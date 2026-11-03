@@ -4,6 +4,7 @@ const { createClient } = require('@supabase/supabase-js');
 const { waitUntil } = require('@vercel/functions');
 const { safeDiscord } = require('../lib/pubg-utils');
 const { getStats } = require('../lib/live-stats');
+const { importPendingBatch } = require('../lib/import-batch');
 
 const CLAN_GUILD = '1411949587299569788';
 const createDb = () => createClient(process.env.SUPABASE_URL,
@@ -126,40 +127,75 @@ async function formatStats(result, name) {
 }
 
 async function leaderboard(db) {
+  // A leaderboard request is also a chance to import missing roster members.
+  // The shared database budget keeps this safe alongside /stats and daily sync.
+  let imported;
+  try {
+    imported = await importPendingBatch(db);
+  } catch (error) {
+    console.error('Leaderboard batch import failed:', error.message);
+    imported = { status: 'lookup_failed', matched: 0 };
+  }
+
   const selectTop = () => db.from('players')
     .select('gamertag,platform,total_kills,total_wins,last_checked')
     .in('platform', ['xbox', 'psn'])
     .order('total_kills', { ascending: false }).limit(10);
-  const first = await selectTop();
-  if (first.error) throw first.error;
-  if (!first.data?.length) {
-    const result = await db.from('player_import_queue')
-      .select('id', { count: 'exact', head: true }).eq('status', 'pending');
-    if (result.error) throw result.error;
-    return '📊 No verified console stats yet. ' + (result.count || 0) +
-      ' names are waiting in the import queue. Use /stats to request an immediate check.';
-  }
-  // Refresh at most two stale leaderboard accounts per lookup, preserving
-  // API capacity for normal searches and using the shared database rate budget.
-  const stale = first.data.filter(p =>
-    !p.last_checked || Date.now() - new Date(p.last_checked).getTime() >= 2 * 60 * 60 * 1000
-  ).slice(0, 2);
-  for (const p of stale) {
-    try {
-      await getStats(db, p.gamertag);
-    } catch (error) {
-      console.error('Leaderboard refresh unavailable:', error.message);
+  let current = await selectTop();
+  if (current.error) throw current.error;
+
+  // If there were no newly imported players, use a little of any spare budget
+  // to refresh older leaders. A recent import batch gets priority.
+  if (!imported.attempted && imported.status === 'no_work') {
+    const stale = (current.data || []).filter(p =>
+      !p.last_checked || Date.now() - new Date(p.last_checked).getTime() >= 2 * 60 * 60 * 1000
+    ).slice(0, 2);
+    for (const player of stale) {
+      try { await getStats(db, player.gamertag); }
+      catch (error) { console.error('Leaderboard refresh failed:', error.message); }
+    }
+    if (stale.length) {
+      current = await selectTop();
+      if (current.error) throw current.error;
     }
   }
-  const latest = stale.length ? await selectTop() : first;
-  if (latest.error) throw latest.error;
-  const list = latest.data || [];
-  return reply('🏆 **Console Clan Leaderboard — Lifetime Kills**\n' +
-    list.map((p, i) => (i + 1) + '. **' + safeDiscord(p.gamertag) +
-      '** (' + (p.platform === 'xbox' ? 'Xbox' : 'PS') + ') — ' +
-      (p.total_kills || 0) + ' kills · ' + (p.total_wins || 0) +
-      ' wins' + (!p.last_checked ? ' · not synced' : ''))
-      .join('\n') + '\n_Stats are saved in Supabase. Up to two stale players refresh per leaderboard request, subject to PUBG API limits._');
+
+  const [queue, verified] = await Promise.all([
+    db.from('player_import_queue').select('status').limit(1000),
+    db.from('players').select('id', { count: 'exact', head: true })
+      .in('platform', ['xbox', 'psn'])
+  ]);
+  if (queue.error) throw queue.error;
+  if (verified.error) throw verified.error;
+  const counts = (queue.data || []).reduce((out, row) => {
+    out[row.status] = (out[row.status] || 0) + 1;
+    return out;
+  }, {});
+  const rank = current.data || [];
+  const lines = ['🏆 **Console Clan Leaderboard — Lifetime Kills**'];
+  lines.push(...(rank.length ? rank.map((p, i) =>
+    (i + 1) + '. **' + safeDiscord(p.gamertag) +
+    '** (' + (p.platform === 'xbox' ? 'Xbox' : 'PS') + ') — ' +
+    (p.total_kills || 0) + ' kills · ' + (p.total_wins || 0) + ' wins'
+  ) : ['No verified players imported yet.']));
+  lines.push(
+    '',
+    '📋 **Roster import:** ' + (verified.count || 0) + ' verified · ' +
+      (counts.pending || 0) + ' pending · ' +
+      (counts.ambiguous || 0) + ' need console confirmation · ' +
+      (counts.not_found || 0) + ' not found' +
+      (counts.error ? ' · ' + counts.error + ' errors' : '')
+  );
+  if (imported.matched > 0)
+    lines.push('✅ Imported ' + imported.matched + ' new player(s) on this request.');
+  if (imported.status === 'rate_limited')
+    lines.push('⏳ PUBG API budget is temporarily full. Try /leaderboard again shortly to import more.');
+  else if (imported.status === 'lookup_failed')
+    lines.push('⚠️ The roster import could not connect to PUBG. Saved standings are shown.');
+  else if ((counts.pending || 0) > 0)
+    lines.push('_Import still in progress. Run /leaderboard again to fetch the next batch when API capacity is available._');
+  else lines.push('_All currently resolvable players are processed. Stats refresh when stale._');
+  return reply(lines.join('\n'));
 }
 
 async function processCommand(body) {
