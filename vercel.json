@@ -44,6 +44,10 @@
       "dest": "api/public-matches.js"
     },
     {
+      "src": "/api/public-insights",
+      "dest": "api/public-insights.js"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
     },

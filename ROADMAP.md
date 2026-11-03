@@ -32,7 +32,8 @@
 ### Phase 2 — Complete profiles and discovery
 - [ ] Player search across tracked accounts with consent/public visibility policy
 - [x] Add real advanced lifetime profile metrics and per-mode comparisons (damage, headshots, assists, knockdowns, revives and Top 10s)
-- [ ] Add weapon-specific mastery and richer advanced charts
+- [x] Add real cached weapon-mastery table, level/tier/XP, detailed stats and visual kill bars
+- [ ] Expand weapon-mastery coverage across clan players and additional advanced charts
 - [x] Shareable official-clan player links (`/#player/<encoded-gamertag>`) and per-player detail panels
 - [x] Real daily snapshots from all PUBG player updates, including baseline captured at the real last-fetch timestamp
 - [x] Read-only private-table-backed history API, with no player IDs or tracked outsiders exposed
@@ -51,8 +52,9 @@
 - [x] Private RLS and verified-roster access; public output uses an explicit field allowlist
 - [ ] Confirm trigger archiving on the next newly retrieved PUBG match in production
 - [x] Archived match details and squad breakdown on the website
-- [ ] Opponent and recurring teammate analysis across archived games
-- [ ] Weapon mastery views with documented PUBG field mapping
+- [x] Recurring teammate analysis from real archived squads (games, wins, kills, damage and last played)
+- [ ] Opponent and rival analysis after safe source fields are available
+- [x] Weapon mastery views documenting StatsTotal, OfficialStatsTotal, CompetitiveStatsTotal, LevelCurrent, TierCurrent and XPTotal (separate categories)
 - [ ] Season and ranked histories and per-mode leaderboard measures
 
 ### Phase 4 — Secure updates and Discord integration

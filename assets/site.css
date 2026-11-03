@@ -42,3 +42,15 @@
 .compare-mode-control label{display:flex;flex-direction:column;color:#a6bad3;letter-spacing:1px;font-size:11px;font-weight:750}
 .compare-mode-control select{background:#122238;border:1px solid #37526f;border-radius:10px;color:#eff5fe;padding:10px;margin-top:6px}
 @media(max-width:740px){.advanced-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Real weapon mastery and recurring teammate analysis */
+.profile-insight-actions{display:flex;gap:8px;flex-wrap:wrap;margin:17px 0}
+.weapon-bars{display:flex;flex-direction:column;gap:9px;margin:18px 0 24px;max-width:850px}
+.weapon-bar-row{display:grid;grid-template-columns:minmax(85px,160px) minmax(75px,1fr) 70px;gap:13px;align-items:center}
+.weapon-bar-row strong{font-size:12px;overflow-wrap:anywhere}
+.weapon-bar-row b{font-size:12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--mint)}
+.weapon-rail{height:10px;border-radius:9px;background:#243952;overflow:hidden}
+.weapon-rail span{display:block;height:100%;background:linear-gradient(90deg,#298fa6,#3ce4c6);border-radius:9px}
+#page-teammates table{min-width:730px}
+#page-weapons table{min-width:670px}
+@media(max-width:740px){.weapon-bar-row{grid-template-columns:minmax(75px,115px) 1fr 60px;gap:7px}.weapon-bar-row strong{font-size:10px}}

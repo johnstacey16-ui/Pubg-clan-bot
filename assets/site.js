@@ -6,6 +6,9 @@
   var compareB = null;
   var matchName = null;
   var matchRequest = 0;
+  var insightNames={weapons:null,teammates:null};
+  var insightRequests={weapons:0,teammates:0};
+  var insightCache={weapons:null,teammates:null};
   var $ = function (id) { return document.getElementById(id); };
   var fmt = function (v) { return Number.isFinite(Number(v)) ? Number(v).toLocaleString('en-GB') : '—'; };
   var dec = function (v) { return v === null || v === undefined ? '—' : Number(v).toFixed(2); };
@@ -16,7 +19,7 @@
   var dateText = function (s) { return s ? new Date(s).toLocaleString('en-GB', {dateStyle:'medium',timeStyle:'short'}) : 'Not available'; };
   var findPlayer = function (name) { return data && data.players.find(function (p) { return p.name === name; }); };
   function go(page, preserveHash) {
-    if (['overview','leaderboard','players','modes','matches','compare','roadmap'].indexOf(page) === -1) return;
+    if (['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'].indexOf(page) === -1) return;
     current = page;
     document.querySelectorAll('.page').forEach(function (el) { el.hidden = el.id !== 'page-' + page; });
     document.querySelectorAll('[data-page]').forEach(function (el) {
@@ -24,10 +27,11 @@
       if (el.dataset.page === page) el.setAttribute('aria-current','page');
       else el.removeAttribute('aria-current');
     });
-    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',roadmap:'Roadmap'}[page];
+    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',teammates:'Teammate insights',roadmap:'Roadmap'}[page];
     try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
     window.scrollTo(0,0);
     if(page==='matches' && data)loadCachedMatches();
+    if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
   }
   function chart(target, totals, modes) {
     var max = Math.max.apply(null, [1].concat(modes.map(function (m) { return totals[m] ? totals[m].kills : 0; })));
@@ -199,6 +203,88 @@
       top10:'top10s',longestKill:'longestKill'};
     return mode==='all'?(p.advanced?.[key]??null):(raw[fields[key]]??null);
   }
+
+  function chooseInsightPlayers(preferredKind,preferredName) {
+    if(!data)return;
+    var names=data.players.map(function(p){return p.name;});
+    for(const kind of ['weapons','teammates']){
+      if(preferredKind===kind&&names.includes(preferredName))insightNames[kind]=preferredName;
+      if(!names.includes(insightNames[kind]))insightNames[kind]=names[0]||null;
+      var picker=$(kind+'-player');
+      picker.innerHTML=names.map(function(name){
+        return '<option value="'+escapeHtml(name)+'"'+(name===insightNames[kind]?' selected':'')+'>'+escapeHtml(name)+'</option>';
+      }).join('');
+      picker.value=insightNames[kind]||'';
+      picker.disabled=!insightNames[kind];
+      $(kind+'-reload').disabled=!insightNames[kind];
+    }
+  }
+  function displayedStat(obj,key) {
+    var value=obj?.[key];
+    return value===null||value===undefined?'—':fmt(value);
+  }
+  function renderWeaponInsights() {
+    var source=insightCache.weapons;
+    if(!source)return;
+    var category=$('weapon-category').value;
+    var query=$('weapon-search').value.toLowerCase().trim();
+    var rows=source.items.filter(function(w){return w.name.toLowerCase().includes(query);})
+      .sort(function(a,b){
+        return (Number(b[category]?.kills??-1)-Number(a[category]?.kills??-1))||
+          (Number(b.xp??-1)-Number(a.xp??-1));
+      });
+    $('weapons-table').innerHTML=rows.map(function(w){
+      var s=w[category]||{};
+      return '<tr><td><strong>'+escapeHtml(w.name)+'</strong></td>'+
+        '<td>'+displayedStat(w,'level')+' / '+displayedStat(w,'tier')+'</td>'+
+        '<td><strong>'+displayedStat(s,'kills')+'</strong></td>'+
+        '<td>'+displayedStat(s,'headshots')+'</td>'+
+        '<td>'+displayedStat(s,'damage')+'</td>'+
+        '<td>'+displayedStat(w,'xp')+'</td></tr>';
+    }).join('')||'<tr><td colspan="6" class="empty">No saved weapons match this filter.</td></tr>';
+    var top=rows.filter(function(w){return Number(w[category]?.kills)>0;}).slice(0,6);
+    var high=Math.max(1,...top.map(function(w){return Number(w[category].kills);}));
+    $('weapon-bars').innerHTML=top.map(function(w){
+      var kills=Number(w[category].kills);
+      return '<div class="weapon-bar-row"><strong>'+escapeHtml(w.name)+'</strong>'+
+        '<div class="weapon-rail"><span style="width:'+Math.max(1,Math.round(kills/high*100))+'%"></span></div>'+
+        '<b>'+fmt(kills)+'</b></div>';
+    }).join('')||'<p class="small muted">No recorded kills in this category. Other mastery entries may appear below.</p>';
+  }
+  function renderTeammateInsights() {
+    var source=insightCache.teammates;
+    if(!source)return;
+    $('teammates-table').innerHTML=source.items.map(function(p){
+      return '<tr><td><strong>'+escapeHtml(p.name)+'</strong></td>'+
+        '<td>'+fmt(p.games)+'</td><td>'+fmt(p.wins)+'</td>'+
+        '<td>'+fmt(p.kills)+'</td><td>'+fmt(p.damage)+'</td>'+
+        '<td>'+fmt(p.assists)+'</td><td>'+escapeHtml(dateText(p.lastPlayedAt))+'</td></tr>';
+    }).join('')||'<tr><td colspan="7" class="empty">No archived squad partners for this player yet.</td></tr>';
+  }
+  async function loadInsight(kind) {
+    var name=insightNames[kind];
+    if(!name)return;
+    var request=++insightRequests[kind];
+    $(kind+'-note').textContent='Reading saved '+(kind==='weapons'?'weapon mastery':'squad')+' data for '+name+'…';
+    try{
+      var response=await fetch('/api/public-insights?kind='+kind+'&name='+encodeURIComponent(name),{
+        cache:'no-store',headers:{Accept:'application/json'}
+      });
+      if(!response.ok)throw Error('Insight API HTTP '+response.status);
+      var result=await response.json();
+      if(request!==insightRequests[kind]||insightNames[kind]!==name)return;
+      if(result.schemaVersion!==1||result.kind!==kind||!Array.isArray(result.items))throw Error('Unexpected response');
+      insightCache[kind]=result;
+      $(kind+'-note').textContent=result.note+' · '+fmt(result.count)+' '+
+        (kind==='weapons'?'weapon records':'distinct partners')+
+        (kind==='weapons'&&result.savedAt?' · Saved '+dateText(result.savedAt):'');
+      if(kind==='weapons')renderWeaponInsights();
+      else renderTeammateInsights();
+    }catch(error){
+      if(request!==insightRequests[kind])return;
+      $(kind+'-note').textContent='Saved insights temporarily unavailable. Existing clan statistics are unaffected.';
+    }
+  }
   function renderCompare() {
     if(!data)return;
     var names=data.players.map(function(p){return p.name;});
@@ -297,7 +383,9 @@
         return '<div class="profile-mode"><strong>'+escapeHtml(modeName(m))+'</strong><span>'+fmt(s.roundsPlayed)+
           ' matches · '+fmt(s.kills)+' kills · '+fmt(s.wins)+' wins</span></div>';
       }).join('') || '<p class="muted">No mode details saved yet.</p>') +
-      '<p><button class="secondary" type="button" data-match-player="'+escapeHtml(p.name)+'">⚑ View saved match analysis</button></p>'+
+      '<div class="profile-insight-actions"><button class="secondary" type="button" data-match-player="'+escapeHtml(p.name)+'">⚑ Matches</button>'+
+      '<button class="secondary" type="button" data-insight-page="weapons" data-insight-name="'+escapeHtml(p.name)+'">⌖ Weapons</button>'+
+      '<button class="secondary" type="button" data-insight-page="teammates" data-insight-name="'+escapeHtml(p.name)+'">♟ Teammates</button></div>'+
       '<h3>Advanced lifetime statistics</h3><div class="advanced-stats">'+
       [['Damage',p.advanced?.damage],['Headshots',p.advanced?.headshots],['Assists',p.advanced?.assists],
        ['Knockdowns',p.advanced?.knocks],['Revives',p.advanced?.revives],['Top 10',p.advanced?.top10],
@@ -326,6 +414,8 @@
       if(!result || result.schemaVersion!==1 || !Array.isArray(result.players))throw Error('Unsupported response');
       data=result;
       renderOverview();renderLeaderboard();renderRoster();renderModes();renderCompare();chooseMatchPlayer(matchName);
+      chooseInsightPlayers();
+      if(current==='weapons'||current==='teammates')loadInsight(current);
       $('notice').hidden=true;
     } catch(error) {
       $('notice').textContent='Could not load saved statistics: '+error.message+'. The existing Discord bot is unaffected.';
@@ -341,6 +431,15 @@
       chooseMatchPlayer(match.dataset.matchPlayer);
       if($('profile').open)$('profile').close();
       go('matches');
+    }
+    var insight=e.target.closest&&e.target.closest('[data-insight-page]');
+    if(insight){
+      var kind=insight.dataset.insightPage;
+      if(kind==='weapons'||kind==='teammates'){
+        chooseInsightPlayers(kind,insight.dataset.insightName);
+        if($('profile').open)$('profile').close();
+        go(kind);
+      }
     }
   });
   $('profile-close').addEventListener('click',function () { $('profile').close(); });
@@ -369,12 +468,20 @@
   $('reload').addEventListener('click',reload);
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);
+  for(const kind of ['weapons','teammates']){
+    $(kind+'-player').addEventListener('change',function(e){
+      insightNames[kind]=e.target.value;loadInsight(kind);
+    });
+    $(kind+'-reload').addEventListener('click',function(){loadInsight(kind);});
+  }
+  $('weapon-category').addEventListener('change',renderWeaponInsights);
+  $('weapon-search').addEventListener('input',renderWeaponInsights);
   var hash=location.hash.slice(1);
   var sharedName=null;
   if(hash.startsWith('player/')){
     try { sharedName=decodeURIComponent(hash.slice(7)); } catch(error) {}
   }
-  go(sharedName?'players':(['overview','leaderboard','players','modes','matches','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
+  go(sharedName?'players':(['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
   reload().then(function(){
     if(sharedName) {
       if(findPlayer(sharedName))openProfile(sharedName,true);

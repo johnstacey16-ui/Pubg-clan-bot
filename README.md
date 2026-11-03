@@ -150,3 +150,29 @@ The private Supabase `clan_match_archive` table stores sanitised summaries for *
 Retention is **180 days from the match date**. The existing secret-protected Vercel cron calls `prune_clan_match_archive` during its daily run. If a scheduled run fails, the next successful run resumes pruning. The archive uses RLS and service-role-only grants.
 
 The website's `GET /api/public-matches?name=...` now prioritises up to 30 archived match summaries for a verified clan member. If the archive is empty, it falls back to the temporary PUBG cache. The backend checks roster membership before reading the archive and allowlists every field returned to public viewers.
+
+
+## Weapon mastery and teammate intelligence
+
+The website now includes **Weapon Mastery** and **Teammate Insights**, using
+the read-only, cache-only `GET /api/public-insights?kind=weapons|teammates&name=<gamertag>`
+endpoint. Both views verify exact official-clan membership before reading
+any Supabase data. Neither requires additional upstream PUBG API requests.
+
+The weapon response is mapped from
+`data.attributes.weaponSummaries`, including
+`StatsTotal`, `OfficialStatsTotal` and
+`CompetitiveStatsTotal` as distinct categories. PUBG keys
+`Kills`, `HeadShots`,
+`DamagePlayer`, `Groggies`,
+`LevelCurrent`, `TierCurrent` and
+`XPTotal` are mapped directly; missing fields display an
+unavailable dash instead of a false zero. Only one player's mastery
+response is currently cached; use the bot's `/mastery`
+command to populate additional players without bypassing the rate budget.
+
+Teammate statistics group previously archived squad members by name, counting
+games played together, wins together, the partner's kills, damage, assists
+and knockdowns, and most recent archived match. The summary reflects
+**archived games only**, not guaranteed full PUBG career coverage, and
+does not imply that opponents are identified as rivals.

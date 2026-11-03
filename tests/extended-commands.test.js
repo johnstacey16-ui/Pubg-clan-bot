@@ -82,3 +82,18 @@ test('only valid match IDs are requested', async () => {
   assert.equal(result.state, 'invalid');
 });
 
+
+test('weapon parser maps real PUBG LevelCurrent and capitalised OfficialStatsTotal fields',()=>{
+  const data={data:{attributes:{weaponSummaries:{
+    Item_Weapon_BerylM762_C:{LevelCurrent:35,TierCurrent:5,
+      StatsTotal:{Kills:1520},OfficialStatsTotal:{Kills:1397,HeadShots:490}},
+    Item_Weapon_M416_C:{LevelCurrent:12,StatsTotal:{Kills:55}}
+  }}}};
+  const result=extra.weaponRows(data);
+  assert.equal(result[0].weapon,'BerylM762');
+  assert.equal(result[0].level,35);
+  assert.equal(result[0].kills,1397);
+  assert.equal(result[0].official,true);
+  assert.equal(result[1].kills,55);
+  assert.equal(result[1].official,false);
+});
