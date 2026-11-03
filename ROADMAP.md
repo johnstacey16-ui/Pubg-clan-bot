@@ -16,12 +16,13 @@
 - [x] Keep service-role, Discord, Groq and PUBG API secrets on the server
 - [x] Build overview, sortable leaderboard, searchable roster, per-player mode details and comparisons
 - [x] Add visualizations from real stored mode data; no invented statistics
-- [x] Test web response shaping, routes and sensitive-data exclusion with automated checks
+- [x] Test web response shaping, routes and sensitive-data exclusion with development checks (19/19 passed)
+- [ ] Run all repository Node tests in independent CI (workflow installation currently blocked)
 
 ## Deployment and acceptance gates
 
-- [ ] Vercel production deployment READY for this commit (Hobby build quota may delay deployment)
-- [ ] Verify `/` serves the website and `/api/public-stats` returns verified production data
+- [x] Vercel deployment READY for initial web foundation commit f73041b; production alias confirmed
+- [ ] Verify the homepage and `/api/public-stats` using a real HTTP/browser request (external HTTP inspection was blocked in the current environment)
 - [ ] Confirm /interactions, /api/health, /api/sync and Discord dashboard still work
 - [ ] Verify responsive layout in Chromium and phone screen size
 - [ ] Verify browser security headers and safe public data with production responses
