@@ -171,3 +171,18 @@ test('ranked stat output rejects unknown fields and carries no bogus numbers',()
  assert.equal(modes[0].stats.roundsPlayed,10);
  assert.equal(modes[0].stats.accountId,undefined);
 });
+
+test('one unavailable match detail does not erase other saved details',async()=>{
+ const database=db();
+ const r=await refreshScopedData(database,{name:'OtherPlayer',scope:'matches'},{
+  playerEndpoint:async()=>({state:'fresh',data:{data:{relationships:{matches:{data:[
+    {id:MATCHES[0]},{id:MATCHES[1]}]}}}}}),
+  matchEndpoint:async(_db,id)=>{
+    if(id===MATCHES[0])throw Error('One expired PUBG match');
+    return{state:'fresh',data:{data:{id}}};
+  }
+ });
+ assert.equal(r.status,200);
+ assert.equal(r.body.indexedMatches,2);
+ assert.equal(r.body.savedDetails,1);
+});
