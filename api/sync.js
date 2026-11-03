@@ -70,13 +70,38 @@ module.exports = async (req, res) => {
   }
   if (!lease) return res.status(200).json({ status: 'throttled', message: 'Another sync is active or the 90-second cooldown has not elapsed' });
 
-  const summary = { status: 'ok', checked: 0, matched: 0, ambiguous: 0, not_found: 0 };
+  const summary = { status: 'ok', checked: 0, matched: 0, ambiguous: 0, not_found: 0, errors: 0, refreshed: 0 };
   let statusCode = 200;
   try {
     const pending = await checked(db.from('player_import_queue')
       .select('id,gamertag').eq('status', 'pending').order('id').limit(MAX_BATCH), 'Import queue');
     if (!pending?.length) {
-      summary.status = 'completed';
+      // Once the initial import finishes, refresh the oldest verified accounts daily.
+      const old = await checked(db.from('players')
+        .select('id,platform,pubg_account_id,last_checked')
+        .not('pubg_account_id', 'is', null)
+        .order('last_checked', { ascending: true, nullsFirst: true })
+        .limit(MAX_BATCH), 'Refresh candidates');
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      for (const player of old || []) {
+        if (player.last_checked && new Date(player.last_checked).getTime() > cutoff) continue;
+        if (!SHARDS.includes(player.platform)) continue;
+        try {
+          const data = await pubg(player.platform + '/players/' +
+            encodeURIComponent(player.pubg_account_id) + '/seasons/lifetime');
+          const totals = lifetimeSummary(data);
+          await checked(db.from('players').update({
+            total_kills: totals.kills, total_wins: totals.wins,
+            matches_played: totals.rounds, last_checked: new Date().toISOString()
+          }).eq('id', player.id).select('id'), 'Refresh player');
+          summary.refreshed++;
+        } catch (error) {
+          if (/HTTP 429/.test(error.message)) throw error;
+          console.error('Player refresh failed:', player.id, error.message);
+          summary.errors++;
+        }
+      }
+      summary.status = summary.errors ? 'partial' : 'completed';
     } else {
       const names = pending.map(p => p.gamertag);
       const matches = {};
@@ -86,43 +111,55 @@ module.exports = async (req, res) => {
         matches[platform] = result.data || [];
       }
       for (const row of pending) {
-        const options = SHARDS.map(platform => ({
-          platform, player: exactPlayer(matches[platform], row.gamertag)
-        })).filter(entry => entry.player);
-        if (options.length > 1) {
-          await checked(db.from('player_import_queue').update({
-            status: 'ambiguous', note: 'Gamertag exists on Xbox and PlayStation; select the correct account',
-            checked_at: new Date().toISOString()
-          }).eq('id', row.id).select('id'), 'Mark ambiguous');
-          summary.ambiguous++;
-        } else if (!options.length) {
-          await checked(db.from('player_import_queue').update({
-            status: 'not_found', note: 'No exact match returned by either console shard',
-            checked_at: new Date().toISOString()
-          }).eq('id', row.id).select('id'), 'Mark not found');
-          summary.not_found++;
-        } else {
-          const { platform, player } = options[0];
-          const accountId = player.id;
-          const lifetime = await pubg(platform + '/players/' + encodeURIComponent(accountId) + '/seasons/lifetime');
-          const totals = lifetimeSummary(lifetime);
-          await checked(db.from('players').upsert({
-            gamertag: row.gamertag,
-            platform,
-            pubg_account_id: accountId,
-            total_kills: totals.kills,
-            total_wins: totals.wins,
-            matches_played: totals.rounds,
-            last_checked: new Date().toISOString()
-          }, { onConflict: 'gamertag' }).select('id'), 'Save player');
-          await checked(db.from('player_import_queue').update({
-            status: 'matched', platform, pubg_account_id: accountId,
-            checked_at: new Date().toISOString(), note: 'Lifetime stats imported'
-          }).eq('id', row.id).select('id'), 'Finish import');
-          summary.matched++;
+        try {
+          const options = SHARDS.map(platform => ({
+            platform, player: exactPlayer(matches[platform], row.gamertag)
+          })).filter(entry => entry.player);
+          if (options.length > 1) {
+            await checked(db.from('player_import_queue').update({
+              status: 'ambiguous',
+              note: 'Exact gamertag found on Xbox and PlayStation; manual selection required',
+              checked_at: new Date().toISOString()
+            }).eq('id', row.id).select('id'), 'Mark ambiguous');
+            summary.ambiguous++;
+          } else if (!options.length) {
+            await checked(db.from('player_import_queue').update({
+              status: 'not_found', note: 'No exact match returned by Xbox or PlayStation',
+              checked_at: new Date().toISOString()
+            }).eq('id', row.id).select('id'), 'Mark not found');
+            summary.not_found++;
+          } else {
+            const { platform, player } = options[0];
+            const lifetime = await pubg(platform + '/players/' +
+              encodeURIComponent(player.id) + '/seasons/lifetime');
+            const totals = lifetimeSummary(lifetime);
+            await checked(db.from('players').upsert({
+              gamertag: row.gamertag, platform,
+              pubg_account_id: player.id,
+              total_kills: totals.kills, total_wins: totals.wins,
+              matches_played: totals.rounds,
+              last_checked: new Date().toISOString()
+            }, { onConflict: 'gamertag' }).select('id'), 'Save player');
+            await checked(db.from('player_import_queue').update({
+              status: 'matched', platform, pubg_account_id: player.id,
+              checked_at: new Date().toISOString(), note: 'Lifetime stats imported'
+            }).eq('id', row.id).select('id'), 'Finish import');
+            summary.matched++;
+          }
+        } catch (error) {
+          if (/HTTP 429/.test(error.message)) throw error;
+          console.error('Player import failed:', row.id, error.message);
+          summary.errors++;
+          try {
+            await checked(db.from('player_import_queue').update({
+              status: 'error', note: String(error.message).slice(0, 300),
+              checked_at: new Date().toISOString()
+            }).eq('id', row.id).select('id'), 'Mark failed');
+          } catch (markError) { console.error('Could not mark import failure:', markError.message); }
         }
         summary.checked++;
       }
+      if (summary.errors) summary.status = 'partial';
     }
   } catch (error) {
     console.error('PUBG sync error:', error.message);
