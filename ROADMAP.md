@@ -17,7 +17,7 @@
 - [x] Build overview, sortable leaderboard, searchable roster, per-player mode details and comparisons
 - [x] Add visualizations from real stored mode data; no invented statistics
 - [x] Test web response shaping, routes and sensitive-data exclusion with development checks (19/19 passed)
-- [ ] Run all repository Node tests in independent CI (workflow installation currently blocked)
+- [x] Run all repository Node tests in independent GitHub Actions CI (93/93 passing on 2026-11-03; workflow installs pinned backend dependencies)
 
 ## Deployment and acceptance gates
 
@@ -91,7 +91,8 @@
 - [ ] Accessibility and performance regression gate
 
 ### Phase 5 — Production hardening
-- [ ] Run full automated regression suite and browser checks
+- [x] Full automated Node regression suite: 93/93 tests pass in GitHub Actions on 2026-11-03
+- [ ] Complete live desktop, Android and Xbox browser checks
 - [ ] Error monitoring, stale-data indicators and backoff
 - [ ] Confirm free-tier usage, hosting and API-request budgets
 - [ ] Validate layout and interaction on Xbox browser (hardware acceptance separately)
