@@ -5,6 +5,14 @@ const { createClient } = require('@supabase/supabase-js');
 // Discord requires a response within three seconds. The core commands intentionally
 // use deterministic formatting rather than waiting for an external AI completion.
 const allowedSkewSeconds = 300;
+const HOME_GUILD_ID = '1411949587299569788';
+function escapeLike(value) {
+  // PostgreSQL ILIKE treats % and _ as wildcards unless escaped.
+  return value.replace(/[\\%_]/g, ch => '\\' + ch);
+}
+function safeDiscord(value) {
+  return String(value).replace(/[\\*_`~|>]/g, '\\const allowedSkewSeconds = 300;').slice(0, 120);
+}
 const response = (content, ephemeral = false) => ({
   type: 4,
   data: { content: String(content).slice(0, 2000), allowed_mentions: { parse: [] }, ...(ephemeral ? { flags: 64 } : {}) }
@@ -49,19 +57,25 @@ async function handleCommand(body) {
     if (!gamertag || gamertag.length > 100) return response('Please provide a valid gamertag.', true);
     const { data: players, error } = await db.from('players')
       .select('id,gamertag,platform,total_kills,total_wins,matches_played,last_checked')
-      .ilike('gamertag', gamertag).limit(5);
+      .ilike('gamertag', escapeLike(gamertag)).limit(5);
     if (error) throw error;
     const player = players?.find(p => p.gamertag.toLowerCase() === gamertag.toLowerCase());
     if (!player) {
       const { data: queued, error: queueError } = await db.from('player_import_queue')
-        .select('status,platform,note')
-        .ilike('gamertag', gamertag).limit(10);
+        .select('gamertag,status,platform,note')
+        .ilike('gamertag', escapeLike(gamertag)).limit(10);
       if (queueError) throw queueError;
-      const entry = queued?.find(q => true);
-      if (entry?.status === 'pending') return response('⏳ **' + gamertag + '** is in the Xbox/PlayStation import queue. No verified stats yet.', true);
-      if (entry?.status === 'ambiguous') return response('🎮 **' + gamertag + '** matches accounts on both Xbox and PlayStation. Platform confirmation is needed.', true);
-      if (entry?.status === 'not_found') return response('🔎 No exact Xbox or PlayStation account was found for **' + gamertag + '**. Double-check spelling.', true);
-      if (entry?.status === 'error') return response('⚠️ The import for **' + gamertag + '** encountered an error. It can be retried.', true);
+      const entry = queued?.find(q => q.gamertag.toLowerCase() === gamertag.toLowerCase());
+      if (entry?.status === 'pending') return response('⏳ **' + safeDiscord(gamertag) + '** is in the Xbox/PlayStation import queue. No verified stats yet.', true);
+      if (entry?.status === 'ambiguous') return response('🎮 **' + safeDiscord(gamertag) + '** matches accounts on both Xbox and PlayStation. Platform confirmation is needed.', true);
+      if (entry?.status === 'not_found') return response('🔎 No exact Xbox or PlayStation account was found for **' + safeDiscord(gamertag) + '**. Double-check spelling.', true);
+      if (entry?.status === 'error') return response('⚠️ The import for **' + safeDiscord(gamertag) + '** encountered an error. It will be retried.', true);
+      if (body.guild_id === HOME_GUILD_ID) {
+        const { error: addError } = await db.from('player_import_queue').insert({ gamertag });
+        if (addError && addError.code !== '23505') throw addError;
+        return response('✅ **' + safeDiscord(gamertag) +
+          '** has been added to the console-only import queue. Check /stats again after the next sync.', true);
+      }
       return response('No verified Xbox or PlayStation stats for that gamertag yet.', true);
     }
     const { data: matches, error: matchError } = await db.from('matches')
@@ -73,7 +87,7 @@ async function handleCommand(body) {
     const lastSync = player.last_checked ? new Date(player.last_checked).toISOString().slice(0, 10) : 'Not yet synced';
     return response([
       '🎮 **PUBG Player Stats**',
-      '**' + player.gamertag.replaceAll('*', '\\*') + '** (' + player.platform + ')',
+      '**' + safeDiscord(player.gamertag) + '** (' + player.platform + ')',
       'Kills: **' + kills + '** · Wins: **' + (player.total_wins || 0) + '** · Matches: **' + games + '**',
       'Kills per match: **' + (games ? (kills / games).toFixed(2) : 'N/A') + '**',
       'Recent matches saved: **' + (matches?.length || 0) + '** · Last sync: ' + lastSync,
@@ -97,7 +111,7 @@ async function handleCommand(body) {
         (counts.error || 0) + ' awaiting retry.');
     }
     return response('🏆 **Clan leaderboard — kills**\n' + data.map((p, i) =>
-      (i + 1) + '. **' + p.gamertag.replaceAll('*', '\\*') + '** — ' + (p.total_kills || 0) +
+      (i + 1) + '. **' + safeDiscord(p.gamertag) + '** — ' + (p.total_kills || 0) +
       ' kills · ' + (p.total_wins || 0) + ' wins').join('\n'));
   }
   return response('Unknown command.', true);
