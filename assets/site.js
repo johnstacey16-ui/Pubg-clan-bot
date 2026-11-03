@@ -2,6 +2,29 @@
 (function () {
   var data = null;
   var extraPlayers = [];
+  var rosterPage=1;
+  var FAVOURITES_KEY='pubg-clan-roster-favourites-v1';
+  function favouriteKey(name) { return String(name||'').trim().toLowerCase(); }
+  function readRosterFavourites() {
+    try {
+      var saved=JSON.parse(window.localStorage?.getItem(FAVOURITES_KEY)||'[]');
+      return new Set(Array.isArray(saved)?saved.filter(function(x){
+        return typeof x==='string'&&x.length>0&&x.length<=100;
+      }).slice(0,250).map(favouriteKey):[]);
+    }catch(error){return new Set();}
+  }
+  var rosterFavourites=readRosterFavourites();
+  function toggleRosterFavourite(name) {
+    if(!data || !data.roster.entries.some(function(r){
+      return favouriteKey(r.name)===favouriteKey(name);
+    }))return;
+    var key=favouriteKey(name);
+    if(rosterFavourites.has(key))rosterFavourites.delete(key);
+    else if(rosterFavourites.size<250)rosterFavourites.add(key);
+    try {window.localStorage?.setItem(FAVOURITES_KEY,JSON.stringify([...rosterFavourites]));}
+    catch(error){} // Private browsing and disabled storage still work for this session.
+    renderRoster();
+  }
   var current = 'overview';
   var compareA = null;
   var compareB = null;
@@ -177,22 +200,60 @@
   }
   function renderRoster() {
     if (!data) return;
-    var q = $('search').value.trim().toLowerCase(), platform = $('player-console').value, status = $('player-status').value;
-    var byName = new Map(data.players.map(function (p) { return [p.name.toLowerCase(),p]; }));
-    var roster = data.roster.entries.filter(function (p) {
-      return (!q || p.name.toLowerCase().includes(q)) &&
-        (platform === 'all' || (platform === 'unknown' ? !p.platform : p.platform === platform)) &&
-        (status === 'all' || (status === 'verified' ? p.verified : p.status === status));
+    var q=$('search').value.trim().toLowerCase(),platform=$('player-console').value;
+    var status=$('player-status').value,sort=$('roster-sort').value;
+    var favOnly=$('roster-favs-only').checked;
+    var byName=new Map(data.players.map(function(p){return [p.name.toLowerCase(),p];}));
+    var roster=data.roster.entries.filter(function(p){
+      return (!q||p.name.toLowerCase().includes(q)) &&
+        (platform==='all'||(platform==='unknown'?!p.platform:p.platform===platform)) &&
+        (status==='all'||(status==='verified'?p.verified:p.status===status)) &&
+        (!favOnly||rosterFavourites.has(favouriteKey(p.name)));
     });
-    $('roster-count').textContent = 'Showing ' + roster.length + ' of ' + data.roster.total + ' official clan members';
-    $('roster-table').innerHTML = roster.map(function (r) {
-      var p = byName.get(r.name.toLowerCase()), st = r.verified ? 'verified' : r.status;
-      var label = {verified:'✓ Verified',pending:'⏳ Pending',ambiguous:'? Ambiguous',not_found:'! Not found'}[st] || st;
-      return '<tr><td>' + (p ? playerLink(p) : '<strong>'+escapeHtml(r.name)+'</strong>') +
-        '</td><td>' + (r.platform === 'xbox' ? 'Xbox' : r.platform === 'psn' ? 'PlayStation' : '—') +
-        '</td><td><span class="badge ' + escapeHtml(st) + '">' + escapeHtml(label) + '</span></td>' +
-        '<td>' + (p?fmt(p.kills):'—') + '</td><td>' + (p?fmt(p.wins):'—') + '</td><td>' + (p?fmt(p.matches):'—') + '</td></tr>';
-    }).join('') || '<tr><td colspan="6" class="empty">No players match the chosen filters.</td></tr>';
+    roster.sort(function(a,b){
+      if(sort==='favourites'){
+        var favour=Number(rosterFavourites.has(favouriteKey(b.name)))-
+          Number(rosterFavourites.has(favouriteKey(a.name)));
+        if(favour)return favour;
+      }
+      if(sort==='kills'||sort==='wins'){
+        var diff=(byName.get(b.name.toLowerCase())?.[sort]??-1)-
+          (byName.get(a.name.toLowerCase())?.[sort]??-1);
+        if(diff)return diff;
+      }
+      return a.name.localeCompare(b.name);
+    });
+    var size=Number($('roster-page-size').value)||20;
+    if(![10,20,50,100].includes(size))size=20;
+    var pages=Math.max(1,Math.ceil(roster.length/size));
+    rosterPage=Math.max(1,Math.min(rosterPage,pages));
+    var first=(rosterPage-1)*size;
+    var shown=roster.slice(first,first+size);
+    var totalFavourites=data.roster.entries.filter(function(p){
+      return rosterFavourites.has(favouriteKey(p.name));
+    }).length;
+    $('roster-count').textContent=(roster.length?
+      'Showing '+(first+1)+'–'+(first+shown.length)+' of '+roster.length+' matching members':
+      'No matching members')+
+      ' · '+data.roster.total+' official members · '+totalFavourites+' favourites on this device';
+    $('roster-page-label').textContent='Page '+rosterPage+' of '+pages;
+    $('roster-prev').disabled=rosterPage<=1;
+    $('roster-next').disabled=rosterPage>=pages;
+    $('roster-table').innerHTML=shown.map(function(r){
+      var p=byName.get(r.name.toLowerCase()),st=r.verified?'verified':r.status;
+      var fav=rosterFavourites.has(favouriteKey(r.name));
+      var label={verified:'✓ Verified',pending:'⏳ Pending',
+        ambiguous:'? Ambiguous',not_found:'! Not found'}[st]||st;
+      return '<tr><td><button type="button" class="favourite-toggle'+(fav?' is-favourite':'')+
+        '" data-favourite="'+escapeHtml(r.name)+'" aria-pressed="'+fav+
+        '" aria-label="'+(fav?'Remove favourite: ':'Save favourite: ')+escapeHtml(r.name)+
+        '" title="'+(fav?'Remove favourite':'Save favourite')+'">'+(fav?'★':'☆')+'</button> '+
+        (p?playerLink(p):'<strong>'+escapeHtml(r.name)+'</strong>')+
+        '</td><td>'+(r.platform==='xbox'?'Xbox':r.platform==='psn'?'PlayStation':'—')+
+        '</td><td><span class="badge '+escapeHtml(st)+'">'+escapeHtml(label)+'</span></td>'+
+        '<td>'+(p?fmt(p.kills):'—')+'</td><td>'+(p?fmt(p.wins):'—')+
+        '</td><td>'+(p?fmt(p.matches):'—')+'</td></tr>';
+    }).join('')||'<tr><td colspan="6" class="empty">No players match the chosen filters.</td></tr>';
   }
   function renderModes() {
     if (!data) return;
@@ -684,6 +745,8 @@
   document.querySelectorAll('[data-page]').forEach(function (b) { b.addEventListener('click',function () {go(b.dataset.page);}); });
   document.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click',function () {go(b.dataset.go);}); });
   document.addEventListener('click',function (e) {
+    var favourite=e.target.closest&&e.target.closest('[data-favourite]');
+    if(favourite)toggleRosterFavourite(favourite.dataset.favourite);
     var b=e.target.closest&&e.target.closest('[data-profile]');
     if(b)openProfile(b.dataset.profile);
     var match=e.target.closest&&e.target.closest('[data-match-player]');
@@ -722,8 +785,13 @@
   });
   $('profile').addEventListener('click',function(e) {if(e.target===$('profile'))$('profile').close();});
   ['sort','leader-console'].forEach(function (id) {$(id).addEventListener('change',renderLeaderboard);});
-  ['player-console','player-status'].forEach(function (id) {$(id).addEventListener('change',renderRoster);});
-  $('search').addEventListener('input',renderRoster);
+  ['player-console','player-status','roster-sort','roster-page-size','roster-favs-only']
+    .forEach(function(id){$(id).addEventListener('change',function(){
+      rosterPage=1;renderRoster();
+    });});
+  $('search').addEventListener('input',function(){rosterPage=1;renderRoster();});
+  $('roster-prev').addEventListener('click',function(){rosterPage--;renderRoster();});
+  $('roster-next').addEventListener('click',function(){rosterPage++;renderRoster();});
   $('compare-one').addEventListener('change',function(e){compareA=e.target.value;renderCompare();});
   $('compare-two').addEventListener('change',function(e){compareB=e.target.value;renderCompare();});
   $('compare-mode').addEventListener('change',renderCompare);

@@ -38,7 +38,7 @@
 - [x] Real daily snapshots from all PUBG player updates, including baseline captured at the real last-fetch timestamp
 - [x] Read-only private-table-backed history API for saved console players, without revealing database IDs
 - [x] Historical SVG charts that appear **only after two or more real snapshots**
-- [ ] Full roster pagination, advanced filters and saved player favourites
+- [x] Roster pagination, name/kills/wins/favourites sorting, console/status/favourites filters and on-device saved clan favourites (no account or database required)
 - [ ] Verify a second genuine snapshot and resulting public chart after an actual PUBG refresh
 - [x] Validate shareable profile links and real-history baseline/line-chart behaviour in a simulated browser
 - [x] Handle ambiguous platform searches openly, requesting a console choice only if both shards return a matching gamertag

@@ -12,7 +12,7 @@ The website and Discord bot now share **this repository, Vercel project, and Sup
 - Existing scheduled sync: `GET /api/sync` (unchanged)
 - Existing status route: `GET /api/health` (unchanged)
 
-The initial website includes a mobile-friendly dark overview, official-clan lifetime leaderboards, searchable roster, per-mode charts, verified player details, side-by-side comparisons, and a roadmap page. It **does not** offer unprotected public PUBG refreshes; the web reload button only re-reads saved Supabase data. Actual PUBG updates go through the existing protected Discord buttons, cron and rate-limited backend.
+The website includes a mobile-friendly dark overview, official-clan lifetime leaderboards, paginated and sortable roster with favourites saved on each device, per-mode charts, verified profiles, comparisons and real history. Public Xbox/PlayStation player searches and explicit website PUBG refreshes now run through Vercel functions with an atomic Supabase cooldown and shared PUBG API rate limit. Ordinary reloads read saved data without spending PUBG API capacity. Favourites use browser storage only; they are not shared across devices.
 
 This deployment uses Vercel's existing `builds` configuration plus explicit `@vercel/static` entries for `index.html`, `assets/**` and `design/**`. Preserve those static builds when modifying `vercel.json`. Secret environment variables are never supplied to browser code.
 

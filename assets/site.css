@@ -96,3 +96,17 @@
 .season-history-summary .history-number{padding:12px 16px;background:#142842;border:1px solid #294660;border-radius:9px;min-width:130px}
 .season-history-summary strong{display:block;color:var(--mint);font-size:20px}
 .season-history-summary small{display:block;color:#a2b8ce}
+
+
+/* Local-only clan favourites and pagination: no player account or server requests. */
+.roster-fav-filter{display:flex;flex-direction:row!important;align-items:center;gap:10px;padding:10px 0}
+.filters .roster-fav-filter input[type=checkbox]{width:18px;height:18px;min-width:0;min-height:0;accent-color:var(--mint);cursor:pointer}
+.favourite-toggle{border:0;background:transparent;color:#9caabf;font-size:22px;line-height:1;padding:4px 8px 4px 0;vertical-align:middle}
+.favourite-toggle:hover,.favourite-toggle.is-favourite{color:var(--gold)}
+.roster-pagination{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:17px}
+.roster-pagination p{margin:0}
+.roster-page-buttons{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.roster-page-buttons span{font-size:12px;color:#b8c9db;white-space:nowrap}
+.roster-page-buttons button{min-height:38px}
+.roster-page-buttons button:disabled{opacity:.4}
+@media(max-width:740px){.roster-page-buttons{width:100%;justify-content:space-between}}
