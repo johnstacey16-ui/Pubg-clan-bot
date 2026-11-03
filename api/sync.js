@@ -1,8 +1,8 @@
 'use strict';
 const { createClient } = require('@supabase/supabase-js');
+const { lifetimeSummary, exactPlayer, gameModeStats } = require('../lib/pubg-utils');
 const MAX_BATCH = 6; // 2 lookups + at most 6 lifetime calls = at most 8 rate-limited calls
 const SHARDS = ['xbox', 'psn'];
-const MODES = ['solo', 'duo', 'squad', 'solo-fpp', 'duo-fpp', 'squad-fpp'];
 const HEADERS = () => ({
   Authorization: 'Bearer ' + process.env.PUBG_API_KEY,
   Accept: 'application/vnd.api+json'
@@ -20,17 +20,6 @@ async function pubg(path, allowNotFound = false) {
   }
   return result.json();
 }
-function lifetimeSummary(payload) {
-  const stats = payload?.data?.attributes?.gameModeStats;
-  if (!stats || typeof stats !== 'object') throw new Error('PUBG lifetime statistics unavailable');
-  return MODES.reduce((totals, mode) => {
-    const item = stats[mode] || {};
-    totals.kills += Number(item.kills) || 0;
-    totals.wins += Number(item.wins) || 0;
-    totals.rounds += Number(item.roundsPlayed) || 0;
-    return totals;
-  }, { kills: 0, wins: 0, rounds: 0 });
-}
 function dbClient() {
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false }
@@ -42,18 +31,13 @@ async function checked(promise, label) {
   return result.data;
 }
 async function saveLifetimeDetails(db, playerId, platform, lifetime) {
-  const modes = lifetime?.data?.attributes?.gameModeStats;
-  if (!modes || typeof modes !== 'object' || Array.isArray(modes))
-    throw new Error('Invalid PUBG lifetime game-mode response');
+  const modes = gameModeStats(lifetime);
   await checked(db.from('player_lifetime_details').upsert({
     player_id: playerId,
     platform,
     game_mode_stats: modes,
     updated_at: new Date().toISOString()
   }, { onConflict: 'player_id' }).select('player_id'), 'Save game-mode details');
-}
-function exactPlayer(list, gamertag) {
-  return (list || []).find(item => item?.attributes?.name?.toLowerCase() === gamertag.toLowerCase());
 }
 module.exports = async (req, res) => {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
