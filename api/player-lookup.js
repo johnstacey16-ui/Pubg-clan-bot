@@ -8,9 +8,9 @@ const sameOrigin=req=>{
  return /^pubg-clan-bot(?:-[a-z0-9-]+)?\.vercel\.app$/.test(host) &&
    origin==='https://'+host;
 };
-async function processLookup(db,{name,platform,refresh=false}){
+async function processLookup(db,{name,platform='auto',refresh=false}){
  if(!validInput(name,platform))
-   return{status:400,body:{error:'Choose a valid gamertag and console'}};
+   return{status:400,body:{error:'Enter one valid gamertag (Auto-detect, Xbox or PlayStation)'}};
  const saved=await publicPlayer(db,name,platform);
  if(saved.status!==200||!refresh)return saved;
  const stamp=saved.body.player?.updatedAt;
@@ -18,17 +18,25 @@ async function processLookup(db,{name,platform,refresh=false}){
    Date.now()-Date.parse(stamp)<REFRESH_FRESH_MS)
    return{status:200,body:{...saved.body,refreshState:'recent',
      note:'These PUBG statistics were updated within the last 15 minutes.'}};
- const slot=await db.rpc('reserve_web_refresh',{p_player_key:platform+':'+name.toLowerCase()});
+ // Once saved, use the confirmed console in both refresh cooldown and PUBG calls.
+ // Unknown names use auto once, checking Xbox and PSN within the shared API budget.
+ const resolvedPlatform=saved.body.found?saved.body.platform:platform;
+ const slot=await db.rpc('reserve_web_refresh',{p_player_key:resolvedPlatform+':'+name.toLowerCase()});
  if(slot.error)throw new Error('Web refresh budget unavailable');
  if(!slot.data)return{status:429,body:{error:'Website PUBG refresh capacity is cooling down. Saved statistics remain available.',retryAfterSeconds:90}};
- const result=await getStats(db,name,{platform,refreshRequested:true});
+ const result=await getStats(db,name,{platform:resolvedPlatform==='auto'?null:resolvedPlatform,refreshRequested:true});
  if(result.state==='platform_conflict')
    return{status:409,body:{error:result.message}};
  if(result.state==='invalid')return{status:400,body:{error:result.message}};
+ if(result.state==='ambiguous')
+   return{status:409,body:{
+     error:'This gamertag was found on both Xbox and PlayStation. Choose the console for the player you want to view.',
+     code:'platform_ambiguous',choices:['xbox','psn']
+   }};
  if(result.state==='queued')return{status:429,body:{error:'PUBG API budget is busy. Please try again later.',retryAfterSeconds:90}};
- if(result.state==='not_found')return{status:404,body:{error:'No matching PUBG account on this console.'}};
+ if(result.state==='not_found')return{status:404,body:{error:resolvedPlatform==='auto'?'No exact PUBG account found on Xbox or PlayStation.':'No matching PUBG account on this console.'}};
  if(result.state==='unavailable')return{status:503,body:{error:'PUBG data is temporarily unavailable.'}};
- const updated=await publicPlayer(db,name,platform);
+ const updated=await publicPlayer(db,name,resolvedPlatform);
  if(updated.status!==200)return updated;
  return{status:200,body:{...updated.body,
    refreshState:result.source==='live'?'refreshed':result.source||result.state,

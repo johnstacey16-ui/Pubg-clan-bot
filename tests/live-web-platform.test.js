@@ -71,3 +71,79 @@ test('invalid console selection fails before reading or calling PUBG',async()=>{
  assert.equal(result.state,'invalid');
  assert.equal(db.calls.length,0);
 });
+
+test('auto-detect finds PSN after checking both console shards once',async()=>{
+ const old=global.fetch,oldKey=process.env.PUBG_API_KEY;
+ process.env.PUBG_API_KEY='TEST_ONLY_NOT_REAL';
+ const requests=[];
+ global.fetch=async url=>{
+   requests.push(url);
+   if(url.includes('/shards/xbox/players?'))return{ok:true,status:200,json:async()=>({data:[]})};
+   if(url.includes('/shards/psn/players?'))return{ok:true,status:200,
+     json:async()=>({data:[{id:'account.PSNCONFIRMED',attributes:{name:'UnknownTester'}}]})};
+   if(url.includes('/shards/psn/players/')&&url.includes('/seasons/lifetime'))
+     return{ok:true,status:200,json:async()=>({data:{attributes:{gameModeStats:{
+       squad:{roundsPlayed:9,kills:17,wins:1}}}}})};
+   throw Error('Unexpected platform lookup '+url);
+ };
+ try{
+   const database=savedDb(),r=await getStats(database,'UnknownTester',{refreshRequested:true});
+   assert.equal(r.state,'player');
+   assert.equal(r.player.platform,'psn');
+   assert.equal(r.player.total_kills,17);
+   assert.equal(database.calls.find(x=>x.name==='reserve_pubg_requests').args.p_count,3);
+   assert.equal(requests.length,3);
+   assert.ok(database.writes.some(x=>x.table==='players'&&x.row.platform==='psn'));
+ }finally{
+   global.fetch=old;
+   if(oldKey===undefined)delete process.env.PUBG_API_KEY;else process.env.PUBG_API_KEY=oldKey;
+ }
+});
+test('a known account refresh uses one lifetime request and never rechecks consoles',async()=>{
+ const old=global.fetch,oldKey=process.env.PUBG_API_KEY;
+ process.env.PUBG_API_KEY='TEST_ONLY_NOT_REAL';
+ const urls=[];
+ global.fetch=async url=>{
+   urls.push(url);
+   if(!url.includes('/shards/psn/players/account.EXISTING/seasons/lifetime'))
+     throw Error('Unexpected account re-discovery '+url);
+   return{ok:true,status:200,json:async()=>({data:{attributes:{gameModeStats:{solo:{
+     roundsPlayed:12,kills:25,wins:2}}}}})};
+ };
+ try {
+   const database=savedDb({id:20,gamertag:'KnownTester',platform:'psn',
+     pubg_account_id:'account.EXISTING',total_kills:4,total_wins:0,matches_played:2,
+     last_checked:'2025-01-01T00:00:00Z'});
+   const r=await getStats(database,'KnownTester',{refreshRequested:true});
+   assert.equal(r.state,'player');
+   assert.equal(r.player.platform,'psn');
+   assert.equal(database.calls.find(x=>x.name==='reserve_pubg_requests').args.p_count,1);
+   assert.equal(urls.length,1);
+ }finally {
+   global.fetch=old;
+   if(oldKey===undefined)delete process.env.PUBG_API_KEY;else process.env.PUBG_API_KEY=oldKey;
+ }
+});
+test('same gamertag on both shards remains ambiguous instead of creating two accounts',async()=>{
+ const old=global.fetch,oldKey=process.env.PUBG_API_KEY;
+ process.env.PUBG_API_KEY='TEST_ONLY_NOT_REAL';
+ const requests=[];
+ global.fetch=async url=>{
+   requests.push(url);
+   return{ok:true,status:200,json:async()=>({
+     data:[{id:url.includes('/shards/xbox/')?'account.XBOX':'account.PSN',
+       attributes:{name:'SameDisplayName'}}]
+   })};
+ };
+ try{
+   const database=savedDb(),r=await getStats(database,'SameDisplayName',{refreshRequested:true});
+   assert.equal(r.state,'ambiguous');
+   assert.equal(database.calls.find(x=>x.name==='reserve_pubg_requests').args.p_count,3);
+   assert.equal(requests.length,2);
+   assert.equal(database.writes.filter(x=>x.table==='players').length,0);
+   assert.ok(database.writes.some(x=>x.table==='player_import_queue'&&x.row.status==='ambiguous'));
+ }finally{
+   global.fetch=old;
+   if(oldKey===undefined)delete process.env.PUBG_API_KEY;else process.env.PUBG_API_KEY=oldKey;
+ }
+});

@@ -33,8 +33,8 @@
     var name=String(nameValue||$('console-gamertag').value).trim();
     var platform=platformValue||$('console-platform').value;
     var result=$('console-search-result');
-    if(!name||name.length>100||name.includes(',')||!['xbox','psn'].includes(platform)){
-      result.textContent='Enter one valid gamertag and select Xbox or PlayStation.';
+    if(!name||name.length>100||name.includes(',')||!['auto','xbox','psn'].includes(platform)){
+      result.textContent='Enter one valid PUBG gamertag. Auto-detect is recommended.';
       return false;
     }
     $('console-gamertag').value=name;
@@ -52,23 +52,28 @@
       var payload=await response.json();
       if(!response.ok) {
         result.textContent=(payload.error||'Unable to retrieve player')+
-          (payload.retryAfterSeconds?' Try again in about '+payload.retryAfterSeconds+' seconds.':'');
+          (payload.retryAfterSeconds?' Try again in about '+payload.retryAfterSeconds+' seconds.':'')+
+          (payload.suggestedPlatform?' Change the console selector to '+(payload.suggestedPlatform==='xbox'?'Xbox':'PlayStation')+'.':'');
+        if(payload.code==='platform_ambiguous')
+          result.textContent+=' Both consoles returned a matching name, so please select Xbox or PlayStation before refreshing again.';
         return false;
       }
       if(!payload.found){
-        result.innerHTML='<strong>'+escapeHtml(name)+'</strong> ('+
-          (platform==='xbox'?'Xbox':'PlayStation')+') — not in Supabase yet. '+
-          'Select Refresh from PUBG to request a first lookup.';
+        result.innerHTML='<strong>'+escapeHtml(name)+'</strong> — no saved account yet. '+
+          (platform==='auto'?'Use Refresh from PUBG to identify Xbox or PlayStation automatically.':
+            'Use Refresh from PUBG to look for this name on '+(platform==='xbox'?'Xbox':'PlayStation')+'.');
         return false;
       }
       var p=payload.player;
+      // Remember the one actual console returned by the saved or live lookup.
+      if(['xbox','psn'].includes(p.platform))$('console-platform').value=p.platform;
       extraPlayers=extraPlayers.filter(x=>!(x.name.toLowerCase()===p.name.toLowerCase()));
       extraPlayers.push(p);
       if(data){
         renderCompare();chooseMatchPlayer(matchName);chooseInsightPlayers();
       }
       result.innerHTML='<div class="lookup-top"><strong>'+escapeHtml(p.name)+
-        ' · '+(platform==='xbox'?'Xbox':'PlayStation')+'</strong><span class="badge '+
+        ' · '+(p.platform==='xbox'?'Xbox':'PlayStation')+'</strong><span class="badge '+
         (payload.isClanMember?'verified':'')+'">'+
         (payload.isClanMember?'Official clan':'Other console player')+'</span></div>'+
         '<div class="lookup-stats"><span><strong>'+fmt(p.kills)+'</strong> kills</span>'+
@@ -543,6 +548,10 @@
     lookupAnyPlayer(false);
   });
   $('console-refresh').addEventListener('click',function(){lookupAnyPlayer(true);});
+  // A different name starts a fresh discovery; users can still override the console.
+  $('console-gamertag').addEventListener('input',function(){
+    $('console-platform').value='auto';
+  });
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);
   for(const kind of ['weapons','teammates']){
@@ -569,11 +578,8 @@
     if(!sharedName)return;
     if(findPlayer(sharedName) && (!sharedPlatform||findPlayer(sharedName).platform===sharedPlatform)){
       openProfile(sharedName,true);
-    } else if(sharedPlatform) {
-      await lookupAnyPlayer(false,sharedName,sharedPlatform,true);
     } else {
-      $('console-gamertag').value=sharedName;
-      $('console-search-result').textContent='Select a console for this shared player, then search saved data.';
+      await lookupAnyPlayer(false,sharedName,sharedPlatform||'auto',true);
     }
   });
 })();

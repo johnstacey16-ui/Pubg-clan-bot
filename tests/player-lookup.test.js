@@ -39,10 +39,41 @@ test('refresh requests are separately throttled before PUBG API access',async()=
  assert.equal(r.status,429);
  assert.deepEqual(f.calls.slice(-1),['reserve_web_refresh']);
 });
-test('web refresh requires matching HTTPS origin and platform-specific identity',()=>{
+test('web refresh requires matching HTTPS origin and valid console selection',()=>{
  assert.equal(sameOrigin({headers:{host:'pubg-clan-bot.vercel.app',origin:'https://pubg-clan-bot.vercel.app'}}),true);
  assert.equal(sameOrigin({headers:{host:'pubg-clan-bot.vercel.app',origin:'https://evil.example'}}),false);
  assert.equal(validInput('Random Player','psn'),true);
  assert.equal(validInput('Random, Other','psn'),false);
  assert.equal(validInput('Player','steam'),false);
+ assert.equal(validInput('Player','auto'),true);
+ assert.equal(validInput('Player'),true);
+});
+
+test('auto-detect loads previously saved console without requiring a platform choice',async()=>{
+ const database=db({platform:'psn',clan:false});
+ const result=await publicPlayer(database,'Outsider','auto');
+ assert.equal(result.status,200);
+ assert.equal(result.body.found,true);
+ assert.equal(result.body.platform,'psn');
+ assert.equal(result.body.isClanMember,false);
+ assert.deepEqual(database.calls,['players','player_lifetime_details','player_import_queue']);
+});
+test('auto-detect accepts an unknown name without creating duplicate player records',async()=>{
+ const database=db({existing:false});
+ const result=await publicPlayer(database,'Outsider','auto');
+ assert.equal(result.status,200);
+ assert.equal(result.body.found,false);
+ assert.equal(result.body.platform,'auto');
+ assert.deepEqual(database.calls,['players']);
+});
+test('auto-detect refresh uses confirmed platform as cooldown key',async()=>{
+ const database=db({platform:'psn'});
+ const result=await processLookup(database,{name:'Outsider',platform:'auto',refresh:true});
+ assert.equal(result.status,429);
+ assert.deepEqual(database.calls.slice(-1),['reserve_web_refresh']);
+});
+test('a saved console mismatch returns the known platform without overwriting',async()=>{
+ const result=await publicPlayer(db({platform:'psn'}),'Outsider','xbox');
+ assert.equal(result.status,409);
+ assert.equal(result.body.suggestedPlatform,'psn');
 });

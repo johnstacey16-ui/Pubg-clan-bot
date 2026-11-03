@@ -34,14 +34,14 @@
 - [x] Add real advanced lifetime profile metrics and per-mode comparisons (damage, headshots, assists, knockdowns, revives and Top 10s)
 - [x] Add real cached weapon-mastery table, level/tier/XP, detailed stats and visual kill bars
 - [ ] Expand weapon-mastery coverage across clan players and additional advanced charts
-- [x] Shareable official-clan player links (`/#player/<encoded-gamertag>`) and per-player detail panels
+- [x] Shareable console player links (`/#player/xbox/<name>` or `/#player/psn/<name>`) and per-player detail panels
 - [x] Real daily snapshots from all PUBG player updates, including baseline captured at the real last-fetch timestamp
 - [x] Read-only private-table-backed history API, with no player IDs or tracked outsiders exposed
 - [x] Historical SVG charts that appear **only after two or more real snapshots**
 - [ ] Full roster pagination, advanced filters and saved player favourites
 - [ ] Verify a second genuine snapshot and resulting public chart after an actual PUBG refresh
 - [x] Validate shareable profile links and real-history baseline/line-chart behaviour in a simulated browser
-- [ ] Handle ambiguous platform names and missing accounts in an admin-only workflow
+- [x] Handle ambiguous platform searches openly, requesting a console choice only if both shards return a matching gamertag
 
 ### Phase 2B — Public console player discovery and protected website refresh
 - [x] Search any saved Xbox or PlayStation gamertag from the website
@@ -50,7 +50,9 @@
 - [x] Individual profile, weapon, match and history views for saved players outside the clan
 - [x] Retain official clan-only totals and separately track searched outsiders
 - [x] Shareable platform-specific links for arbitrary saved players
-- [ ] Migrate legacy UNIQUE(gamertag) safely to support the same name on both consoles
+- [x] Auto-detect a new player's console, save that one account, and reuse its confirmed platform/account ID on future refreshes
+- [x] If both console shards return matching names, request a manual console choice instead of creating duplicate profiles
+- [ ] Evaluate genuinely distinct Xbox and PSN accounts sharing an identical displayed name only if this becomes a real requirement
 - [ ] Enable website mastery, seasons and recent match refreshes with independent quotas
 - [ ] End-to-end production browser, Android and Xbox validation
 
@@ -96,4 +98,4 @@ Existing server-side Supabase service role --> saved verified statistics
 Existing Discord /interactions & /api/sync --> shared rate-limited PUBG data collection
 ```
 
-Website data reads **Supabase, not the upstream PUBG API**. Refreshing the page never spends PUBG API capacity. Admin-initiated PUBG refresh remains protected by existing Discord commands until web authentication is implemented. No 2D replays will be built.
+Ordinary website reads use saved Supabase data and never spend PUBG API capacity. Explicit **Refresh from PUBG** requests run through a server-side Vercel function, an additional web cooldown and the same atomic shared PUBG request limit as Discord. Unknown gamertags are checked on Xbox and PSN once; known account IDs and platforms are reused. No 2D replays will be built.

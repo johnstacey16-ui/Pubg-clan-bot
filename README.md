@@ -205,9 +205,20 @@ views now accept all saved Xbox/PSN accounts. Official clan totals
 and rankings remain separate. The private match archive can also
 store summarised games for any saved player.
 
-**Legacy limitation:** the current database uniquely identifies gamertags,
-not gamertag+platform. Searches for the same name on both consoles
-will return an explicit conflict rather than overwrite a different
-player; a compatible platform-identity migration is on the roadmap.
+**Console discovery:** Auto-detect is the default. For a previously unseen
+gamertag, the server searches Xbox and PlayStation, records the one
+confirmed account (platform + PUBG account ID), and uses that saved
+identity for later updates. Searches of already-saved names need no
+additional platform lookup. If the same gamertag resolves to distinct
+accounts on both shards, the site asks which console is intended rather
+than guessing. The legacy schema intentionally stores one account per
+gamertag; it never silently overwrites another console's saved identity.
+Supporting unrelated accounts with identical names is only worth a
+database migration if users actually need it.
 
 **Scope clarification (2026-11-03):** A player's membership in the 55-name official clan is not required for individual profile, history, match, weapon or teammate reads. The only clan-only figures are the official clan overview, roster, mode totals and clan leaderboard. Lifetime PUBG refreshes can be requested through the website with the shared server-side budget.
+
+
+### Console detection update
+
+Auto-detect is selected by default in the web search panel. Once an Xbox or PlayStation account has been confirmed, the selector changes to that console and later refreshes reuse the stored account ID. A previously shared player link without a platform also resolves saved data automatically. A duplicate name across genuinely different console identities triggers a choice rather than adding duplicate records.

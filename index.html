@@ -38,14 +38,14 @@
         <form id="console-player-form" class="console-search-form">
           <label>GAMERTAG <input id="console-gamertag" type="search" maxlength="100"
             placeholder="Enter an Xbox gamertag or PSN ID" autocomplete="off" required></label>
-          <label>PLATFORM <select id="console-platform"><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label>
+          <label>PLATFORM <select id="console-platform"><option value="auto" selected>Auto-detect (recommended)</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label>
           <button id="console-search" class="secondary" type="submit">⌕ Search saved</button>
           <button id="console-refresh" class="primary" type="button">↻ Refresh from PUBG</button>
         </form>
         <div id="console-search-result" class="console-search-result" role="status" aria-live="polite">
-          Search any console player. Official clan totals remain separate from all other players.
+          Enter a gamertag. We'll check saved data first, then detect Xbox or PlayStation if you request a PUBG refresh.
         </div>
-        <p class="small muted">PUBG refreshes share the bot's request budget. Repeated refreshes are throttled; saved stats remain viewable at any time.</p>
+        <p class="small muted">PUBG only needs both console checks for a new, unknown name. After discovery we save its console and account ID, so later refreshes use that account directly. All requests share the Discord bot's rate budget.</p>
       </section>
       <div class="section-heading"><div><p class="eyebrow subtle">AT A GLANCE</p><h2>Lifetime performance</h2></div><span class="muted small" id="snapshot">Waiting for saved data</span></div>
       <div class="stats">
