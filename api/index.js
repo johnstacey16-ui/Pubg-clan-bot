@@ -297,6 +297,8 @@ module.exports = async (req, res) => {
   if (body.guild_id === CLAN_GUILD) {
     waitUntil(Promise.allSettled([work, ensureGuildCommands(createDb())]));
   } else waitUntil(work);
-  return res.status(200).json({ type: 5, data: { flags: 64 } });
+  return res.status(200).json(isDashboardButton || body.data?.name === 'dashboard'
+    ? { type: 5, data: { flags: 64 } }
+    : { type: 5 });
 };
 module.exports.config = { api: { bodyParser: false } };
