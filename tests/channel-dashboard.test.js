@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { canManage,renderDashboard,REFRESH_BUTTON,SECTIONS } = require('../lib/channel-dashboard');
+const { canManage,renderDashboard,REFRESH_BUTTON,SECTIONS,dailyUpdate } = require('../lib/channel-dashboard');
 const { commands } = require('../lib/command-definitions');
 
 function fixture() {
@@ -51,4 +51,30 @@ test('dashboard command uses restricted slash-command subcommands', () => {
   assert.equal(command.default_member_permissions,'16');
   assert.deepEqual(command.options.map(x=>x.name),['setup','refresh','status']);
   assert.equal(command.options.every(x=>x.type===1),true);
+});
+
+test('single /setup command is administrator-scoped and keeps existing dashboard commands', () => {
+  const setup=commands.find(c=>c.name==='setup');
+  assert.ok(setup);
+  assert.equal(setup.type,1);
+  assert.equal(setup.default_member_permissions,'16');
+  assert.equal(commands.filter(c=>c.name==='setup').length,1);
+  assert.ok(commands.find(c=>c.name==='dashboard'));
+});
+test('daily scheduled refresh does not post until a channel has been configured', async () => {
+  let requests=0;
+  const db={
+    from(table) {
+      assert.equal(table,'discord_dashboard_channels');
+      requests++;
+      return {
+        select() { return this; },
+        eq() { return this; },
+        async maybeSingle() { return { data:null,error:null }; }
+      };
+    }
+  };
+  const r=await dailyUpdate(db);
+  assert.deepEqual(r,{status:'not_configured'});
+  assert.equal(requests,1);
 });
