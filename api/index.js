@@ -8,6 +8,7 @@ const { importPendingBatch } = require('../lib/import-batch');
 const core = require('../lib/commands-core');
 const extra = require('../lib/commands-extra');
 const { ensureGuildCommands } = require('../lib/register-commands');
+const { bridgeButton, replay } = require('../lib/replay-links');
 
 const CLAN_GUILD = '1411949587299569788';
 const createDb = () => createClient(process.env.SUPABASE_URL,
@@ -230,8 +231,9 @@ async function processCommand(body) {
   if (body.data?.name === 'clan') return core.clan(db);
   if (body.data?.name === 'modes') return core.modes(db, body);
   if (body.data?.name === 'compare') return core.compare(db, body);
-  if (body.data?.name === 'recent') return extra.recent(db, body);
-  if (body.data?.name === 'match') return extra.match(db, body);
+  if (body.data?.name === 'replay') return replay(db, body);
+  if (body.data?.name === 'recent') return bridgeButton(await extra.recent(db, body));
+  if (body.data?.name === 'match') return bridgeButton(await extra.match(db, body));
   if (body.data?.name === 'mastery') return extra.mastery(db, body);
   if (body.data?.name === 'season') return extra.season(db, body);
   if (body.data?.name === 'ranked') return extra.season(db, body, true);
@@ -247,7 +249,12 @@ async function editOriginal(body, content) {
   const result = await fetch(url, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: reply(content), allowed_mentions: { parse: [] } }),
+    body: JSON.stringify({
+      content: reply(typeof content === 'string' ? content : content.content),
+      ...(typeof content === 'object' && Array.isArray(content.components)
+        ? { components: content.components } : {}),
+      allowed_mentions: { parse: [] }
+    }),
     signal: AbortSignal.timeout(10000)
   });
   if (!result.ok) throw new Error('Discord edit failed: HTTP ' + result.status);
