@@ -34,17 +34,22 @@ test('dashboard renders eight reusable Supabase-powered cards with refresh butto
   const rendered=renderDashboard(fixture());
   assert.deepEqual(Object.keys(rendered),SECTIONS);
   for(const card of Object.values(rendered)) {
-    assert.equal(card.embeds.length,1);
-    assert.equal(card.components[0].components[0].custom_id,REFRESH_BUTTON);
-    assert.equal(card.components[0].components[0].style,1);
+    assert.equal(card.flags,32768);
+    assert.equal(card.content,null);
+    assert.deepEqual(card.embeds,[]);
+    assert.equal(card.components[0].type,17);
+    assert.equal(card.components[0].components[0].type,10);
+    assert.equal(card.components[1].components[0].custom_id,REFRESH_BUTTON);
+    assert.equal(card.components[1].components[0].style,1);
     assert.deepEqual(card.allowed_mentions,{parse:[]});
   }
-  assert.match(rendered.overview.embeds[0].description,/200/);
-  assert.match(rendered.leaderboard.embeds[0].description,/Official\\_One/);
-  assert.match(rendered.roster.embeds[0].description,/1/);
-  assert.match(rendered.players1.embeds[0].description,/Official\\_One/);
-  assert.match(rendered.players1.embeds[0].description,/PendingTwo/);
-  assert.match(rendered.players1.embeds[0].description,/200 kills/);
+  const content = name => rendered[name].components[0].components.map(x=>x.content||'').join('\n');
+  assert.match(content('overview'),/200/);
+  assert.match(content('leaderboard'),/Official\\_One/);
+  assert.match(content('roster'),/1/);
+  assert.match(content('players1'),/Official\\_One/);
+  assert.match(content('players1'),/PendingTwo/);
+  assert.match(content('players1'),/200 kills/);
 });
 test('dashboard command uses restricted slash-command subcommands', () => {
   const command=commands.find(c=>c.name==='dashboard');

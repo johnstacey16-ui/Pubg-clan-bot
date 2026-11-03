@@ -62,3 +62,7 @@ This is the *first comprehensive command pack*, not yet every possible PUBG API 
 Dashboard cards show **saved Supabase data immediately**, without wasting API calls every time someone opens Discord. Detailed player, match, and weapon reports remain available from the other slash commands. New account identities continue to be imported in batches within rate limits. This is a message dashboard (Discord embeds), not an arbitrary interactive website embedded in a Discord message.
 
 If dashboard setup fails, verify that the bot is installed in the server and can send embeds in the chosen channel. Dashboard data is not publicly exposed through Supabase; only the signed Discord bot backend uses its service key.
+
+### Modern Discord Components V2 layout
+
+The permanent dashboard messages use **Discord Components V2** rather than old plain embeds. Coloured containers, grouped typography, separators, ranking sections, roster-completion bars and the same Refresh button make the cards easier to scan on desktop and mobile. Existing eight dashboard message IDs are edited in place on the next /dashboard setup, /dashboard refresh or Refresh button (without creating new posts). The migration explicitly clears old content and embeds while setting the immutable IS_COMPONENTS_V2 flag (32768). A real dashboard web app or Discord Activity would be necessary for fully custom interactive charts; this channel layout does not embed HTML/CSS.
