@@ -5,6 +5,9 @@ const { waitUntil } = require('@vercel/functions');
 const { safeDiscord } = require('../lib/pubg-utils');
 const { getStats } = require('../lib/live-stats');
 const { importPendingBatch } = require('../lib/import-batch');
+const core = require('../lib/commands-core');
+const extra = require('../lib/commands-extra');
+const { ensureGuildCommands } = require('../lib/register-commands');
 
 const CLAN_GUILD = '1411949587299569788';
 const createDb = () => createClient(process.env.SUPABASE_URL,
@@ -137,10 +140,16 @@ async function leaderboard(db) {
     imported = { status: 'lookup_failed', matched: 0 };
   }
 
-  const selectTop = () => db.from('players')
-    .select('gamertag,platform,total_kills,total_wins,last_checked')
-    .in('platform', ['xbox', 'psn'])
-    .order('total_kills', { ascending: false }).limit(10);
+  const memberList = await db.from('player_import_queue')
+    .select('gamertag').eq('is_clan_member', true)
+    .eq('status', 'matched').limit(1000);
+  if (memberList.error) throw memberList.error;
+  const officialNames = (memberList.data || []).map(x => x.gamertag);
+  const selectTop = () => officialNames.length
+    ? db.from('players').select('gamertag,platform,total_kills,total_wins,last_checked')
+      .in('platform', ['xbox','psn']).in('gamertag', officialNames)
+      .order('total_kills', { ascending: false }).limit(10)
+    : Promise.resolve({ data: [], error: null });
   let current = await selectTop();
   if (current.error) throw current.error;
 
@@ -161,9 +170,9 @@ async function leaderboard(db) {
   }
 
   const [queue, verified] = await Promise.all([
-    db.from('player_import_queue').select('status,pubg_account_id').limit(1000),
-    db.from('players').select('id', { count: 'exact', head: true })
-      .in('platform', ['xbox', 'psn'])
+    db.from('player_import_queue').select('status,pubg_account_id').eq('is_clan_member', true).limit(1000),
+    db.from('player_import_queue').select('id', { count: 'exact', head: true })
+      .eq('is_clan_member', true).eq('status', 'matched')
   ]);
   if (queue.error) throw queue.error;
   if (verified.error) throw verified.error;
@@ -174,7 +183,7 @@ async function leaderboard(db) {
   const identifiedAwaitingStats = (queue.data || []).filter(row =>
     row.status === 'pending' && Boolean(row.pubg_account_id)).length;
   const rank = current.data || [];
-  const lines = ['🏆 **Console Clan Leaderboard — Lifetime Kills**'];
+  const lines = ['🏆 **Official Clan Leaderboard — Lifetime Kills**'];
   lines.push(...(rank.length ? rank.map((p, i) =>
     (i + 1) + '. **' + safeDiscord(p.gamertag) +
     '** (' + (p.platform === 'xbox' ? 'Xbox' : 'PS') + ') — ' +
@@ -216,7 +225,17 @@ async function processCommand(body) {
     return formatStats(result, name);
   }
   if (body.data?.name === 'leaderboard') return leaderboard(db);
-  return 'Unknown command.';
+  if (body.data?.name === 'help') return core.help();
+  if (body.data?.name === 'roster') return core.roster(db, body);
+  if (body.data?.name === 'clan') return core.clan(db);
+  if (body.data?.name === 'modes') return core.modes(db, body);
+  if (body.data?.name === 'compare') return core.compare(db, body);
+  if (body.data?.name === 'recent') return extra.recent(db, body);
+  if (body.data?.name === 'match') return extra.match(db, body);
+  if (body.data?.name === 'mastery') return extra.mastery(db, body);
+  if (body.data?.name === 'season') return extra.season(db, body);
+  if (body.data?.name === 'ranked') return extra.season(db, body, true);
+  return 'Unknown command. Try /help.';
 }
 
 async function editOriginal(body, content) {
@@ -261,7 +280,12 @@ module.exports = async (req, res) => {
     })
     .then(content => editOriginal(body, content))
     .catch(error => console.error('Could not update deferred Discord reply:', error.message));
-  waitUntil(work);
+  // A signed existing command also registers this release's guild slash
+  // commands using the private Vercel bot token. Command updates do not delay
+  // the normal Discord reply and are only attempted in our guild.
+  if (body.guild_id === CLAN_GUILD) {
+    waitUntil(Promise.allSettled([work, ensureGuildCommands(createDb())]));
+  } else waitUntil(work);
   return res.status(200).json({ type: 5 });
 };
 module.exports.config = { api: { bodyParser: false } };
