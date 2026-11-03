@@ -117,6 +117,37 @@
         </div>
         <p id="season-note" class="small muted" aria-live="polite">Choose a saved player to inspect season statistics.</p>
         <div id="season-results" class="season-results" aria-live="polite"></div>
+        <section class="season-history season-leaderboard" aria-labelledby="season-board-title">
+          <div class="panel-heading"><div>
+            <p class="eyebrow subtle">SAVED CLAN PERFORMANCE</p>
+            <h2 id="season-board-title">Historical clan leaderboards</h2>
+          </div><span class="chip">REAL OBSERVATIONS ONLY</span></div>
+          <p class="small muted">Compare latest saved statistics from each verified clan player in the same season and game mode. Player observations may have different timestamps; missing scores are never treated as zero.</p>
+          <div class="filters">
+            <label>Statistics <select id="season-board-type">
+              <option value="ranked">Ranked</option><option value="season">Season</option>
+            </select></label>
+            <label>Game mode <select id="season-board-mode">
+              <option value="squad">Squad</option><option value="squad-fpp">Squad FPP</option>
+              <option value="duo">Duo</option><option value="duo-fpp">Duo FPP</option>
+              <option value="solo">Solo</option><option value="solo-fpp">Solo FPP</option>
+            </select></label>
+            <label>Saved season <select id="season-board-season" disabled></select></label>
+            <label>Rank by <select id="season-board-metric">
+              <option value="rankPoints">Rank points</option>
+              <option value="kills">Kills</option><option value="wins">Wins</option>
+              <option value="matches">Matches</option><option value="damage">Damage</option>
+            </select></label>
+            <button class="secondary" id="season-board-reload" type="button">↻ Reload saved leaderboard</button>
+          </div>
+          <p id="season-board-note" class="small muted" aria-live="polite">Reading saved clan observations…</p>
+          <div class="scroll-table"><table>
+            <thead><tr><th>#</th><th>CLAN PLAYER</th><th>CONSOLE</th>
+              <th id="season-board-metric-label">RANK POINTS</th>
+              <th>RANKED TIER</th><th>OBSERVED AT</th></tr></thead>
+            <tbody id="season-board-table"></tbody>
+          </table></div>
+        </section>
         <section class="season-history" aria-labelledby="season-history-title">
           <div class="panel-heading"><div>
             <p class="eyebrow subtle">GENUINE PUBG OBSERVATIONS</p>

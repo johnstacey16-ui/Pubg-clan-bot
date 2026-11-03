@@ -81,7 +81,8 @@
 - [ ] Opponent and rival analysis after safe source fields are available
 - [x] Weapon mastery views documenting StatsTotal, OfficialStatsTotal, CompetitiveStatsTotal, LevelCurrent, TierCurrent and XPTotal (separate categories)
 - [x] Real historical season/ranked snapshots and per-mode progression charts
-- [ ] Historical season and ranked leaderboards across players
+- [x] Historical season/ranked clan leaderboards from latest genuine per-player, per-mode, per-season observations with source timestamps (server-only SQL RPC, API, and website)
+- [ ] Verify historical clan leaderboard on live website with multiple real player snapshots
 
 ### Phase 4 — Secure updates and Discord integration
 - [ ] Authenticated manager-only website refresh using existing budget and database lock

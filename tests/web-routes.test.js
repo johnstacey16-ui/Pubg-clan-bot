@@ -17,6 +17,7 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(routes['/api/player-lookup'],'api/player-lookup.js');
  assert.equal(routes['/api/player-refresh'],'api/player-refresh.js');
  assert.equal(routes['/api/public-season'],'api/public-season.js');
+ assert.equal(routes['/api/public-season-leaderboard'],'api/public-season-leaderboard.js');
  assert.equal(routes['/api/public-matches'],'api/public-matches.js');
  assert.equal(routes['/api/public-insights'],'api/public-insights.js');
  assert.ok(v.builds.some(x=>x.src==='index.html'&&x.use==='@vercel/static'));

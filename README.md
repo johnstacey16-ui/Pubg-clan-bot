@@ -287,3 +287,21 @@ observation shows an honest baseline and an explanation; only two or more
 actual captured observations produce a line chart. Historic seasons remain
 available in the compact archive even after the current-season cache
 changes. No estimates or synthetic pre-refresh history are drawn.
+
+
+## Historical season and ranked clan leaderboards (2026-11-03)
+
+The Season & Ranked page now has a cross-player official-clan leaderboard.
+Select saved season, Solo/Duo/Squad TPP/FPP, season or ranked, and the actual
+metric to sort. Values come **only** from the latest saved observation per
+verified clan member in the selected season and mode. Each player has an
+independent observation timestamp: ranks are not simultaneous, and missing
+stats are excluded rather than being treated as zero.
+
+The read-only endpoint is \`GET /api/public-season-leaderboard?type=ranked&mode=squad\`.
+It calls the service-role-only \`get_clan_season_leaderboard\` Supabase RPC;
+the browser never calls Supabase directly and no PUBG requests occur when
+reading or sorting leaderboards. The migration is retained in
+\`supabase/migrations/20261103_verified_clan_season_ranked_leaderboard.sql\`.
+Players outside the official clan never enter this leaderboard, while their
+individual season reports remain accessible separately.

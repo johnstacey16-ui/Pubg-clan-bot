@@ -33,6 +33,8 @@
   var seasonName=null;
   var seasonRequest=0;
   var seasonHistory=null;
+  var seasonBoard=null;
+  var seasonBoardRequest=0;
   var insightNames={weapons:null,teammates:null};
   var insightRequests={weapons:0,teammates:0};
   var insightCache={weapons:null,teammates:null};
@@ -134,7 +136,7 @@
     window.scrollTo(0,0);
     if(page==='matches' && data)loadCachedMatches();
     if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
-    if(page==='season'&&data)loadSeason();
+    if(page==='season'&&data){loadSeason();loadSeasonLeaderboard();}
   }
   function chart(target, totals, modes) {
     var max = Math.max.apply(null, [1].concat(modes.map(function (m) { return totals[m] ? totals[m].kills : 0; })));
@@ -518,6 +520,74 @@
       escapeHtml(dateText(last.capturedAt))+'</text></svg>';
   }
 
+  function renderSeasonLeaderboard() {
+    var source=seasonBoard;
+    var seasons=Array.isArray(source?.seasons)?source.seasons:[];
+    var selector=$('season-board-season');
+    var previous=selector.value;
+    selector.innerHTML=seasons.map(function(id){
+      return '<option value="'+escapeHtml(id)+'">'+escapeHtml(id)+'</option>';
+    }).join('');
+    var chosen=seasons.includes(previous)?previous:seasons[0];
+    selector.value=chosen||'';
+    selector.disabled=!seasons.length;
+    var kind=$('season-board-type').value;
+    var metric=$('season-board-metric').value;
+    var labels={rankPoints:'Rank points',kills:'Kills',wins:'Wins',
+      matches:'Matches',damage:'Damage'};
+    $('season-board-metric-label').textContent=(labels[metric]||metric).toUpperCase();
+    var all=(Array.isArray(source?.entries)?source.entries:[])
+      .filter(function(r){return r.seasonId===chosen;});
+    var ranked=all.filter(function(r){
+      return r[metric]!==null&&r[metric]!==undefined&&
+        Number.isFinite(Number(r[metric]));
+    }).sort(function(a,b){
+      return Number(b[metric])-Number(a[metric])||
+        a.name.localeCompare(b.name);
+    });
+    $('season-board-note').textContent=seasons.length?
+      ranked.length+' verified clan player'+(ranked.length===1?'':'s')+
+      ' with observed '+(labels[metric]||metric).toLowerCase()+
+      ' · '+(all.length-ranked.length)+' missing that metric · '+
+      'latest real observation per player, not a synchronized snapshot':
+      'No saved '+kind+' observations for this game mode yet. Refresh individual players from PUBG to populate genuine results.';
+    $('season-board-table').innerHTML=ranked.map(function(r,i){
+      return '<tr><td>'+(i+1)+'</td><td><strong>'+escapeHtml(r.name)+
+        '</strong></td><td>'+(r.platform==='xbox'?'Xbox':'PlayStation')+
+        '</td><td><strong class="mint">'+seasonNumber(r[metric])+
+        '</strong></td><td>'+(kind==='ranked'?
+          escapeHtml([r.tier,r.subTier].filter(Boolean).join(' ')||'—'):'—')+
+        '</td><td>'+escapeHtml(dateText(r.capturedAt))+'</td></tr>';
+    }).join('')||'<tr><td colspan="6" class="empty">No actual PUBG observations for this selection.</td></tr>';
+  }
+
+  async function loadSeasonLeaderboard() {
+    var kind=$('season-board-type').value,mode=$('season-board-mode').value;
+    var request=++seasonBoardRequest;
+    $('season-board-note').textContent='Reading stored '+kind+' leaderboard…';
+    $('season-board-table').innerHTML='';
+    try{
+      var response=await fetch('/api/public-season-leaderboard?type='+
+        encodeURIComponent(kind)+'&mode='+encodeURIComponent(mode),{
+        cache:'no-store',headers:{Accept:'application/json'}
+      });
+      if(!response.ok)throw Error('Leaderboard HTTP '+response.status);
+      var payload=await response.json();
+      if(request!==seasonBoardRequest||
+        kind!==$('season-board-type').value||mode!==$('season-board-mode').value)return;
+      if(payload.schemaVersion!==1||payload.type!==kind||payload.mode!==mode||
+        !Array.isArray(payload.seasons)||!Array.isArray(payload.entries))
+        throw Error('Unexpected leaderboard response');
+      seasonBoard=payload;
+      renderSeasonLeaderboard();
+    }catch(error){
+      if(request!==seasonBoardRequest)return;
+      seasonBoard=null;
+      $('season-board-table').innerHTML='';
+      $('season-board-note').textContent='Saved clan leaderboards are temporarily unavailable.';
+    }
+  }
+
   async function loadSeason() {
     var name=seasonName;
     if(!name)return;
@@ -595,7 +665,7 @@
         (scope==='matches'?' · '+(result.savedDetails||0)+' match details saved':'');
       if(scope==='weapons')await loadInsight('weapons');
       else if(scope==='matches')await loadCachedMatches();
-      else await loadSeason();
+      else {await loadSeason();if(current==='season')await loadSeasonLeaderboard();}
       return true;
     }catch(error){
       target.textContent='PUBG refresh temporarily unavailable; existing saved statistics are unchanged.';
@@ -736,7 +806,7 @@
       renderOverview();renderLeaderboard();renderRoster();renderModes();renderCompare();chooseMatchPlayer(matchName);
       chooseInsightPlayers();chooseSeasonPlayer();
       if(current==='weapons'||current==='teammates')loadInsight(current);
-      if(current==='season')loadSeason();
+      if(current==='season'){loadSeason();loadSeasonLeaderboard();}
       $('notice').hidden=true;
     } catch(error) {
       $('notice').textContent='Could not load saved statistics: '+error.message+'. The existing Discord bot is unaffected.';
@@ -816,6 +886,19 @@
   $('season-player').addEventListener('change',function(e){seasonName=e.target.value;loadSeason();});
   $('season-type').addEventListener('change',loadSeason);
   $('season-reload').addEventListener('click',loadSeason);
+  ['season-board-type','season-board-mode'].forEach(function(id){
+    $(id).addEventListener('change',function(){
+      if(id==='season-board-type'){
+        $('season-board-metric').value=$('season-board-type').value==='ranked'?'rankPoints':'kills';
+      }
+      $('season-board-season').value='';
+      loadSeasonLeaderboard();
+    });
+  });
+  ['season-board-season','season-board-metric'].forEach(function(id){
+    $(id).addEventListener('change',renderSeasonLeaderboard);
+  });
+  $('season-board-reload').addEventListener('click',loadSeasonLeaderboard);
   $('season-history-season').addEventListener('change',renderSeasonHistory);
   $('season-history-mode').addEventListener('change',renderSeasonHistory);
   $('season-refresh').addEventListener('click',function(){

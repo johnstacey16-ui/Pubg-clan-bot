@@ -110,3 +110,11 @@
 .roster-page-buttons button{min-height:38px}
 .roster-page-buttons button:disabled{opacity:.4}
 @media(max-width:740px){.roster-page-buttons{width:100%;justify-content:space-between}}
+
+/* Cross-player historical leaderboard, sorted only by genuine comparable fields. */
+.season-leaderboard .filters{margin-top:16px}
+.season-leaderboard .filters label{min-width:125px;flex:1 1 145px}
+.season-leaderboard .filters select{min-width:0;width:100%}
+.season-leaderboard .scroll-table{margin-top:15px}
+.season-leaderboard td{white-space:nowrap}
+.season-leaderboard td:first-child{color:var(--mint);font-weight:800}
