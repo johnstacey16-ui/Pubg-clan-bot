@@ -73,6 +73,8 @@ test('CSV strict numeric checks, duplicate blocks and local unverified bot sourc
  assert.ok(a.parseCSV('name,matches,kills\nAlice,1,999').errors.length===0);
  const csv=a.exportCSV([make('D"Q')]);
  assert.match(csv, /"D""Q"/);
+ const safe=a.exportCSV([make("=1+2")]);
+ assert.match(safe, /\x27=1\+2/);
 });
 test('offline comparison labels missing members as unconfirmed, never departed',()=>{
  const prev=[{name:'One',kills:10,matches:8},{name:'Two',kills:8,matches:4}];

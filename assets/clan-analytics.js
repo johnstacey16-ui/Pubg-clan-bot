@@ -1,7 +1,7 @@
 'use strict';
 // Pure calculations adapted from the user's older Clan Command Centre.
-// The old fixture players, PUBGClans.net badges and unverified bot labels
-// are deliberately NOT shipped or used in official analysis.
+// Historical example players, unverifiable third-party status badges and
+// unsupported claims are not shipped or used in official analysis.
 (function(root,factory){
   var api=factory();
   if(typeof module==='object'&&module.exports)module.exports=api;
@@ -270,6 +270,8 @@
   }
   function csvEscape(value){
     var s=String(value??'');
+    // Disarm user-controlled gamertags that spreadsheet apps treat as formulas.
+    if(typeof value==='string'&&/^\s*[=+@-]/.test(s))s="'"+s;
     return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
   }
   function exportCSV(players){
