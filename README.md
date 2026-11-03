@@ -2,12 +2,13 @@
 
 A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional **Groq** AI commentary. It supports **Xbox and PlayStation only** (no PC). Match/season/mastery features are subject to actual PUBG API availability.
 
-## Commands (15)
+## Commands (16)
 
 | Discord command | What it does |
 |---|---|
 | /stats gamertag | Fetch a verified console player, cache lifetime stats for two hours, display Groq commentary |
-| /dashboard setup, refresh, status | Configure permanent Supabase-backed Discord dashboard cards, edit in place, and refresh from PUBG on request |
+| /setup | Admin: save the channel where you run it and create eight permanent dashboard cards |
+| /dashboard setup, refresh, status | Advanced dashboard setup, status and manual refresh |
 | /leaderboard | Rank **official roster** players by saved lifetime kills and progressively import pending names |
 | /roster [page] | View the 55 supplied clan names and import progress |
 | /clan | Official clan totals and verified member counts |
@@ -22,7 +23,7 @@ A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional *
 | /ranked gamertag | Current ranked tier, rank points and game results, where available |
 | /help | Help and list of commands |
 
-**How new commands appear:** After this release is deployed, run an already-registered /stats or /leaderboard command once in the clan Discord guild. The bot verifies the signed Discord interaction, then uses its existing secret Vercel DISCORD_BOT_TOKEN to register the full command list. Refresh Discord's slash-command menu if needed. Registration success appears at /api/health under discord_commands.registered. The local registration script also uses the exact same command definitions; it does a bulk overwrite.
+**How new commands appear:** After this release is deployed, run an already-registered /stats or /leaderboard command once in the clan Discord guild. The bot verifies the signed Discord interaction, then uses its existing secret Vercel DISCORD_BOT_TOKEN to register the full command list. Refresh Discord's slash-command menu if needed. Registration success appears at /api/health under discord_commands.registered. The local registration script also uses the exact same command definitions; it does a bulk overwrite. **If `/setup` is not visible immediately after a deploy, run `/stats` or `/leaderboard` once so the bot re-registers commands, then reopen the slash-command picker.**
 
 ## Official clan vs tracked players
 
@@ -54,9 +55,9 @@ This is the *first comprehensive command pack*, not yet every possible PUBG API 
 ## Dedicated Discord dashboard channel
 
 1. Create a text channel in the clan Discord server (for example `#clan-stats`). Make it read-only for members if you want only the bot to post there. Ensure the bot has View Channel, Send Messages, and Embed Links permissions. Optional Pin Messages permission lets it pin each card automatically.
-2. As a member with Manage Channels permission, run `/dashboard setup` **inside that channel**. The bot creates eight permanent cards: **overview, lifetime leaderboard, six game-mode totals, roster/import progress, and saved records/recent updates, and three full member-stat pages**. Message IDs and the channel are recorded in Supabase; running setup again edits existing messages instead of flooding the channel.
+2. As a member with Manage Channels or Administrator permission, run **`/setup`** (or `/dashboard setup`) **inside that channel**. The bot creates eight permanent cards: **overview, lifetime leaderboard, six game-mode totals, roster/import progress, and saved records/recent updates, and three full member-stat pages**. Message IDs and the channel are recorded in Supabase; running setup again edits existing messages instead of flooding the channel.
 3. Any member can tap **Refresh dashboards** on a card. The bot checks for pending roster imports and up to two stale players, uses the existing atomic PUBG API budget, saves any available changes in Supabase, then edits the original eight posts. A global 90-second click cooldown and database lock prevent duplicate requests. The user gets a private confirmation instead of a new public chat message.
-4. `/dashboard status` (channel managers) reports the configured location and last refresh. `/dashboard refresh` also triggers a refresh without using a button.
+4. `/dashboard status` (channel managers) reports the configured location and last refresh. `/dashboard refresh` also triggers a refresh without using a button. **Each day, the existing Vercel Hobby cron also edits the saved dashboard cards automatically after the scheduled import at approximately 05:00 UTC (Vercel may execute at any time within that hour).** It does not send eight new messages every day.
 
 Dashboard cards show **saved Supabase data immediately**, without wasting API calls every time someone opens Discord. Detailed player, match, and weapon reports remain available from the other slash commands. New account identities continue to be imported in batches within rate limits. This is a message dashboard (Discord embeds), not an arbitrary interactive website embedded in a Discord message.
 
