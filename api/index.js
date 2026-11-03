@@ -161,7 +161,7 @@ async function leaderboard(db) {
   }
 
   const [queue, verified] = await Promise.all([
-    db.from('player_import_queue').select('status').limit(1000),
+    db.from('player_import_queue').select('status,pubg_account_id').limit(1000),
     db.from('players').select('id', { count: 'exact', head: true })
       .in('platform', ['xbox', 'psn'])
   ]);
@@ -171,6 +171,8 @@ async function leaderboard(db) {
     out[row.status] = (out[row.status] || 0) + 1;
     return out;
   }, {});
+  const identifiedAwaitingStats = (queue.data || []).filter(row =>
+    row.status === 'pending' && Boolean(row.pubg_account_id)).length;
   const rank = current.data || [];
   const lines = ['🏆 **Console Clan Leaderboard — Lifetime Kills**'];
   lines.push(...(rank.length ? rank.map((p, i) =>
@@ -181,14 +183,19 @@ async function leaderboard(db) {
   lines.push(
     '',
     '📋 **Roster import:** ' + (verified.count || 0) + ' verified · ' +
-      (counts.pending || 0) + ' pending · ' +
+      ((counts.pending || 0) - identifiedAwaitingStats) + ' names pending · ' +
+      identifiedAwaitingStats + ' accounts identified (stats pending) · ' +
       (counts.ambiguous || 0) + ' need console confirmation · ' +
       (counts.not_found || 0) + ' not found' +
       (counts.error ? ' · ' + counts.error + ' errors' : '')
   );
+  if (imported.identified > 0)
+    lines.push('🔎 Identified ' + imported.identified + ' console account(s) in bulk.');
   if (imported.matched > 0)
-    lines.push('✅ Imported ' + imported.matched + ' new player(s) on this request.');
-  if (imported.status === 'rate_limited')
+    lines.push('✅ Imported lifetime stats for ' + imported.matched + ' player(s).');
+  if (imported.status === 'busy')
+    lines.push('⏳ Another roster import is already running.');
+  else if (imported.status === 'rate_limited')
     lines.push('⏳ PUBG API budget is temporarily full. Try /leaderboard again shortly to import more.');
   else if (imported.status === 'lookup_failed')
     lines.push('⚠️ The roster import could not connect to PUBG. Saved standings are shown.');
