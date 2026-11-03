@@ -40,6 +40,10 @@
       "dest": "api/player-history.js"
     },
     {
+      "src": "/api/public-matches",
+      "dest": "api/public-matches.js"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
     },

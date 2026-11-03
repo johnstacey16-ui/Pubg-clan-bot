@@ -14,3 +14,22 @@
 .profile-mode{align-items:center;flex-wrap:wrap}
 .profile-mode span{max-width:72%;text-align:right}
 @media(max-width:740px){.profile-actions{flex-direction:column}.profile-mode span{max-width:100%;text-align:left}.profile-history{padding:12px}}
+
+/* Saved match intelligence: readable cards and collapsible squad reports. */
+.match-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,355px),1fr));gap:15px;margin-top:20px}
+.match-card{padding:19px;border:1px solid #36516c;background:linear-gradient(140deg,#1a2b43,#0d1a2d);border-radius:15px;min-width:0}
+.match-heading{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.match-heading>div{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.match-map{font-size:17px;font-weight:850;color:#eaf7ff;overflow-wrap:anywhere}
+.match-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0}
+.match-metrics div{padding:10px 6px;background:#15243b;border:1px solid #2a415c;border-radius:9px;text-align:center;min-width:0}
+.match-metrics small{display:block;color:#8fa8c7;font-size:9px;font-weight:700;letter-spacing:.6px}
+.match-metrics strong{display:block;font-size:21px;color:var(--mint);font-variant-numeric:tabular-nums}
+.match-secondary{font-size:11px;color:#a3b6cb;line-height:1.8}
+.match-squad{margin-top:13px;border-top:1px solid #2c435e;padding-top:12px}
+.match-squad summary{cursor:pointer;color:#71e4d4;font-weight:750;list-style-position:inside}
+.match-teammate{padding:8px 0;display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #243852;align-items:center}
+.match-teammate strong{overflow-wrap:anywhere}
+.match-teammate span{color:#a5bad6;font-size:11px;text-align:right}
+.match-empty{padding:22px;background:#17283e;border:1px dashed #35516d;border-radius:12px;color:#b6c9e0}
+@media(max-width:740px){.match-metrics strong{font-size:18px}.match-teammate{align-items:flex-start;flex-direction:column;gap:2px}}

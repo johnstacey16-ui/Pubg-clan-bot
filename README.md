@@ -111,3 +111,26 @@ If dashboard setup fails, verify that the bot is installed in the server and can
 ### Modern Discord Components V2 layout
 
 The permanent dashboard messages use **Discord Components V2** rather than old plain embeds. Coloured containers, grouped typography, separators, ranking sections, roster-completion bars and the same Refresh button make the cards easier to scan on desktop and mobile. Existing eight dashboard message IDs are edited in place on the next /dashboard setup, /dashboard refresh or Refresh button (without creating new posts). The migration explicitly clears old content and embeds while setting the immutable IS_COMPONENTS_V2 flag (32768). A real dashboard web app or Discord Activity would be necessary for fully custom interactive charts; this channel layout does not embed HTML/CSS.
+
+
+## Phase 3 — Cached match intelligence (no 2D replays)
+
+The website's **Match Intelligence** tab reads detailed match data **only from
+already-saved Supabase cache entries**. It does not make public PUBG API calls,
+does not reserve PUBG request budget, and never returns telemetry URLs or
+internal PUBG account IDs.
+
+- Select a verified clan player, or choose **View saved match analysis** from
+  that player's profile.
+- Review map, mode, placement, kills, damage, assists, headshots, knockdowns,
+  revives, heals and the squad's reported performance.
+- Use the Discord \`/recent gamertag\` command to fetch available recent matches
+  within the shared rate limit; reload the web tab afterwards.
+- Match data exists for about 14 days in PUBG; this first public viewer
+  exposes at most eight indexed and previously cached detailed matches.
+- Public endpoint: \`GET /api/public-matches?name=...\` checks exact verified
+  official-clan membership before reading cache and returns only safe fields.
+- No match history or opponents are fabricated when the cache is empty.
+
+The long-term archive, additional match collection and protected site refresh
+remain roadmap tasks.

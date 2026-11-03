@@ -4,6 +4,8 @@
   var current = 'overview';
   var compareA = null;
   var compareB = null;
+  var matchName = null;
+  var matchRequest = 0;
   var $ = function (id) { return document.getElementById(id); };
   var fmt = function (v) { return Number.isFinite(Number(v)) ? Number(v).toLocaleString('en-GB') : '—'; };
   var dec = function (v) { return v === null || v === undefined ? '—' : Number(v).toFixed(2); };
@@ -14,7 +16,7 @@
   var dateText = function (s) { return s ? new Date(s).toLocaleString('en-GB', {dateStyle:'medium',timeStyle:'short'}) : 'Not available'; };
   var findPlayer = function (name) { return data && data.players.find(function (p) { return p.name === name; }); };
   function go(page, preserveHash) {
-    if (['overview','leaderboard','players','modes','compare','roadmap'].indexOf(page) === -1) return;
+    if (['overview','leaderboard','players','modes','matches','compare','roadmap'].indexOf(page) === -1) return;
     current = page;
     document.querySelectorAll('.page').forEach(function (el) { el.hidden = el.id !== 'page-' + page; });
     document.querySelectorAll('[data-page]').forEach(function (el) {
@@ -22,9 +24,10 @@
       if (el.dataset.page === page) el.setAttribute('aria-current','page');
       else el.removeAttribute('aria-current');
     });
-    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',roadmap:'Roadmap'}[page];
+    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',roadmap:'Roadmap'}[page];
     try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
     window.scrollTo(0,0);
+    if(page==='matches' && data)loadCachedMatches();
   }
   function chart(target, totals, modes) {
     var max = Math.max.apply(null, [1].concat(modes.map(function (m) { return totals[m] ? totals[m].kills : 0; })));
@@ -104,6 +107,67 @@
         '</td><td><strong>' + fmt(s.kills) + '</strong></td><td>' + fmt(s.wins) +
         '</td><td>' + rate + '</td><td>' + fmt(s.damage) + '</td><td>' + fmt(s.assists) + '</td></tr>';
     }).join('');
+  }
+
+  function chooseMatchPlayer(preferred) {
+    if(!data)return;
+    var names=data.players.map(function(p){return p.name;});
+    if(preferred && names.indexOf(preferred)!==-1)matchName=preferred;
+    if(names.indexOf(matchName)===-1)matchName=names[0]||null;
+    $('match-player').innerHTML=names.map(function(name){
+      return '<option value="'+escapeHtml(name)+'"'+(name===matchName?' selected':'')+'>'+escapeHtml(name)+'</option>';
+    }).join('');
+    $('match-player').disabled=!matchName;
+    $('match-reload').disabled=!matchName;
+    if(current==='matches')loadCachedMatches();
+  }
+  async function loadCachedMatches() {
+    if(!matchName)return;
+    var request=++matchRequest,name=matchName;
+    $('match-note').textContent='Reading saved console match data for '+name+'…';
+    $('match-results').innerHTML='';
+    try{
+      var response=await fetch('/api/public-matches?name='+encodeURIComponent(name),{
+        cache:'no-store',headers:{Accept:'application/json'}
+      });
+      if(!response.ok)throw Error('Match API HTTP '+response.status);
+      var result=await response.json();
+      if(request!==matchRequest || matchName!==name)return;
+      $('match-note').textContent=(result.note||'Saved PUBG matches only')+
+        ' · '+result.availableCount+' detailed match(es) stored';
+      if(!result.matches?.length){
+        $('match-results').innerHTML='<p class="match-empty">No detailed match records are stored yet for this player. '+
+          'Use the Discord <strong>/recent</strong> command with their gamertag to populate the shared cache, then reload here.</p>';
+        return;
+      }
+      $('match-results').innerHTML=result.matches.map(function(m){
+        var team=Array.isArray(m.squad)?m.squad:[];
+        return '<article class="match-card">'+
+          '<header class="match-heading"><div><span class="match-map">'+escapeHtml(m.map)+'</span>'+
+          '<span class="badge">'+escapeHtml(m.mode)+'</span></div>'+
+          '<span class="small muted">'+escapeHtml(dateText(m.playedAt))+'</span></header>'+
+          '<div class="match-metrics">'+
+          '<div><small>PLACEMENT</small><strong>'+(m.placement?'#'+fmt(m.placement):'—')+'</strong></div>'+
+          '<div><small>KILLS</small><strong>'+fmt(m.kills)+'</strong></div>'+
+          '<div><small>DAMAGE</small><strong>'+fmt(m.damage)+'</strong></div>'+
+          '<div><small>ASSISTS</small><strong>'+fmt(m.assists)+'</strong></div>'+
+          '</div>'+
+          '<div class="match-secondary">Headshots '+fmt(m.headshots)+' · Knocks '+fmt(m.knocks)+
+          ' · Revives '+fmt(m.revives)+' · Heals '+fmt(m.heals)+
+          ' · Boosts '+fmt(m.boosts)+' · Longest kill '+fmt(m.longestKillMeters)+'m</div>'+
+          '<details class="match-squad"><summary>Squad details · '+team.length+' player(s)</summary>'+
+          (team.length?team.map(function(member){
+            return '<div class="match-teammate"><strong>'+(member.isSelf?'★ ':'')+
+              escapeHtml(member.name)+'</strong><span>'+fmt(member.kills)+' kills · '+
+              fmt(member.damage)+' damage · '+fmt(member.assists)+' assists</span></div>';
+          }).join(''):'<p class="small muted">No roster details were saved for this match.</p>')+
+          '</details></article>';
+      }).join('');
+    }catch(error){
+      if(request!==matchRequest)return;
+      $('match-note').textContent='Saved match data is temporarily unavailable.';
+      $('match-results').innerHTML='<p class="match-empty">The website could not read saved match records. Try Reload saved matches.</p>';
+    }
   }
   function renderCompare() {
     if (!data) return;
@@ -196,6 +260,7 @@
         return '<div class="profile-mode"><strong>'+escapeHtml(modeName(m))+'</strong><span>'+fmt(s.roundsPlayed)+
           ' matches · '+fmt(s.kills)+' kills · '+fmt(s.wins)+' wins</span></div>';
       }).join('') || '<p class="muted">No mode details saved yet.</p>') +
+      '<p><button class="secondary" type="button" data-match-player="'+escapeHtml(p.name)+'">⚑ View saved match analysis</button></p>'+
       '<p class="small muted">Last saved player update: '+escapeHtml(dateText(p.updatedAt))+'. Upstream PUBG refresh is managed through the Discord dashboard.</p>'+
       '<div class="profile-history"><div class="profile-history-header"><h3>📈 Actual lifetime progress</h3><label>Metric <select id="history-metric">'+
       '<option value="kills">Kills</option><option value="wins">Wins</option><option value="matches">Matches</option></select></label></div>'+
@@ -216,7 +281,7 @@
       var result=await r.json();
       if(!result || result.schemaVersion!==1 || !Array.isArray(result.players))throw Error('Unsupported response');
       data=result;
-      renderOverview();renderLeaderboard();renderRoster();renderModes();renderCompare();
+      renderOverview();renderLeaderboard();renderRoster();renderModes();renderCompare();chooseMatchPlayer(matchName);
       $('notice').hidden=true;
     } catch(error) {
       $('notice').textContent='Could not load saved statistics: '+error.message+'. The existing Discord bot is unaffected.';
@@ -224,7 +289,16 @@
   }
   document.querySelectorAll('[data-page]').forEach(function (b) { b.addEventListener('click',function () {go(b.dataset.page);}); });
   document.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click',function () {go(b.dataset.go);}); });
-  document.addEventListener('click',function (e) {var b=e.target.closest&&e.target.closest('[data-profile]');if(b)openProfile(b.dataset.profile);});
+  document.addEventListener('click',function (e) {
+    var b=e.target.closest&&e.target.closest('[data-profile]');
+    if(b)openProfile(b.dataset.profile);
+    var match=e.target.closest&&e.target.closest('[data-match-player]');
+    if(match) {
+      chooseMatchPlayer(match.dataset.matchPlayer);
+      if($('profile').open)$('profile').close();
+      go('matches');
+    }
+  });
   $('profile-close').addEventListener('click',function () { $('profile').close(); });
   $('profile').addEventListener('close',function(){
     profileRequest++;
@@ -248,12 +322,14 @@
   $('compare-one').addEventListener('change',function(e){compareA=e.target.value;renderCompare();});
   $('compare-two').addEventListener('change',function(e){compareB=e.target.value;renderCompare();});
   $('reload').addEventListener('click',reload);
+  $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
+  $('match-reload').addEventListener('click',loadCachedMatches);
   var hash=location.hash.slice(1);
   var sharedName=null;
   if(hash.startsWith('player/')){
     try { sharedName=decodeURIComponent(hash.slice(7)); } catch(error) {}
   }
-  go(sharedName?'players':(['overview','leaderboard','players','modes','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
+  go(sharedName?'players':(['overview','leaderboard','players','modes','matches','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
   reload().then(function(){
     if(sharedName) {
       if(findPlayer(sharedName))openProfile(sharedName,true);

@@ -42,7 +42,10 @@
 - [ ] Handle ambiguous platform names and missing accounts in an admin-only workflow
 
 ### Phase 3 — Match analysis (no replay features)
-- [ ] Match index/archive pipeline and retention policy
+- [x] Read-only cached PUBG match-intelligence API (official players only; no public upstream calls)
+- [x] Responsive Match Intelligence website tab with optional squad breakdown
+- [x] Verify match-cache shape in Supabase; use existing Discord /recent to populate
+- [ ] Persistent match archive beyond the shared cache and a documented retention policy
 - [ ] Match detail, squad breakdown, opponents and teammates
 - [ ] Weapon mastery views with documented PUBG field mapping
 - [ ] Season and ranked histories and per-mode leaderboard measures
