@@ -30,6 +30,12 @@ async function checked(promise, label) {
   if (result.error) throw new Error(label + ': ' + result.error.message);
   return result.data;
 }
+async function reserveBudget(db, count) {
+  if (!count) return;
+  const allowed = await checked(db.rpc('reserve_pubg_requests', { p_count: count }),
+    'Reserve shared PUBG API capacity');
+  if (!allowed) throw new Error('Shared PUBG API limit reached; retry at next scheduled run');
+}
 async function saveLifetimeDetails(db, playerId, platform, lifetime) {
   const modes = gameModeStats(lifetime);
   await checked(db.from('player_lifetime_details').upsert({
@@ -49,8 +55,8 @@ module.exports = async (req, res) => {
 
   const db = dbClient();
   const now = Date.now();
-  // Atomic database lease: separate function instances cannot claim simultaneously,
-  // and back-to-back runs must wait at least 90 seconds to respect the PUBG API budget.
+  // Only one background batch may run at a time; request tokens are shared
+  // with live player searches through reserve_pubg_requests.
   let lease;
   try {
     lease = await checked(db.from('pubg_sync_control').update({
@@ -86,7 +92,10 @@ module.exports = async (req, res) => {
         .order('last_checked', { ascending: true, nullsFirst: true })
         .limit(MAX_BATCH), 'Refresh candidates');
       const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-      for (const player of old || []) {
+      const eligible = (old || []).filter(player => SHARDS.includes(player.platform) &&
+        (!player.last_checked || new Date(player.last_checked).getTime() <= cutoff));
+      await reserveBudget(db, eligible.length);
+      for (const player of eligible) {
         if (player.last_checked && new Date(player.last_checked).getTime() > cutoff) continue;
         if (!SHARDS.includes(player.platform)) continue;
         try {
@@ -107,6 +116,8 @@ module.exports = async (req, res) => {
       }
       summary.status = summary.errors ? 'partial' : 'completed';
     } else {
+      // Two platform searches plus at most one lifetime request per player.
+      await reserveBudget(db, 2 + pending.length);
       const names = pending.map(p => p.gamertag);
       const matches = {};
       for (const platform of SHARDS) {
