@@ -38,6 +38,7 @@
 - [x] Historical SVG charts that appear **only after two or more real snapshots**
 - [ ] Full roster pagination, advanced filters and saved player favourites
 - [ ] Verify a second genuine snapshot and resulting public chart after an actual PUBG refresh
+- [x] Validate shareable profile links and real-history baseline/line-chart behaviour in a simulated browser
 - [ ] Handle ambiguous platform names and missing accounts in an admin-only workflow
 
 ### Phase 3 — Match analysis (no replay features)
@@ -50,7 +51,7 @@
 - [ ] Authenticated manager-only website refresh using existing budget and database lock
 - [x] Discord dashboard **View full dashboard** link
 - [ ] Configurable Discord clan membership management
-- [ ] Audit remaining legacy RLS/grants before any new public write feature
+- [x] Audit legacy Supabase grants and secure `players`, `matches`, `clan_records` (RLS enabled; anonymous/authenticated access revoked; service-role preserved)
 - [ ] Accessibility and performance regression gate
 
 ### Phase 5 — Production hardening
