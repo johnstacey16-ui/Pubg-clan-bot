@@ -2,7 +2,7 @@
 const {createClient}=require('@supabase/supabase-js');
 const {savedSeason}=require('../lib/web-season');
 module.exports=async(req,res)=>{
-  res.setHeader('Cache-Control','public, s-maxage=60, stale-while-revalidate=120');
+  res.setHeader('Cache-Control','private, no-store');
   res.setHeader('X-Content-Type-Options','nosniff');
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
   const name=req.query?.name,platform=req.query?.platform||'auto',type=req.query?.type||'season';
