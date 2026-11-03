@@ -71,3 +71,13 @@
 .console-search-result .lookup-stats{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0;font-variant-numeric:tabular-nums}
 .console-search-result .lookup-stats strong{color:var(--mint)}
 @media(max-width:740px){.console-search-form button{flex:1}.console-lookup .panel-heading{gap:9px}}
+
+/* Current season and ranked, rendered only from allowlisted PUBG values. */
+.season-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:15px;margin-top:18px}
+.season-mode-card{background:linear-gradient(150deg,#1a2d45,#101e33);border:1px solid #324e6c;border-radius:13px;padding:17px}
+.season-mode-card h3{margin:0 0 14px;color:#f3fbff;font-size:17px}
+.season-tier{color:var(--mint);font-size:16px;font-weight:800;margin:0 0 13px}
+.season-mode-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.season-mode-stats div{background:#172840;border-radius:8px;padding:9px;min-width:0}
+.season-mode-stats small{display:block;color:#9db5cc;font-size:10px}
+.season-mode-stats strong{font-size:17px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}

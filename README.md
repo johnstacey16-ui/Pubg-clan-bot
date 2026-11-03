@@ -222,3 +222,38 @@ database migration if users actually need it.
 ### Console detection update
 
 Auto-detect is selected by default in the web search panel. Once an Xbox or PlayStation account has been confirmed, the selector changes to that console and later refreshes reuse the stored account ID. A previously shared player link without a platform also resolves saved data automatically. A duplicate name across genuinely different console identities triggers a choice rather than adding duplicate records.
+
+
+## Website refresh: weapon mastery, recent matches and seasons
+
+Website visitors can refresh the selected saved console player's **weapon mastery,
+recent match index, current season, or ranked season** from the relevant page.
+They must first use the homepage to find and save the real Xbox/PSN account;
+subsequent refreshes reuse that confirmed platform and account ID. The website
+never searches both consoles again for known players.
+
+- `POST /api/player-refresh` (same-origin, JSON body
+  `{"name":"<gamertag>","platform":"auto|xbox|psn","scope":"weapons|matches|season|ranked"}`)
+  requires a saved account, reserves the global web refresh cooldown and
+  a **per-player, per-scope 15-minute cooldown** through Supabase.
+- The same existing `reserve_pubg_requests` database RPC remains
+  the authority for PUBG's shared rate limit across the website and Discord.
+  No browser receives `PUBG_API_KEY` or Supabase credentials.
+- Weapon refresh calls the genuine console `weapon_mastery`
+  endpoint. Recent matches refresh the saved player match index (one
+  rate-limited call) and fetch up to five unique, valid console match
+  reports, which PUBG does not charge against the normal API limit.
+  Supabase's existing archive trigger saves compact reports.
+- Current season and ranked each refresh the platform's current season list
+  and that player's season/ranked statistics. Both are bounded to two
+  rate-limited API requests per refresh; a season change can be detected
+  even if the previous season list had a 30-day cache TTL.
+- `GET /api/public-season?name=...&type=season|ranked` reads
+  and allowlists already saved mode stats. It never fetches PUBG and never
+  returns account IDs, raw cache entries, credentials or telemetry.
+
+The **Reload saved** buttons never contact PUBG. The separate **Refresh
+from PUBG** buttons are explicit, rate limited, and preserve stored data if
+PUBG returns a temporary error. This is the current season viewer, not a
+fabricated historical season graph; longitudinal season history remains
+future work.

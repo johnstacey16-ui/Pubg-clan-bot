@@ -15,6 +15,8 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(routes['/api/public-stats'],'api/public-stats.js');
  assert.equal(routes['/api/player-history'],'api/player-history.js');
  assert.equal(routes['/api/player-lookup'],'api/player-lookup.js');
+ assert.equal(routes['/api/player-refresh'],'api/player-refresh.js');
+ assert.equal(routes['/api/public-season'],'api/public-season.js');
  assert.equal(routes['/api/public-matches'],'api/public-matches.js');
  assert.equal(routes['/api/public-insights'],'api/public-insights.js');
  assert.ok(v.builds.some(x=>x.src==='index.html'&&x.use==='@vercel/static'));
@@ -25,7 +27,7 @@ test('static web app assets and original reference pictures are present',()=>{
  const index=read('index.html');
  assert.match(index,/assets\/site\.css/);
  assert.match(index,/assets\/site\.js/);
- for(const page of ['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'])
+ for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','roadmap'])
    assert.ok(index.includes('id="page-'+page+'"'),page);
  for(const f of ['assets/site.css','assets/site.js','assets/brand.svg',
   'design/overview-reference.svg','design/leaderboard-reference.svg','ROADMAP.md'])
@@ -36,6 +38,11 @@ test('static web app assets and original reference pictures are present',()=>{
  assert.match(js,/\/api\/player-history/);
  assert.match(js,/\/api\/public-matches/);
  assert.match(js,/\/api\/public-insights/);
+ assert.match(js,/\/api\/player-refresh/);
+ assert.match(js,/\/api\/public-season/);
+ assert.match(index,/id="match-refresh"/);
+ assert.match(index,/id="weapons-refresh"/);
+ assert.match(index,/id="season-refresh"/);
  assert.match(js,/#player\//);
  assert.doesNotMatch(js,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN/);
 });

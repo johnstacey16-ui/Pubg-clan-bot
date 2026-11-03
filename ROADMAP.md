@@ -55,7 +55,12 @@
 - [x] Accept omitted platform on website API requests as Auto-detect (no second account required)
 - [x] If both console shards return matching names, request a manual console choice instead of creating duplicate profiles
 - [ ] Evaluate genuinely distinct Xbox and PSN accounts sharing an identical displayed name only if this becomes a real requirement
-- [ ] Enable website mastery, seasons and recent match refreshes with independent quotas
+- [x] Website PUBG refresh for weapon mastery, recent matches, current season and ranked
+- [x] Per-player, per-refresh-type 15-minute cooldown plus shared 90-second global web limit
+- [x] Bound recent match detail refresh to five match IDs; use PUBG's non-rate-limited console matches endpoint
+- [x] Explicit season-list revalidation so stale 30-day season indexes do not hide new seasons
+- [x] Current Season & Ranked page using sanitised cached statistics and honest empty states
+- [ ] Add historical season archive and longitudinal ranked progression charts
 - [ ] End-to-end production browser, Android and Xbox validation
 
 ### Phase 3 — Match analysis (no replay features)

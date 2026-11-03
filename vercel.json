@@ -40,6 +40,14 @@
       "dest": "api/player-lookup.js"
     },
     {
+      "src": "/api/player-refresh",
+      "dest": "api/player-refresh.js"
+    },
+    {
+      "src": "/api/public-season",
+      "dest": "api/public-season.js"
+    },
+    {
       "src": "/api/player-history",
       "dest": "api/player-history.js"
     },

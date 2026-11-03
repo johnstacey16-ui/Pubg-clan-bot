@@ -20,6 +20,7 @@
       <button class="nav-link" type="button" data-page="modes"><span>▥</span> Game modes</button>
       <button class="nav-link" type="button" data-page="matches"><span>⚑</span> Match intelligence</button>
       <button class="nav-link" type="button" data-page="weapons"><span>⌖</span> Weapon mastery</button>
+      <button class="nav-link" type="button" data-page="season"><span>🏆</span> Season & ranked</button>
       <button class="nav-link" type="button" data-page="teammates"><span>♟</span> Teammate insights</button>
       <button class="nav-link" type="button" data-page="compare"><span>⚔</span> Compare players</button>
       <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
@@ -70,10 +71,11 @@
       <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore archived match results and squad performance, saved up to 180 days. No replays or extra PUBG API requests.</p></div>
       <div class="card panel">
         <div class="filters">
-          <label>Verified clan player <select id="match-player"></select></label>
+          <label>Saved console player <select id="match-player"></select></label>
           <button type="button" class="secondary" id="match-reload">↻ Reload saved matches</button>
+          <button type="button" class="primary" id="match-refresh">↻ Refresh recent from PUBG</button>
         </div>
-        <p id="match-note" class="small muted" aria-live="polite">Choose a verified clan player to explore existing match records.</p>
+        <p id="match-note" class="small muted" aria-live="polite">Choose a saved console player to explore existing match records.</p>
         <div id="match-results" class="match-results" aria-live="polite"></div>
       </div>
     </section>
@@ -82,13 +84,14 @@
         <p>Real PUBG mastery levels, kills, headshots, damage and XP from saved API responses.</p></div>
       <div class="card panel">
         <div class="filters">
-          <label>Verified clan player <select id="weapons-player"></select></label>
+          <label>Saved console player <select id="weapons-player"></select></label>
           <label>Stat category <select id="weapon-category">
             <option value="total">All recorded stats</option>
             <option value="official">Official</option>
             <option value="competitive">Competitive</option></select></label>
           <label>Search weapons <input type="search" id="weapon-search" placeholder="Weapon name…" autocomplete="off"></label>
           <button type="button" id="weapons-reload" class="secondary">↻ Reload saved mastery</button>
+          <button type="button" id="weapons-refresh" class="primary">↻ Refresh mastery from PUBG</button>
         </div>
         <p class="small muted" id="weapons-note" aria-live="polite">Choose a player to view stored weapon mastery.</p>
         <div id="weapon-bars" class="weapon-bars" aria-label="Top recorded weapon kills"></div>
@@ -97,12 +100,31 @@
         </tr></thead><tbody id="weapons-table"></tbody></table></div>
       </div>
     </section>
+
+    <section class="page" id="page-season" hidden>
+      <div class="page-head"><p class="eyebrow">CURRENT PUBG SEASON</p>
+        <h1>Season <em>& ranked.</em></h1>
+        <p>Real saved current-season PUBG performance and ranked tiers. Refresh on demand using the shared API budget.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Saved console player <select id="season-player"></select></label>
+          <label>Statistics <select id="season-type">
+            <option value="season">Current season</option>
+            <option value="ranked">Ranked season</option>
+          </select></label>
+          <button class="secondary" id="season-reload" type="button">↻ Reload saved season</button>
+          <button class="primary" id="season-refresh" type="button">↻ Refresh from PUBG</button>
+        </div>
+        <p id="season-note" class="small muted" aria-live="polite">Choose a saved player to inspect season statistics.</p>
+        <div id="season-results" class="season-results" aria-live="polite"></div>
+      </div>
+    </section>
     <section class="page" id="page-teammates" hidden>
       <div class="page-head"><p class="eyebrow">SQUAD CONNECTIONS</p><h1>Teammate <em>insights.</em></h1>
         <p>Find recurring partners using actual archived squad matches, not estimated lifetime statistics.</p></div>
       <div class="card panel">
         <div class="filters">
-          <label>Verified clan player <select id="teammates-player"></select></label>
+          <label>Saved console player <select id="teammates-player"></select></label>
           <button type="button" id="teammates-reload" class="secondary">↻ Reload saved teammates</button>
         </div>
         <p class="small muted" id="teammates-note" aria-live="polite">Choose a player to review archived squad partners.</p>

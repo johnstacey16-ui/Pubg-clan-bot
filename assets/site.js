@@ -7,6 +7,8 @@
   var compareB = null;
   var matchName = null;
   var matchRequest = 0;
+  var seasonName=null;
+  var seasonRequest=0;
   var insightNames={weapons:null,teammates:null};
   var insightRequests={weapons:0,teammates:0};
   var insightCache={weapons:null,teammates:null};
@@ -70,7 +72,7 @@
       extraPlayers=extraPlayers.filter(x=>!(x.name.toLowerCase()===p.name.toLowerCase()));
       extraPlayers.push(p);
       if(data){
-        renderCompare();chooseMatchPlayer(matchName);chooseInsightPlayers();
+        renderCompare();chooseMatchPlayer(matchName);chooseInsightPlayers();chooseSeasonPlayer();
       }
       result.innerHTML='<div class="lookup-top"><strong>'+escapeHtml(p.name)+
         ' · '+(p.platform==='xbox'?'Xbox':'PlayStation')+'</strong><span class="badge '+
@@ -95,7 +97,7 @@
   }
 
   function go(page, preserveHash) {
-    if (['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'].indexOf(page) === -1) return;
+    if (['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','roadmap'].indexOf(page) === -1) return;
     current = page;
     document.querySelectorAll('.page').forEach(function (el) { el.hidden = el.id !== 'page-' + page; });
     document.querySelectorAll('[data-page]').forEach(function (el) {
@@ -103,11 +105,12 @@
       if (el.dataset.page === page) el.setAttribute('aria-current','page');
       else el.removeAttribute('aria-current');
     });
-    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',teammates:'Teammate insights',roadmap:'Roadmap'}[page];
+    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',roadmap:'Roadmap'}[page];
     try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
     window.scrollTo(0,0);
     if(page==='matches' && data)loadCachedMatches();
     if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
+    if(page==='season'&&data)loadSeason();
   }
   function chart(target, totals, modes) {
     var max = Math.max.apply(null, [1].concat(modes.map(function (m) { return totals[m] ? totals[m].kills : 0; })));
@@ -361,6 +364,102 @@
       $(kind+'-note').textContent='Saved insights temporarily unavailable. Existing clan statistics are unaffected.';
     }
   }
+
+  function chooseSeasonPlayer(preferred) {
+    if(!data)return;
+    var names=visiblePlayers().map(function(p){return p.name;});
+    if(preferred&&names.includes(preferred))seasonName=preferred;
+    if(!names.includes(seasonName))seasonName=names[0]||null;
+    $('season-player').innerHTML=names.map(function(name){
+      return '<option value="'+escapeHtml(name)+'"'+
+        (name===seasonName?' selected':'')+'>'+escapeHtml(name)+'</option>';
+    }).join('');
+    $('season-player').value=seasonName||'';
+    $('season-player').disabled=!seasonName;
+    $('season-reload').disabled=!seasonName;
+    $('season-refresh').disabled=!seasonName;
+  }
+  function seasonNumber(value) {
+    return value===undefined||value===null?'—':fmt(value);
+  }
+  async function loadSeason() {
+    var name=seasonName;
+    if(!name)return;
+    var type=$('season-type').value,request=++seasonRequest;
+    $('season-note').textContent='Reading saved '+type+' data for '+name+'…';
+    $('season-results').innerHTML='';
+    try{
+      var result=await fetch('/api/public-season?name='+encodeURIComponent(name)+
+        '&type='+encodeURIComponent(type),{cache:'no-store',headers:{Accept:'application/json'}});
+      if(!result.ok)throw Error('HTTP '+result.status);
+      var payload=await result.json();
+      if(request!==seasonRequest||seasonName!==name||type!==$('season-type').value)return;
+      $('season-note').textContent=(payload.note||'Saved PUBG season data')+
+        (payload.seasonId?' · '+payload.seasonId:'')+
+        (payload.savedAt?' · Saved '+dateText(payload.savedAt):'');
+      var modes=Array.isArray(payload.modes)?payload.modes:[];
+      if(!modes.length){
+        $('season-results').innerHTML='<p class="match-empty">No current '+type+
+          ' statistics are saved for this player yet. Select Refresh from PUBG.</p>';
+        return;
+      }
+      $('season-results').innerHTML=modes.map(function(row){
+        var s=row.stats||{};
+        var fields=type==='ranked'?
+          [['Matches','roundsPlayed'],['Kills','kills'],['Wins','wins'],
+           ['Rank points','currentRankPoint'],['Damage','damageDealt'],['Assists','assists']]:
+          [['Matches','roundsPlayed'],['Kills','kills'],['Wins','wins'],
+           ['Damage','damageDealt'],['Headshot kills','headshotKills'],['Assists','assists']];
+        var tier=type==='ranked'&&s.currentTier?
+          '<p class="season-tier">'+escapeHtml(s.currentTier.tier||'Unranked')+' '+
+            escapeHtml(s.currentTier.subTier||'')+'</p>':'';
+        return '<article class="season-mode-card"><h3>'+escapeHtml(modeName(row.mode))+
+          '</h3>'+tier+'<div class="season-mode-stats">'+
+          fields.map(function(f){
+            return '<div><small>'+escapeHtml(f[0])+'</small><strong>'+
+              seasonNumber(s[f[1]])+'</strong></div>';
+          }).join('')+'</div></article>';
+      }).join('');
+    }catch(error){
+      if(request!==seasonRequest)return;
+      $('season-note').textContent='Saved season statistics are temporarily unavailable.';
+      $('season-results').innerHTML='';
+    }
+  }
+  async function refreshFromPubg(scope,name,statusId) {
+    if(!name)return false;
+    var player=findPlayer(name);
+    var target=$(statusId);
+    var platform=player?.platform||'auto';
+    target.textContent='Requesting '+scope+' from PUBG within the shared API budget…';
+    var refreshButton=scope==='weapons'?'weapons-refresh':
+      scope==='matches'?'match-refresh':'season-refresh';
+    $(refreshButton).disabled=true;
+    try{
+      var response=await fetch('/api/player-refresh',{
+        method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+        body:JSON.stringify({name,platform,scope})
+      });
+      var result=await response.json();
+      if(!response.ok){
+        target.textContent=(result.error||'PUBG refresh unavailable')+
+          (result.retryAfterSeconds?' Try again in about '+result.retryAfterSeconds+' seconds.':'')+
+          (result.suggestedPlatform?' The saved console is '+result.suggestedPlatform+'.':'');
+        return false;
+      }
+      target.textContent=(result.note||'Saved PUBG data updated')+
+        (scope==='matches'?' · '+(result.savedDetails||0)+' match details saved':'');
+      if(scope==='weapons')await loadInsight('weapons');
+      else if(scope==='matches')await loadCachedMatches();
+      else await loadSeason();
+      return true;
+    }catch(error){
+      target.textContent='PUBG refresh temporarily unavailable; existing saved statistics are unchanged.';
+      return false;
+    }finally{
+      $(refreshButton).disabled=false;
+    }
+  }
   function renderCompare() {
     if(!data)return;
     var names=visiblePlayers().map(function(p){return p.name;});
@@ -461,7 +560,8 @@
       }).join('') || '<p class="muted">No mode details saved yet.</p>') +
       '<div class="profile-insight-actions"><button class="secondary" type="button" data-match-player="'+escapeHtml(p.name)+'">⚑ Matches</button>'+
       '<button class="secondary" type="button" data-insight-page="weapons" data-insight-name="'+escapeHtml(p.name)+'">⌖ Weapons</button>'+
-      '<button class="secondary" type="button" data-insight-page="teammates" data-insight-name="'+escapeHtml(p.name)+'">♟ Teammates</button></div>'+
+      '<button class="secondary" type="button" data-insight-page="teammates" data-insight-name="'+escapeHtml(p.name)+'">♟ Teammates</button>'+
+      '<button class="secondary" type="button" data-insight-page="season" data-insight-name="'+escapeHtml(p.name)+'">🏆 Season</button></div>'+
       '<h3>Advanced lifetime statistics</h3><div class="advanced-stats">'+
       [['Damage',p.advanced?.damage],['Headshots',p.advanced?.headshots],['Assists',p.advanced?.assists],
        ['Knockdowns',p.advanced?.knocks],['Revives',p.advanced?.revives],['Top 10',p.advanced?.top10],
@@ -490,8 +590,9 @@
       if(!result || result.schemaVersion!==1 || !Array.isArray(result.players))throw Error('Unsupported response');
       data=result;
       renderOverview();renderLeaderboard();renderRoster();renderModes();renderCompare();chooseMatchPlayer(matchName);
-      chooseInsightPlayers();
+      chooseInsightPlayers();chooseSeasonPlayer();
       if(current==='weapons'||current==='teammates')loadInsight(current);
+      if(current==='season')loadSeason();
       $('notice').hidden=true;
     } catch(error) {
       $('notice').textContent='Could not load saved statistics: '+error.message+'. The existing Discord bot is unaffected.';
@@ -511,8 +612,9 @@
     var insight=e.target.closest&&e.target.closest('[data-insight-page]');
     if(insight){
       var kind=insight.dataset.insightPage;
-      if(kind==='weapons'||kind==='teammates'){
-        chooseInsightPlayers(kind,insight.dataset.insightName);
+      if(kind==='weapons'||kind==='teammates'||kind==='season'){
+        if(kind==='season')chooseSeasonPlayer(insight.dataset.insightName);
+        else chooseInsightPlayers(kind,insight.dataset.insightName);
         if($('profile').open)$('profile').close();
         go(kind);
       }
@@ -554,6 +656,18 @@
   });
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);
+  $('match-refresh').addEventListener('click',function(){
+    refreshFromPubg('matches',matchName,'match-note');
+  });
+  $('weapons-refresh').addEventListener('click',function(){
+    refreshFromPubg('weapons',insightNames.weapons,'weapons-note');
+  });
+  $('season-player').addEventListener('change',function(e){seasonName=e.target.value;loadSeason();});
+  $('season-type').addEventListener('change',loadSeason);
+  $('season-reload').addEventListener('click',loadSeason);
+  $('season-refresh').addEventListener('click',function(){
+    refreshFromPubg($('season-type').value,seasonName,'season-note');
+  });
   for(const kind of ['weapons','teammates']){
     $(kind+'-player').addEventListener('change',function(e){
       insightNames[kind]=e.target.value;loadInsight(kind);
@@ -573,7 +687,7 @@
       } else sharedName=decodeURIComponent(path);
     }catch(error){}
   }
-  go(sharedName?'overview':(['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
+  go(sharedName?'overview':(['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
   reload().then(async function(){
     if(!sharedName)return;
     if(findPlayer(sharedName) && (!sharedPlatform||findPlayer(sharedName).platform===sharedPlatform)){
