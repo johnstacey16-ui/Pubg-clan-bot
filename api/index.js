@@ -81,7 +81,6 @@ async function handleCommand(body) {
   }
   return response('Unknown command.', true);
 }
-module.exports.config = { api: { bodyParser: false } };
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   let raw;
@@ -103,3 +102,5 @@ module.exports = async (req, res) => {
     return res.status(200).json(response('The stats service is temporarily unavailable. Please try again.', true));
   }
 };
+
+module.exports.config = { api: { bodyParser: false } };
