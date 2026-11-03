@@ -14,6 +14,10 @@
     {
       "src": "/api/sync",
       "dest": "api/sync.js"
+    },
+    {
+      "src": "/api/health",
+      "dest": "api/health.js"
     }
   ],
   "crons": [
