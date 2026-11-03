@@ -11,8 +11,9 @@ function escapeLike(value) {
   return value.replace(/[\\%_]/g, ch => '\\' + ch);
 }
 function safeDiscord(value) {
-  return String(value).replace(/[\\*_`~|>]/g, '\\const allowedSkewSeconds = 300;').slice(0, 120);
+  return String(value).replace(/[\\*_`~|>]/g, ch => '\\' + ch).slice(0, 120);
 }
+
 const response = (content, ephemeral = false) => ({
   type: 4,
   data: { content: String(content).slice(0, 2000), allowed_mentions: { parse: [] }, ...(ephemeral ? { flags: 64 } : {}) }
