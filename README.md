@@ -324,3 +324,39 @@ If the shared API limit is busy, the batch stops rather than bypassing it.
 No additional Vercel cron, paid service or public credentials are involved.
 
 Collection progress is also exposed safely in the public /api/health response under season_collection, showing how many clan players have been attempted and the most recent result and completion time. No account IDs or player identities are included.
+
+
+## Clan Command Centre analytics integration
+
+Four new tabs — Clan Awards, Deep Analysis, Data Tools and Analytics Guide
+— plus a radar chart in Compare Players adapt the reusable ideas from the
+older user-owned React command centre into this lightweight website.
+The old historical fixture players, third-party bot labels, bans, Recharts
+and browser-specific window.storage dependencies were not copied.
+
+Awards come exclusively from genuine saved PUBG lifetime statistics of
+verified official clan members, with a minimum-match gate. Exploratory
+Fragger, Support, Survivor and Hybrid roles require real cohort evidence.
+The optional 0–100 clan performance model uses a weighted percentile of
+actual kills/match, damage/match, win rate, assists/match, revives/match
+and Top 10 rate. Five eligible peers and four measured axes are required.
+A sample-size band is descriptive, not a statistical confidence interval.
+
+The read-only GET /api/public-progress uses the private service-role RPC
+get_clan_weekly_progress. It compares genuine lifetime observations with
+another genuine point 6–14 days before the most recent point. Missing
+comparison points remain missing; counter resets are review flags rather
+than fabricated negative performance. No new PUBG requests are made.
+
+CSV exports use saved official values. CSV imports are completely browser
+local, limited to 256 KB and 200 rows with duplicate-player, field and
+number validation. There is deliberately no server-side unauthenticated
+import. A persistent import is deferred until manager authentication and
+source auditability are implemented. External source-supplied bot exposure
+is labelled unverified and only appears in the local CSV scatter plot.
+It never influences the official roster, scores or awards.
+
+What-if controls update only the page's displayed model. They do not
+change Supabase records, Discord state or the PUBG API budget. A
+multi-snapshot consistency award will only be introduced once sufficient
+separate genuine observations exist.

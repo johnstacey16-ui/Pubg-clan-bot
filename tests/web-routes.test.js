@@ -18,6 +18,7 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(routes['/api/player-refresh'],'api/player-refresh.js');
  assert.equal(routes['/api/public-season'],'api/public-season.js');
  assert.equal(routes['/api/public-season-leaderboard'],'api/public-season-leaderboard.js');
+ assert.equal(routes['/api/public-progress'],'api/public-progress.js');
  assert.equal(routes['/api/public-matches'],'api/public-matches.js');
  assert.equal(routes['/api/public-insights'],'api/public-insights.js');
  assert.ok(v.builds.some(x=>x.src==='index.html'&&x.use==='@vercel/static'));
@@ -28,7 +29,7 @@ test('static web app assets and original reference pictures are present',()=>{
  const index=read('index.html');
  assert.match(index,/assets\/site\.css/);
  assert.match(index,/assets\/site\.js/);
- for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','roadmap'])
+ for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','roadmap'])
    assert.ok(index.includes('id="page-'+page+'"'),page);
  for(const f of ['assets/site.css','assets/site.js','assets/brand.svg',
   'design/overview-reference.svg','design/leaderboard-reference.svg','ROADMAP.md'])
@@ -46,4 +47,17 @@ test('static web app assets and original reference pictures are present',()=>{
  assert.match(index,/id="season-refresh"/);
  assert.match(js,/#player\//);
  assert.doesNotMatch(js,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN/);
+});
+
+test('old command centre features are present without shipping fixtures or secrets',()=>{
+ const html=read('index.html'),js=read('assets/command-centre.js'),math=read('assets/clan-analytics.js');
+ for(const id of ['cc-awards-grid','cc-scores','cc-progress','cc-quality','compare-radar',
+  'cc-export','cc-before-file','cc-after-file','cc-scatter','cc-min-matches','cc-team-weight'])
+   assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(html,/clan-analytics\.js/);
+ assert.match(html,/command-centre\.js/);
+ assert.match(js,/\/api\/public-progress/);
+ assert.match(js,/local-only|local-only|Local-only/i);
+ assert.doesNotMatch(html+js+math,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN|window\.storage/);
+ assert.doesNotMatch(math,/Big_SnakeAUG|PUBGClans.net|isBotFarmer/);
 });

@@ -123,7 +123,7 @@
   }
 
   function go(page, preserveHash) {
-    if (['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','roadmap'].indexOf(page) === -1) return;
+    if (['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','roadmap'].indexOf(page) === -1) return;
     current = page;
     document.querySelectorAll('.page').forEach(function (el) { el.hidden = el.id !== 'page-' + page; });
     document.querySelectorAll('[data-page]').forEach(function (el) {
@@ -131,12 +131,13 @@
       if (el.dataset.page === page) el.setAttribute('aria-current','page');
       else el.removeAttribute('aria-current');
     });
-    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',roadmap:'Roadmap'}[page];
+    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',roadmap:'Roadmap'}[page];
     try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
     window.scrollTo(0,0);
     if(page==='matches' && data)loadCachedMatches();
     if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
     if(page==='season'&&data){loadSeason();loadSeasonLeaderboard();}
+    if(data&&window.CommandCentre?.render)window.CommandCentre.render(page,data);
   }
   function chart(target, totals, modes) {
     var max = Math.max.apply(null, [1].concat(modes.map(function (m) { return totals[m] ? totals[m].kills : 0; })));
@@ -703,6 +704,7 @@
           (av!=null&&bv!=null&&bv>av?'winner':'')+'">'+statValue(bv,decimal)+'</strong></div>';
       }).join('')+
       '<p class="small muted">Only saved PUBG mode data is compared. Unavailable values show —; longest kill uses the maximum distance, not a total.</p>';
+    if(window.CommandCentre?.radar)window.CommandCentre.radar('compare-radar',a,b,mode,data.players);
   }
 
   var profileRequest = 0;
@@ -807,6 +809,7 @@
       chooseInsightPlayers();chooseSeasonPlayer();
       if(current==='weapons'||current==='teammates')loadInsight(current);
       if(current==='season'){loadSeason();loadSeasonLeaderboard();}
+      if(window.CommandCentre?.render)window.CommandCentre.render(current,data);
       $('notice').hidden=true;
     } catch(error) {
       $('notice').textContent='Could not load saved statistics: '+error.message+'. The existing Discord bot is unaffected.';

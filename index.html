@@ -7,6 +7,8 @@
 <title>Console Clan Intelligence — PUBG Statistics</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand.svg">
 <link rel="stylesheet" href="/assets/site.css">
+<script defer src="/assets/clan-analytics.js"></script>
+<script defer src="/assets/command-centre.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -23,6 +25,10 @@
       <button class="nav-link" type="button" data-page="season"><span>🏆</span> Season & ranked</button>
       <button class="nav-link" type="button" data-page="teammates"><span>♟</span> Teammate insights</button>
       <button class="nav-link" type="button" data-page="compare"><span>⚔</span> Compare players</button>
+      <button class="nav-link" type="button" data-page="awards"><span>🥇</span> Clan awards</button>
+      <button class="nav-link" type="button" data-page="analysis"><span>◈</span> Deep analysis</button>
+      <button class="nav-link" type="button" data-page="data-tools"><span>⇩</span> Data tools</button>
+      <button class="nav-link" type="button" data-page="help"><span>?</span> Analytics guide</button>
       <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
     </nav>
     <div class="side-bottom"><b><span class="dot"></span> SUPABASE CACHE</b><p>One clan. One shared database. Xbox and PlayStation.</p><span class="chip">XBOX</span><span class="chip">PLAYSTATION</span></div>
@@ -191,7 +197,92 @@
           <option value="solo">Solo TPP</option><option value="duo">Duo TPP</option>
           <option value="squad">Squad TPP</option><option value="solo-fpp">Solo FPP</option>
           <option value="duo-fpp">Duo FPP</option><option value="squad-fpp">Squad FPP</option>
-        </select></label></div><div id="compare-output"></div></div></section>
+        </select></label></div><div id="compare-output"></div><div class="cc-radar" id="compare-radar" aria-live="polite"></div></div></section>
+
+    <section class="page" id="page-awards" hidden>
+      <div class="page-head"><p class="eyebrow">CLAN ACHIEVEMENTS</p>
+        <h1>Player <em>awards.</em></h1>
+        <p>Six evidence-based achievement categories adapted from your original command centre. These are unofficial awards calculated from saved, verified PUBG lifetime results.</p></div>
+      <div class="card panel"><h2>Real-data winners</h2>
+        <p id="cc-awards-note" class="small muted" aria-live="polite"></p>
+        <div class="cc-awards-grid" id="cc-awards-grid"></div>
+        <p class="small muted">Awards require a minimum number of matches. Unavailable advanced statistics are never guessed. A consistency award needs enough genuine multi-day observations and is not issued prematurely.</p>
+      </div>
+    </section>
+    <section class="page" id="page-analysis" hidden>
+      <div class="page-head"><p class="eyebrow">PERFORMANCE INTELLIGENCE</p>
+        <h1>Deep <em>analysis.</em></h1>
+        <p>Role classification, optional unofficial performance ratings, trusted data checks and real history comparisons. Adapted from the old command centre with no imported bot accusations.</p></div>
+      <div class="card panel">
+        <div class="panel-heading"><div><h2>What-if scoring policy</h2>
+          <p class="small muted">Adjust analysis without changing official PUBG statistics or stored clan data.</p></div><span class="chip">LOCAL SIMULATION</span></div>
+        <div class="filters cc-policy">
+          <label>Minimum matches <input id="cc-min-matches" type="range" min="10" max="150" step="10" value="30">
+            <output id="cc-min-output">30</output></label>
+          <label>Teamwork weighting <input id="cc-team-weight" type="range" min="0" max="250" step="25" value="100">
+            <output id="cc-weight-output">100%</output></label>
+        </div>
+        <p class="small muted">This model uses clan-relative percentiles for kills/match, damage/match, win rate, assists/match, revives/match and Top 10 rate. Sample-size bands are descriptive, not confidence intervals. Missing axes are omitted and weights renormalised.</p>
+      </div>
+      <div class="card panel"><div class="panel-heading"><h2>Player roles and performance ratings</h2></div>
+        <p id="cc-score-note" class="small muted"></p>
+        <div class="scroll-table"><table><thead><tr><th>#</th><th>PLAYER</th><th>MODELLED ROLE</th>
+          <th>UNOFFICIAL RATING</th><th>SAMPLE BAND</th><th>OBSERVED METRICS</th></tr></thead>
+          <tbody id="cc-scores"></tbody></table></div></div>
+      <div class="card panel"><div class="panel-heading"><h2>Genuine weekly performance changes</h2></div>
+        <p id="cc-progress-note" class="small muted" aria-live="polite"></p>
+        <p class="small muted">Only actual lifetime snapshots 6–14 days apart are compared. Delta K/match describes kills earned between observations divided by matches added, not an estimated week's individual matches.</p>
+        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>NEW KILLS</th><th>ADDED MATCHES</th>
+          <th>DELTA K/MATCH</th><th>STATUS</th><th>LATEST OBSERVATION</th></tr></thead>
+          <tbody id="cc-progress"></tbody></table></div></div>
+      <div class="card panel"><div class="panel-heading"><h2>Saved data-quality review</h2></div>
+        <p id="cc-quality-note" class="small muted"></p>
+        <p class="small muted" id="cc-data-integrity"></p>
+        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>CHECK</th></tr></thead>
+          <tbody id="cc-quality"></tbody></table></div></div>
+    </section>
+    <section class="page" id="page-data-tools" hidden>
+      <div class="page-head"><p class="eyebrow">SAFE EXPORTS AND IMPORTS</p>
+        <h1>Data <em>workbench.</em></h1>
+        <p>Export official stored PUBG values, or compare your historical CSVs locally without modifying Supabase or the official clan rankings.</p></div>
+      <div class="card panel"><h2>Official export</h2>
+        <button id="cc-export" type="button" class="primary">↓ Export verified clan CSV</button>
+        <p id="cc-export-note" class="small muted"></p></div>
+      <div class="card panel"><h2>Local historical snapshots</h2>
+        <p class="small muted">Files are processed only inside this browser session: no upload to the bot or Supabase. Maximum 200 rows and 256 KB per file. Required columns: name, matches, kills. Optional: wins, damage, assists, revives, top10, botPct. Duplicate names, malformed rows and invalid numbers block the preview.</p>
+        <div class="filters">
+          <label>Earlier CSV <input id="cc-before-file" type="file" accept=".csv,text/csv"></label>
+          <label>Later CSV <input id="cc-after-file" type="file" accept=".csv,text/csv"></label>
+        </div>
+        <p id="cc-before-status" class="small muted"></p>
+        <p id="cc-after-status" class="small muted"></p>
+        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>OBSERVED STATUS</th>
+          <th>KILLS ADDED</th><th>MATCHES ADDED</th><th>KILLS/ADDED MATCH</th>
+          <th>BOT EXPOSURE CHANGE (UNVERIFIED)</th></tr></thead>
+          <tbody id="cc-local-comparison"></tbody></table></div></div>
+      <div class="card panel"><h2>Imported source exposure versus performance</h2>
+        <p class="small muted">Only external source-provided exposure percentages are plotted. PUBG bot exposure is not inferred from the official player stats or used to label anybody as a bot farmer.</p>
+        <div class="cc-scatter" id="cc-scatter"></div>
+      </div>
+    </section>
+    <section class="page" id="page-help" hidden>
+      <div class="page-head"><p class="eyebrow">ANALYTICS METHODOLOGY</p><h1>How the <em>numbers work.</em></h1>
+        <p>A plain-language guide to the original command centre's ideas, adapted for confirmed official PUBG data.</p></div>
+      <div class="card panel cc-glossary">
+        <h2>Metric definitions</h2>
+        <dl>
+          <dt>Kills per match</dt><dd>Reported lifetime or mode kills divided by rounds played. Not PUBG K/D, because deaths can differ from matches.</dd>
+          <dt>Damage per match</dt><dd>Official saved damage dealt divided by saved rounds in the same scope.</dd>
+          <dt>Win and Top 10 rate</dt><dd>Reported wins or Top 10 finishes divided by rounds played. These depend on the game mode.</dd>
+          <dt>Roles</dt><dd>Exploratory Fragger, Support, Survivor or Hybrid classification relative to the current verified clan. Insufficient data is shown until enough real evidence exists.</dd>
+          <dt>Unofficial rating</dt><dd>A weighted 0–100 within-clan percentile model. Only sufficiently observed profiles are rated. This is not PUBG's official ranked rating or a statistical confidence interval.</dd>
+          <dt>Real historical change</dt><dd>Two actual observations dated 6–14 days apart. Counter resets and missing baseline dates do not become imagined improvements or declines.</dd>
+          <dt>Source-provided bot exposure</dt><dd>An unverified field in a local CSV file; not an official PUBG API measure here. It never changes the live player rating, clan roster or awards.</dd>
+          <dt>CSV imports</dt><dd>Local preview only. The official Supabase database is untouched. A future manager-only persistent import would need authenticated authorisation and a separate source label.</dd>
+          <dt>Sample size</dt><dd>Large, Medium and Limited labels describe observed match counts. They are not a confidence level or probability of accuracy.</dd>
+        </dl>
+      </div>
+    </section>
     <section class="page" id="page-roadmap" hidden><div class="page-head"><p class="eyebrow">THE DEVELOPMENT PLAN</p><h1>What's <em>next.</em></h1><p>Tracked in GitHub: no claiming features are done before their acceptance checks.</p></div><div class="roadmap-grid"><article class="card panel"><span class="mint">FOUNDATION</span><h3>First working web app</h3><p>Responsive website, saved-data API, roster, leaderboard, modes, comparisons.</p></article><article class="card panel"><span class="lavender">PHASE TWO</span><h3>Profiles and discovery</h3><p>Advanced statistics, real historical snapshots, shareable player profiles.</p></article><article class="card panel"><span class="lavender">PHASE THREE</span><h3>Match and weapon analysis</h3><p>Recent match records, squads, rivals, weapons, ranked histories. No replays.</p></article><article class="card panel"><span class="lavender">PHASE FOUR</span><h3>Protected refresh and release</h3><p>Admin web controls, Discord integration, browser regression and Xbox checks.</p></article></div><div class="card panel"><h3>Saved visual references & roadmap</h3><p>The original vector example pictures are versioned in GitHub.</p><div class="links"><a href="/design/overview-reference.svg" target="_blank" rel="noopener noreferrer">Overview reference ↗</a><a href="/design/leaderboard-reference.svg" target="_blank" rel="noopener noreferrer">Leaderboard reference ↗</a><a href="https://github.com/johnstacey16-ui/Pubg-clan-bot/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Full checklist ↗</a></div></div></section>
     <footer>CONSOLE//CLAN INTELLIGENCE <span>Xbox + PlayStation · Saved official PUBG data</span><span>Same Discord bot · Same Supabase database</span></footer>
   </main></div>

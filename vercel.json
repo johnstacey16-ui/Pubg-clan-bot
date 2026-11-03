@@ -48,6 +48,10 @@
       "dest": "api/public-season.js"
     },
     {
+      "src": "/api/public-progress",
+      "dest": "api/public-progress.js"
+    },
+    {
       "src": "/api/public-season-leaderboard",
       "dest": "api/public-season-leaderboard.js"
     },

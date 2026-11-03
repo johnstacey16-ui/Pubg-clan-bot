@@ -91,6 +91,13 @@
 - [x] Discord dashboard **View full dashboard** link
 - [ ] Configurable Discord clan membership management
 - [x] Audit legacy Supabase grants and secure `players`, `matches`, `clan_records` (RLS enabled; anonymous/authenticated access revoked; service-role preserved)
+- [x] Adapt legacy Command Centre awards, experimental roles, optional clan percentile ratings and What-if policy controls
+- [x] Add an SVG percentile comparison radar based on actual saved mode data
+- [x] Show real 6–14 day snapshot progress through a private Supabase RPC; flag counter resets and missing baselines
+- [x] Add local-only validated CSV historical comparison, official CSV export, labelled source-only bot scatter, data quality flags, and analytics glossary
+- [ ] Add genuine multi-observation consistency awards when enough historical samples exist
+- [ ] Add authenticated manager-only persistent CSV imports with auditable source provenance
+- [ ] Verify the new Command Centre views in production browsers, Android and Xbox
 - [ ] Accessibility and performance regression gate
 
 ### Phase 5 — Production hardening
