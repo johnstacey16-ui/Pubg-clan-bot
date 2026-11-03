@@ -76,7 +76,7 @@ This is the *first comprehensive command pack*, not yet every possible PUBG API 
 
 ## Phase 2 — Shareable verified player profiles and real history
 
-Verified official-clan players now have shareable hash links, such as
+Any saved Xbox/PlayStation player can have a shareable platform-aware hash link, such as
 `https://pubg-clan-bot.vercel.app/#player/DrBeryl762`.
 The site opens the profile on any browser without logging into Discord. The
 player profile shows available lifetime mode details, a copyable link and a
@@ -145,7 +145,7 @@ Leaderboards can rank by advanced metrics and player comparisons can select a sp
 
 ## Persistent PUBG match archive
 
-The private Supabase `clan_match_archive` table stores sanitised summaries for **verified official clan members only**, populated automatically when the existing bot caches a PUBG match response. It contains no raw PUBG JSON, account IDs or telemetry URLs. Three previously cached genuine match reports were backfilled without new PUBG requests.
+The private Supabase `clan_match_archive` table stores sanitised summaries for saved Xbox and PlayStation accounts, populated automatically when the existing bot caches a PUBG match response. It contains no raw PUBG JSON, account IDs or telemetry URLs. Three previously cached genuine match reports were backfilled without new PUBG requests.
 
 Retention is **180 days from the match date**. The existing secret-protected Vercel cron calls `prune_clan_match_archive` during its daily run. If a scheduled run fails, the next successful run resumes pruning. The archive uses RLS and service-role-only grants.
 
@@ -209,3 +209,5 @@ store summarised games for any saved player.
 not gamertag+platform. Searches for the same name on both consoles
 will return an explicit conflict rather than overwrite a different
 player; a compatible platform-identity migration is on the roadmap.
+
+**Scope clarification (2026-11-03):** A player's membership in the 55-name official clan is not required for individual profile, history, match, weapon or teammate reads. The only clan-only figures are the official clan overview, roster, mode totals and clan leaderboard. Lifetime PUBG refreshes can be requested through the website with the shared server-side budget.
