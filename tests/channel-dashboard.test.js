@@ -42,6 +42,9 @@ test('dashboard renders five reusable Supabase-powered cards with refresh button
   assert.match(rendered.overview.embeds[0].description,/200/);
   assert.match(rendered.leaderboard.embeds[0].description,/Official\\_One/);
   assert.match(rendered.roster.embeds[0].description,/1/);
+  assert.match(rendered.players1.embeds[0].description,/Official\\_One/);
+  assert.match(rendered.players1.embeds[0].description,/PendingTwo/);
+  assert.match(rendered.players1.embeds[0].description,/200 kills/);
 });
 test('dashboard command uses restricted slash-command subcommands', () => {
   const command=commands.find(c=>c.name==='dashboard');
