@@ -43,6 +43,17 @@
 - [x] Validate shareable profile links and real-history baseline/line-chart behaviour in a simulated browser
 - [ ] Handle ambiguous platform names and missing accounts in an admin-only workflow
 
+### Phase 2B — Public console player discovery and protected website refresh
+- [x] Search any saved Xbox or PlayStation gamertag from the website
+- [x] Web-based lifetime PUBG refresh using the existing shared Discord API budget
+- [x] Global and per-player website cooldowns through a private atomic Supabase RPC
+- [x] Individual profile, weapon, match and history views for saved players outside the clan
+- [x] Retain official clan-only totals and separately track searched outsiders
+- [x] Shareable platform-specific links for arbitrary saved players
+- [ ] Migrate legacy UNIQUE(gamertag) safely to support the same name on both consoles
+- [ ] Enable website mastery, seasons and recent match refreshes with independent quotas
+- [ ] End-to-end production browser, Android and Xbox validation
+
 ### Phase 3 — Match analysis (no replay features)
 - [x] Read-only cached PUBG match-intelligence API (official players only; no public upstream calls)
 - [x] Responsive Match Intelligence website tab with optional squad breakdown

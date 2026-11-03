@@ -181,3 +181,31 @@ does not imply that opponents are identified as rivals.
 ### Expanded saved-player access
 
 All saved Xbox and PlayStation accounts, including people outside the official clan, can use the individual history, match, weapon and teammate views. The 180-day match archive trigger now accepts every saved console player instead of checking clan membership. Official clan totals are deliberately calculated only from the 55-name roster. The private `web_refresh_guard` table and RPC are versioned in `supabase/migrations/` and never accessible to browser-side Supabase credentials.
+
+
+## Search any console player and refresh from PUBG
+
+The home page now searches **any Xbox or PlayStation PUBG account**:
+`GET /api/player-lookup?name=...&platform=xbox|psn` reads saved
+statistics and `POST /api/player-lookup` accepts
+`{"name":"gamertag","platform":"xbox"}` to refresh
+lifetime stats from PUBG. The POST is same-origin and server-side only.
+It never exposes the PUBG or Supabase service-role API keys.
+
+The service-role-only Supabase `reserve_web_refresh` RPC
+throttles public web refreshes globally (90 seconds) and per player (15
+minutes). The Discord bot, importer and website also share the existing
+atomic `reserve_pubg_requests` PUBG budget.
+The website uses cached stats if they were refreshed in the last 15
+minutes. Newly searched accounts are saved with
+`is_clan_member=false` by default.
+
+Website player profiles, weapon mastery, history, teammate and match
+views now accept all saved Xbox/PSN accounts. Official clan totals
+and rankings remain separate. The private match archive can also
+store summarised games for any saved player.
+
+**Legacy limitation:** the current database uniquely identifies gamertags,
+not gamertag+platform. Searches for the same name on both consoles
+will return an explicit conflict rather than overwrite a different
+player; a compatible platform-identity migration is on the roadmap.
