@@ -73,8 +73,16 @@ module.exports = async (req, res) => {
   const summary = { status: 'ok', checked: 0, matched: 0, ambiguous: 0, not_found: 0, errors: 0, refreshed: 0 };
   let statusCode = 200;
   try {
-    const pending = await checked(db.from('player_import_queue')
+    let pending = await checked(db.from('player_import_queue')
       .select('id,gamertag').eq('status', 'pending').order('id').limit(MAX_BATCH), 'Import queue');
+    if (!pending?.length) {
+      // Retry temporary failures only after a full day. Avoid continually retrying
+      // the same failed account inside one invocation or starving new players.
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      pending = await checked(db.from('player_import_queue')
+        .select('id,gamertag').eq('status', 'error')
+        .lt('checked_at', cutoff).order('checked_at').limit(MAX_BATCH), 'Failed import retries');
+    }
     if (!pending?.length) {
       // Once the initial import finishes, refresh the oldest verified accounts daily.
       const old = await checked(db.from('players')
@@ -164,7 +172,7 @@ module.exports = async (req, res) => {
   } catch (error) {
     console.error('PUBG sync error:', error.message);
     summary.status = 'error';
-    summary.message = error.message;
+    summary.message = String(error.message).slice(0, 250);
     statusCode = 502;
   } finally {
     try {
