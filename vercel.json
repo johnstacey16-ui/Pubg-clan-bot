@@ -4,6 +4,18 @@
     {
       "src": "api/**/*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "design/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -18,6 +30,26 @@
     {
       "src": "/api/health",
       "dest": "api/health.js"
+    },
+    {
+      "src": "/api/public-stats",
+      "dest": "api/public-stats.js"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/design/(.*)",
+      "dest": "/design/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/index.html"
     }
   ],
   "crons": [

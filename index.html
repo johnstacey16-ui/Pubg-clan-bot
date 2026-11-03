@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#091021">
+<meta name="description" content="PUBG Console Clan Intelligence: lifetime kills, wins, roster, game modes, and player comparisons.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
+<title>Console Clan Intelligence — PUBG Statistics</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand.svg">
+<link rel="stylesheet" href="/assets/site.css">
+<script defer src="/assets/site.js"></script></head><body>
+<a class="skip" href="#content">Skip to content</a>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="/"><img src="/assets/brand.svg" alt="" width="44" height="44"><span><b>CONSOLE<span class="mint">//</span>CLAN</b><small>PLAYER INTELLIGENCE</small></span></a>
+    <p class="nav-label">COMMAND CENTRE</p>
+    <nav aria-label="Main navigation">
+      <button class="nav-link active" type="button" data-page="overview"><span>◫</span> Overview</button>
+      <button class="nav-link" type="button" data-page="leaderboard"><span>🏆</span> Leaderboards</button>
+      <button class="nav-link" type="button" data-page="players"><span>♙</span> Player roster</button>
+      <button class="nav-link" type="button" data-page="modes"><span>▥</span> Game modes</button>
+      <button class="nav-link" type="button" data-page="compare"><span>⚔</span> Compare players</button>
+      <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
+    </nav>
+    <div class="side-bottom"><b><span class="dot"></span> SUPABASE CACHE</b><p>One clan. One shared database. Xbox and PlayStation.</p><span class="chip">XBOX</span><span class="chip">PLAYSTATION</span></div>
+  </aside>
+  <div class="main-area"><header class="topbar"><div>PLATFORM <span class="muted">/</span> <b id="crumb">Overview</b></div><div class="top-actions"><span class="live"><span class="dot"></span> VERIFIED DATA</span><button type="button" class="secondary" id="reload">↻ Reload saved stats</button></div></header>
+  <main id="content">
+    <p id="notice" role="status" aria-live="polite" class="notice">Loading saved PUBG statistics…</p>
+    <section class="page" id="page-overview">
+      <div class="hero"><div><p class="eyebrow">◢ YOUR CLAN. EVERY NUMBER.</p><h1>Clan <em>intelligence.</em></h1><p>Every confirmed console player, game mode and lifetime achievement — in one command centre.</p><div class="hero-actions"><button type="button" class="primary" data-go="leaderboard">Explore rankings ↗</button><button type="button" class="secondary" data-go="players">Browse roster →</button></div></div><div class="hero-mark" aria-hidden="true"><div class="ring"></div><b>C<span>//</span>C</b><small>DATA · INSIGHT · PERFORMANCE</small></div></div>
+      <div class="section-heading"><div><p class="eyebrow subtle">AT A GLANCE</p><h2>Lifetime performance</h2></div><span class="muted small" id="snapshot">Waiting for saved data</span></div>
+      <div class="stats">
+        <article class="card metric"><div class="metric-title">TOTAL KILLS <span class="mint">⌖</span></div><strong id="kills">—</strong><small>Verified player lifetime kills</small></article>
+        <article class="card metric"><div class="metric-title">TOTAL WINS <span class="lavender">★</span></div><strong id="wins">—</strong><small>Lifetime victories</small></article>
+        <article class="card metric"><div class="metric-title">PLAYER MATCHES <span class="sky">▥</span></div><strong id="matches">—</strong><small>Summed player records</small></article>
+        <article class="card metric"><div class="metric-title">ROSTER VERIFIED <span class="gold">♙</span></div><strong id="verified">—</strong><small id="verified-caption">Official clan members</small></article>
+      </div>
+      <div class="two-columns">
+        <article class="card panel"><div class="panel-heading"><div><p class="eyebrow subtle">PERFORMANCE SPLIT</p><h3>Kills by game mode</h3></div><button type="button" class="text-button" data-go="modes">Full breakdown ↗</button></div><div id="overview-chart" class="bars" aria-label="Kills by game mode"></div><p class="small muted">Real lifetime totals from saved PUBG game mode data.</p></article>
+        <article class="card panel"><div class="panel-heading"><div><p class="eyebrow subtle">CLAN ELITE</p><h3>Top performers</h3></div><button type="button" class="text-button" data-go="leaderboard">See all ↗</button></div><div id="top-five"></div></article>
+      </div>
+      <div class="two-columns balanced">
+        <article class="card panel"><div class="panel-heading"><h3>Roster verification</h3></div><div class="progress-meta"><strong id="roster-percent">—</strong><span id="roster-fraction">—</span></div><div class="progress"><div id="roster-progress"></div></div><p id="roster-status" class="small muted">Waiting for import status</p></article>
+        <article class="card panel"><div class="panel-heading"><h3>Console split</h3></div><div class="platform-totals"><span class="round xbox">X</span><div>Xbox <strong id="xbox-count">—</strong></div><span class="round ps">PS</span><div>PlayStation <strong id="ps-count">—</strong></div></div><p class="small muted">Only official, verified clan members are counted.</p></article>
+      </div>
+    </section>
+    <section class="page" id="page-leaderboard" hidden><div class="page-head"><p class="eyebrow">THE COMPETITIVE EDGE</p><h1>Clan <em>leaderboards.</em></h1><p>Sort actual saved statistics; change platforms instantly.</p></div><div class="card panel"><div class="filters"><label>Rank by <select id="sort"><option value="kills">Lifetime kills</option><option value="wins">Lifetime wins</option><option value="matches">Matches played</option><option value="kd">Kills per match</option><option value="winRate">Win rate</option></select></label><label>Platform <select id="leader-console"><option value="all">Both consoles</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label></div><div class="scroll-table"><table><thead><tr><th>#</th><th>PLAYER</th><th>KILLS</th><th>WINS</th><th>MATCHES</th><th>KILLS/MATCH</th><th>WIN RATE</th></tr></thead><tbody id="ranking-table"></tbody></table></div></div></section>
+    <section class="page" id="page-players" hidden><div class="page-head"><p class="eyebrow">THE FULL ROSTER</p><h1>Every <em>clan member.</em></h1><p>See verified accounts alongside names still being imported.</p></div><div class="card panel"><div class="filters"><label>Player search <input id="search" type="search" placeholder="Search gamer tags…" autocomplete="off"></label><label>Console <select id="player-console"><option value="all">Both consoles</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option><option value="unknown">Unconfirmed</option></select></label><label>Import status <select id="player-status"><option value="all">All players</option><option value="verified">Verified</option><option value="pending">Pending</option><option value="ambiguous">Ambiguous</option><option value="not_found">Not found</option></select></label></div><div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>PLATFORM</th><th>STATUS</th><th>KILLS</th><th>WINS</th><th>MATCHES</th></tr></thead><tbody id="roster-table"></tbody></table></div><p id="roster-count" class="small muted"></p></div></section>
+    <section class="page" id="page-modes" hidden><div class="page-head"><p class="eyebrow">PLAYSTYLE BREAKDOWN</p><h1>Every <em>game mode.</em></h1><p>Solo, Duo, Squad and FPP: all actual saved PUBG lifetime numbers.</p></div><div class="card panel"><h3>Clan kills by mode</h3><div id="modes-chart" class="bars"></div><div class="scroll-table"><table><thead><tr><th>MODE</th><th>MATCHES</th><th>KILLS</th><th>WINS</th><th>KILLS/MATCH</th><th>DAMAGE</th><th>ASSISTS</th></tr></thead><tbody id="modes-table"></tbody></table></div></div></section>
+    <section class="page" id="page-compare" hidden><div class="page-head"><p class="eyebrow">HEAD TO HEAD</p><h1>Player <em>comparison.</em></h1><p>Two players, one side-by-side view of real verified lifetime statistics.</p></div><div class="card panel"><div class="compare-controls"><label>PLAYER ONE <select id="compare-one"></select></label><b>VS</b><label>PLAYER TWO <select id="compare-two"></select></label></div><div id="compare-output"></div></div></section>
+    <section class="page" id="page-roadmap" hidden><div class="page-head"><p class="eyebrow">THE DEVELOPMENT PLAN</p><h1>What's <em>next.</em></h1><p>Tracked in GitHub: no claiming features are done before their acceptance checks.</p></div><div class="roadmap-grid"><article class="card panel"><span class="mint">FOUNDATION</span><h3>First working web app</h3><p>Responsive website, saved-data API, roster, leaderboard, modes, comparisons.</p></article><article class="card panel"><span class="lavender">PHASE TWO</span><h3>Profiles and discovery</h3><p>Advanced statistics, real historical snapshots, shareable player profiles.</p></article><article class="card panel"><span class="lavender">PHASE THREE</span><h3>Match and weapon analysis</h3><p>Recent match records, squads, rivals, weapons, ranked histories. No replays.</p></article><article class="card panel"><span class="lavender">PHASE FOUR</span><h3>Protected refresh and release</h3><p>Admin web controls, Discord integration, browser regression and Xbox checks.</p></article></div><div class="card panel"><h3>Saved visual references & roadmap</h3><p>The original vector example pictures are versioned in GitHub.</p><div class="links"><a href="/design/overview-reference.svg" target="_blank" rel="noopener noreferrer">Overview reference ↗</a><a href="/design/leaderboard-reference.svg" target="_blank" rel="noopener noreferrer">Leaderboard reference ↗</a><a href="https://github.com/johnstacey16-ui/Pubg-clan-bot/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Full checklist ↗</a></div></div></section>
+    <footer>CONSOLE//CLAN INTELLIGENCE <span>Xbox + PlayStation · Saved official PUBG data</span><span>Same Discord bot · Same Supabase database</span></footer>
+  </main></div>
+</div>
+<dialog id="profile"><div class="profile-heading"><div><p class="eyebrow">PLAYER PROFILE</p><h2 id="profile-name"></h2><span id="profile-console" class="muted"></span></div><button type="button" id="profile-close" class="secondary" aria-label="Close player profile">✕</button></div><div id="profile-body"></div></dialog>
+</body></html>

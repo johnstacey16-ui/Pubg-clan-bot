@@ -2,6 +2,28 @@
 
 A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional **Groq** AI commentary. It supports **Xbox and PlayStation only** (no PC). Match/season/mastery features are subject to actual PUBG API availability.
 
+## Web dashboard (initial build)
+
+The website and Discord bot now share **this repository, Vercel project, and Supabase**.
+
+- Website: https://pubg-clan-bot.vercel.app/
+- Read-only web API: `GET /api/public-stats`
+- Existing Discord webhook: `POST /interactions` (unchanged)
+- Existing scheduled sync: `GET /api/sync` (unchanged)
+- Existing status route: `GET /api/health` (unchanged)
+
+The initial website includes a mobile-friendly dark overview, official-clan lifetime leaderboards, searchable roster, per-mode charts, verified player details, side-by-side comparisons, and a roadmap page. It **does not** offer unprotected public PUBG refreshes; the web reload button only re-reads saved Supabase data. Actual PUBG updates go through the existing protected Discord buttons, cron and rate-limited backend.
+
+This deployment uses Vercel's existing `builds` configuration plus explicit `@vercel/static` entries for `index.html`, `assets/**` and `design/**`. Preserve those static builds when modifying `vercel.json`. Secret environment variables are never supplied to browser code.
+
+- [Project roadmap with status checkboxes](./ROADMAP.md)
+- [Original overview picture](./design/overview-reference.svg)
+- [Original leaderboard picture](./design/leaderboard-reference.svg)
+
+The two SVGs are original editable design references. Their illustrated numbers are **not actual PUBG results**; the website itself requests verified data from Supabase.
+
+### Commands
+
 ## Commands (16)
 
 | Discord command | What it does |
