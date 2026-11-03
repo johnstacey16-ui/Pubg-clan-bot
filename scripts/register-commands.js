@@ -1,8 +1,9 @@
 'use strict';
 // Run locally: DISCORD_BOT_TOKEN=... DISCORD_CLIENT_ID=... DISCORD_GUILD_ID=... node scripts/register-commands.js
-const { DISCORD_BOT_TOKEN, DISCORD_CLIENT_ID, DISCORD_GUILD_ID } = process.env;
+const { DISCORD_BOT_TOKEN, DISCORD_CLIENT_ID } = process.env;
+const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID || '1411949587299569788';
 if (!DISCORD_BOT_TOKEN || !DISCORD_CLIENT_ID || !DISCORD_GUILD_ID) {
-  console.error('Set DISCORD_BOT_TOKEN, DISCORD_CLIENT_ID, and DISCORD_GUILD_ID in your local environment.');
+  console.error('Set DISCORD_BOT_TOKEN and DISCORD_CLIENT_ID in your local environment.');
   process.exit(1);
 }
 const url = 'https://discord.com/api/v10/applications/' + encodeURIComponent(DISCORD_CLIENT_ID) +
