@@ -79,10 +79,22 @@ async function handleCommand(body) {
       }
       return response('No verified Xbox or PlayStation stats for that gamertag yet.', true);
     }
-    const { data: matches, error: matchError } = await db.from('matches')
-      .select('match_id,kills,win,match_date')
-      .eq('player_id', player.id).order('match_date', { ascending: false }).limit(5);
-    if (matchError) throw matchError;
+    const [matchResult, modesResult] = await Promise.all([
+      db.from('matches').select('match_id,kills,win,match_date')
+        .eq('player_id', player.id).order('match_date', { ascending: false }).limit(5),
+      db.from('player_lifetime_details').select('game_mode_stats')
+        .eq('player_id', player.id).maybeSingle()
+    ]);
+    if (matchResult.error) throw matchResult.error;
+    if (modesResult.error) throw modesResult.error;
+    const matches = matchResult.data;
+    const modes = Object.entries(modesResult.data?.game_mode_stats || {})
+      .filter(([key, stats]) => ['solo', 'duo', 'squad', 'solo-fpp', 'duo-fpp', 'squad-fpp'].includes(key)
+        && stats && Number(stats.roundsPlayed) > 0)
+      .sort((a, b) => Number(b[1].roundsPlayed) - Number(a[1].roundsPlayed));
+    const topModeLines = modes.slice(0, 3).map(([mode, stats]) =>
+      '• ' + mode.toUpperCase() + ': ' + (stats.roundsPlayed || 0) +
+      ' played · ' + (stats.kills || 0) + ' kills · ' + (stats.wins || 0) + ' wins');
     const games = Number(player.matches_played) || 0;
     const kills = Number(player.total_kills) || 0;
     const lastSync = player.last_checked ? new Date(player.last_checked).toISOString().slice(0, 10) : 'Not yet synced';
@@ -92,6 +104,7 @@ async function handleCommand(body) {
       'Kills: **' + kills + '** · Wins: **' + (player.total_wins || 0) + '** · Matches: **' + games + '**',
       'Kills per match: **' + (games ? (kills / games).toFixed(2) : 'N/A') + '**',
       'Recent matches saved: **' + (matches?.length || 0) + '** · Last sync: ' + lastSync,
+      ...(topModeLines.length ? ['**Top played game modes**', ...topModeLines] : []),
       '_These are saved statistics, not a live PUBG API lookup._'
     ].join('\n'));
   }
