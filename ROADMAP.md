@@ -36,7 +36,7 @@
 - [ ] Expand weapon-mastery coverage across clan players and additional advanced charts
 - [x] Shareable console player links (`/#player/xbox/<name>` or `/#player/psn/<name>`) and per-player detail panels
 - [x] Real daily snapshots from all PUBG player updates, including baseline captured at the real last-fetch timestamp
-- [x] Read-only private-table-backed history API, with no player IDs or tracked outsiders exposed
+- [x] Read-only private-table-backed history API for saved console players, without revealing database IDs
 - [x] Historical SVG charts that appear **only after two or more real snapshots**
 - [ ] Full roster pagination, advanced filters and saved player favourites
 - [ ] Verify a second genuine snapshot and resulting public chart after an actual PUBG refresh
@@ -60,11 +60,16 @@
 - [x] Bound recent match detail refresh to five match IDs; use PUBG's non-rate-limited console matches endpoint
 - [x] Explicit season-list revalidation so stale 30-day season indexes do not hide new seasons
 - [x] Current Season & Ranked page using sanitised cached statistics and honest empty states
-- [ ] Add historical season archive and longitudinal ranked progression charts
+- [x] Store observed PUBG season/ranked stats per mode in a compact private hourly archive (18-month retention)
+- [x] Capture new observations automatically whenever Discord or the website caches a genuine season or ranked response
+- [x] Backfill one real cached ranked response at its original fetch timestamp (six mode records; **not six dates**)
+- [x] Show only real observed season kills / ranked points on the Season & Ranked page, with no line until two observations exist
+- [x] Preserve older season IDs when the current PUBG season changes
+- [ ] Verify progression charts with two different genuine refresh timestamps from PUBG production
 - [ ] End-to-end production browser, Android and Xbox validation
 
 ### Phase 3 — Match analysis (no replay features)
-- [x] Read-only cached PUBG match-intelligence API (official players only; no public upstream calls)
+- [x] Read-only cached PUBG match-intelligence API for saved console players (no public upstream calls)
 - [x] Responsive Match Intelligence website tab with optional squad breakdown
 - [x] Verify match-cache shape in Supabase; use existing Discord /recent to populate
 - [x] Persistent match archive for all saved Xbox/PS players, 180-day retention, daily pruning through protected cron
@@ -75,7 +80,8 @@
 - [x] Recurring teammate analysis from real archived squads (games, wins, kills, damage and last played)
 - [ ] Opponent and rival analysis after safe source fields are available
 - [x] Weapon mastery views documenting StatsTotal, OfficialStatsTotal, CompetitiveStatsTotal, LevelCurrent, TierCurrent and XPTotal (separate categories)
-- [ ] Season and ranked histories and per-mode leaderboard measures
+- [x] Real historical season/ranked snapshots and per-mode progression charts
+- [ ] Historical season and ranked leaderboards across players
 
 ### Phase 4 — Secure updates and Discord integration
 - [ ] Authenticated manager-only website refresh using existing budget and database lock

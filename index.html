@@ -117,6 +117,26 @@
         </div>
         <p id="season-note" class="small muted" aria-live="polite">Choose a saved player to inspect season statistics.</p>
         <div id="season-results" class="season-results" aria-live="polite"></div>
+        <section class="season-history" aria-labelledby="season-history-title">
+          <div class="panel-heading"><div>
+            <p class="eyebrow subtle">GENUINE PUBG OBSERVATIONS</p>
+            <h2 id="season-history-title">Season progression</h2>
+          </div><span class="chip">18-MONTH RETENTION</span></div>
+          <p class="small muted">History starts with the first real saved PUBG response. No estimated past seasons, wins or rank points.</p>
+          <div class="filters">
+            <label>Saved season <select id="season-history-season" aria-label="Choose a season to chart"></select></label>
+            <label>Game mode <select id="season-history-mode" aria-label="Choose a game mode to chart">
+              <option value="squad">SQUAD</option><option value="squad-fpp">SQUAD FPP</option>
+              <option value="duo">DUO</option><option value="duo-fpp">DUO FPP</option>
+              <option value="solo">SOLO</option><option value="solo-fpp">SOLO FPP</option>
+            </select></label>
+          </div>
+          <p id="season-history-note" class="small muted" aria-live="polite">
+            Choose a saved player to see real progression observations.</p>
+          <div id="season-history-chart" class="season-chart" role="img"
+            aria-label="Season progression chart based on real PUBG refreshes"></div>
+          <div id="season-history-summary" class="season-history-summary"></div>
+        </section>
       </div>
     </section>
     <section class="page" id="page-teammates" hidden>

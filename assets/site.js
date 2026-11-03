@@ -9,6 +9,7 @@
   var matchRequest = 0;
   var seasonName=null;
   var seasonRequest=0;
+  var seasonHistory=null;
   var insightNames={weapons:null,teammates:null};
   var insightRequests={weapons:0,teammates:0};
   var insightCache={weapons:null,teammates:null};
@@ -382,12 +383,90 @@
   function seasonNumber(value) {
     return value===undefined||value===null?'—':fmt(value);
   }
+
+  function renderSeasonHistory() {
+    var source=seasonHistory;
+    var seasons=source?.archivedSeasons||[];
+    var select=$('season-history-season');
+    var previous=select.value;
+    select.innerHTML=seasons.map(function(id){
+      return '<option value="'+escapeHtml(id)+'">'+escapeHtml(id)+'</option>';
+    }).join('');
+    var selected=seasons.includes(previous)?previous:
+      (seasons.includes(source?.seasonId)?source.seasonId:seasons[0]);
+    select.value=selected||'';
+    select.disabled=!seasons.length;
+    var mode=$('season-history-mode').value||'squad';
+    var kind=source?.type;
+    var key=kind==='ranked'?'rankPoints':'kills';
+    var label=kind==='ranked'?'Rank points':'Season kills';
+    var history=(Array.isArray(source?.history)?source.history:[])
+      .filter(function(p){
+        return p.seasonId===selected&&p.mode===mode&&
+          p[key]!==null&&p[key]!==undefined&&Number.isFinite(Number(p[key]))&&
+          Number.isFinite(Date.parse(p.capturedAt));
+      }).slice().sort(function(a,b){return Date.parse(a.capturedAt)-Date.parse(b.capturedAt);});
+    var note=$('season-history-note'),plot=$('season-history-chart');
+    var summary=$('season-history-summary');
+    summary.innerHTML='';
+    if(!history.length) {
+      note.textContent='No genuine '+label.toLowerCase()+' observations have been saved for this season and mode.';
+      plot.innerHTML='<p class="match-empty">Use Refresh from PUBG to begin collecting real progression snapshots.</p>';
+      return;
+    }
+    var first=history[0],last=history[history.length-1],count=history.length;
+    note.textContent=count+' real observation'+(count===1?'':'s')+' for '+modeName(mode)+
+      ' · '+label+' · '+dateText(first.capturedAt)+' to '+dateText(last.capturedAt);
+    summary.innerHTML='<div class="history-number"><strong>'+seasonNumber(last[key])+
+      '</strong><small>Latest '+escapeHtml(label)+'</small></div>'+
+      '<div class="history-number"><strong>'+fmt(count)+
+      '</strong><small>Actual observations</small></div>'+
+      (count>1?'<div class="history-number"><strong>'+
+        (last[key]-first[key]>=0?'+':'')+fmt(last[key]-first[key])+
+        '</strong><small>Change since first observation</small></div>':'');
+    if(count<2) {
+      plot.innerHTML='<p class="match-empty">Only one real PUBG observation exists for this mode and season. A historical trend needs a second actual refresh.</p>';
+      return;
+    }
+    var values=history.map(function(p){return Number(p[key]);});
+    var min=Math.min.apply(null,values),max=Math.max.apply(null,values);
+    var range=max-min||1;
+    var t0=Date.parse(first.capturedAt),t1=Date.parse(last.capturedAt);
+    var timeRange=t1-t0;
+    var coords=history.map(function(p,i){
+      var elapsed=Date.parse(p.capturedAt)-t0;
+      var x=50+620*(timeRange>0?elapsed/timeRange:i/(count-1));
+      var y=192-145*(Number(p[key])-min)/range;
+      return{x:x,y:y};
+    });
+    var path=coords.map(function(p){return p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
+    var dots=coords.map(function(p){
+      return '<circle class="trend-dot" cx="'+p.x.toFixed(1)+
+        '" cy="'+p.y.toFixed(1)+'" r="4"/>';
+    }).join('');
+    plot.innerHTML='<svg viewBox="0 0 720 246" role="img" aria-label="'+
+      escapeHtml(label)+' from '+escapeHtml(dateText(first.capturedAt))+
+      ' to '+escapeHtml(dateText(last.capturedAt))+'">'+
+      '<line class="trend-grid" x1="50" y1="47" x2="670" y2="47"/>'+
+      '<line class="trend-grid" x1="50" y1="192" x2="670" y2="192"/>'+
+      '<text class="trend-label" x="8" y="51">'+escapeHtml(fmt(max))+'</text>'+
+      '<text class="trend-label" x="8" y="196">'+escapeHtml(fmt(min))+'</text>'+
+      '<polyline class="trend-line" points="'+path+'"/>'+dots+
+      '<text class="trend-label" x="50" y="223">'+escapeHtml(dateText(first.capturedAt))+'</text>'+
+      '<text class="trend-label" x="670" y="223" text-anchor="end">'+
+      escapeHtml(dateText(last.capturedAt))+'</text></svg>';
+  }
+
   async function loadSeason() {
     var name=seasonName;
     if(!name)return;
     var type=$('season-type').value,request=++seasonRequest;
     $('season-note').textContent='Reading saved '+type+' data for '+name+'…';
     $('season-results').innerHTML='';
+    seasonHistory=null;
+    $('season-history-chart').innerHTML='';
+    $('season-history-summary').innerHTML='';
+    $('season-history-note').textContent='Reading stored PUBG season observations…';
     try{
       var result=await fetch('/api/public-season?name='+encodeURIComponent(name)+
         '&type='+encodeURIComponent(type),{cache:'no-store',headers:{Accept:'application/json'}});
@@ -397,6 +476,8 @@
       $('season-note').textContent=(payload.note||'Saved PUBG season data')+
         (payload.seasonId?' · '+payload.seasonId:'')+
         (payload.savedAt?' · Saved '+dateText(payload.savedAt):'');
+      seasonHistory=payload;
+      renderSeasonHistory();
       var modes=Array.isArray(payload.modes)?payload.modes:[];
       if(!modes.length){
         $('season-results').innerHTML='<p class="match-empty">No current '+type+
@@ -423,7 +504,9 @@
     }catch(error){
       if(request!==seasonRequest)return;
       $('season-note').textContent='Saved season statistics are temporarily unavailable.';
+      $('season-history-note').textContent='Saved season history temporarily unavailable.';
       $('season-results').innerHTML='';
+      $('season-history-chart').innerHTML='';
     }
   }
   async function refreshFromPubg(scope,name,statusId) {
@@ -665,6 +748,8 @@
   $('season-player').addEventListener('change',function(e){seasonName=e.target.value;loadSeason();});
   $('season-type').addEventListener('change',loadSeason);
   $('season-reload').addEventListener('click',loadSeason);
+  $('season-history-season').addEventListener('change',renderSeasonHistory);
+  $('season-history-mode').addEventListener('change',renderSeasonHistory);
   $('season-refresh').addEventListener('click',function(){
     refreshFromPubg($('season-type').value,seasonName,'season-note');
   });

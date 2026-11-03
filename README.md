@@ -257,3 +257,33 @@ from PUBG** buttons are explicit, rate limited, and preserve stored data if
 PUBG returns a temporary error. This is the current season viewer, not a
 fabricated historical season graph; longitudinal season history remains
 future work.
+
+
+## Real season and ranked progression (2026-11-03)
+
+The private Supabase `player_season_snapshots` table stores one
+**genuine PUBG observation per player, season, mode, type and hour**.
+Entries retain only observed match counts, kills, wins, damage, rank
+points, the current tier/subtier and the original `fetched_at`
+timestamp. No raw PUBG response, account ID, telemetry or credentials
+are copied into this historical table. The `archive_pubg_season_cache`
+database trigger captures future updates from **both Discord and the
+website** without extra upstream PUBG calls. The first migration backfilled
+six mode-level rows from one genuine previously cached ranked response;
+it did **not** invent historical data for other days or seasons.
+
+Data is retained for **18 months**, with hourly deduplication and the
+existing secret-protected daily sync calling
+`prune_player_season_snapshots`. RLS blocks anonymous and
+authenticated database access; only the server-side service role reads it.
+The public `GET /api/public-season` returns at most 240
+sanitised season/mode observations for an individual saved player and
+statistic type, alongside current season stats and a list of archived season
+IDs. All private player IDs and PUBG account identifiers are excluded.
+
+On the Season & Ranked page, visitors can select an archived season and
+a game mode to inspect **real kills or ranked RP progression**. A single
+observation shows an honest baseline and an explanation; only two or more
+actual captured observations produce a line chart. Historic seasons remain
+available in the compact archive even after the current-season cache
+changes. No estimates or synthetic pre-refresh history are drawn.

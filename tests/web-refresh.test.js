@@ -2,7 +2,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {refreshScopedData,validRefresh}=require('../lib/web-refresh');
-const {savedSeason,shapeRanked,shapeSeasonPayload}=require('../lib/web-season');
+const {savedSeason,shapeRanked,shapeSeasonPayload,safeHistory}=require('../lib/web-season');
 const MATCHES=[
   '00336e4b-d659-4497-bfc4-9f6dd705cc71',
   '01336e4b-d659-4497-bfc4-9f6dd705cc71',
@@ -15,15 +15,16 @@ const ACCOUNT='account.TESTPLAYER0123456';
 function db(opts={}) {
  const calls=[];
  const source={
-   players: [{gamertag:'OtherPlayer',platform:'psn',pubg_account_id:ACCOUNT}],
-   pubg_endpoint_cache: []
+   players: [{id:12,gamertag:'OtherPlayer',platform:'psn',pubg_account_id:ACCOUNT}],
+   pubg_endpoint_cache: [],
+   player_season_snapshots: opts.history||[]
  };
  const database={
   calls,
   from(table){
    calls.push({table});
    const q={
-    select(){return this},eq(k,v){this.k=v;return this},ilike(){return this},
+    select(){return this},eq(k,v){this.k=v;return this},ilike(){return this},order(){return this},
     async limit(){return{data:source[table]||[],error:null}},
     async maybeSingle(){
       if(table!=='pubg_endpoint_cache')return{data:null,error:null};
@@ -185,4 +186,54 @@ test('one unavailable match detail does not erase other saved details',async()=>
  assert.equal(r.status,200);
  assert.equal(r.body.indexedMatches,2);
  assert.equal(r.body.savedDetails,1);
+});
+
+test('saved ranked history is allowlisted and preserves separate genuine observations',async()=>{
+ const history=[
+  {season_id:'division.bro.official.console-43',kind:'ranked',mode:'squad',
+   captured_at:'2026-11-03T17:00:00Z',matches:46,kills:124,wins:3,
+   damage:21700,rank_points:2450,tier:'Platinum',sub_tier:'2',
+   pubg_account_id:'account.PRIVATE',private_field:'secret'},
+  {season_id:'division.bro.official.console-43',kind:'ranked',mode:'squad',
+   captured_at:'2026-11-03T13:00:00Z',matches:45,kills:120,wins:3,
+   damage:21300,rank_points:2319,tier:'Platinum',sub_tier:'2'},
+  {season_id:'division.bro.official.console-42',kind:'ranked',mode:'squad',
+   captured_at:'2026-10-03T17:00:00Z',matches:100,kills:260,wins:10,
+   damage:53000,rank_points:2700,tier:'Diamond',sub_tier:'4'}
+ ];
+ const r=await savedSeason(db({history}),{name:'OtherPlayer',type:'ranked'});
+ assert.equal(r.status,200);
+ assert.equal(r.body.historyCount,3);
+ assert.deepEqual(r.body.archivedSeasons,[
+  'division.bro.official.console-43','division.bro.official.console-42'
+ ]);
+ assert.equal(r.body.history[0].rankPoints,2450);
+ assert.equal(r.body.history[1].rankPoints,2319);
+ assert.equal(r.body.history[2].seasonId,'division.bro.official.console-42');
+ assert.doesNotMatch(JSON.stringify(r.body),/account\.PRIVATE|pubg_account_id|private_field|secret/);
+});
+test('history stays available even if active current-season index is missing',async()=>{
+ const h=[{season_id:'division.bro.official.console-42',kind:'season',mode:'duo',
+   captured_at:'2026-10-30T12:00:00Z',matches:8,kills:19,wins:2,damage:3500}];
+ const r=await savedSeason(db({noCache:true,history:h}),{name:'OtherPlayer',type:'season'});
+ assert.equal(r.status,200);
+ assert.equal(r.body.count,0);
+ assert.equal(r.body.historyCount,1);
+ assert.equal(r.body.archivedSeasons[0],'division.bro.official.console-42');
+});
+test('history allowlist refuses invented timestamps, modes, and hidden identifiers',()=>{
+ assert.equal(safeHistory({season_id:'bad/../../other',kind:'ranked',
+   mode:'squad',captured_at:'2026-11-03T12:00:00Z'}),null);
+ assert.equal(safeHistory({season_id:'division.bro.official.console-43',
+   kind:'ranked',mode:'custom',captured_at:'2026-11-03T12:00:00Z'}),null);
+ assert.equal(safeHistory({season_id:'division.bro.official.console-43',
+   kind:'ranked',mode:'squad',captured_at:'NOT_A_DATE'}),null);
+ const r=safeHistory({season_id:'division.bro.official.console-43',
+   kind:'ranked',mode:'squad',captured_at:'2026-11-03T12:00:00Z',
+   matches:0,kills:0,rank_points:100,tier:'Gold',sub_tier:'3',
+   pubg_account_id:'account.PRIVATE',telemetry:'https://private.test'});
+ assert.equal(r.kills,0);
+ assert.equal(r.rankPoints,100);
+ assert.equal(r.damage,null);
+ assert.doesNotMatch(JSON.stringify(r),/account\.PRIVATE|telemetry|private\.test/);
 });

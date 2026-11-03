@@ -81,3 +81,18 @@
 .season-mode-stats div{background:#172840;border-radius:8px;padding:9px;min-width:0}
 .season-mode-stats small{display:block;color:#9db5cc;font-size:10px}
 .season-mode-stats strong{font-size:17px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+
+/* Archived season/ranked trend: genuine observed snapshots, not interpolation. */
+.season-history{margin-top:28px;padding-top:20px;border-top:1px solid #304661}
+.season-history .panel-heading{gap:10px;flex-wrap:wrap}
+.season-history .filters{margin:18px 0}
+.season-chart{min-height:95px;max-width:900px}
+.season-chart svg{width:100%;height:auto;display:block}
+.season-chart .trend-grid{stroke:#35516d;stroke-width:1}
+.season-chart .trend-line{fill:none;stroke:#38d5b5;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.season-chart .trend-dot{fill:#57edc5;stroke:#12243a;stroke-width:2}
+.season-chart .trend-label{fill:#adc8de;font-size:12px}
+.season-history-summary{display:flex;flex-wrap:wrap;gap:12px}
+.season-history-summary .history-number{padding:12px 16px;background:#142842;border:1px solid #294660;border-radius:9px;min-width:130px}
+.season-history-summary strong{display:block;color:var(--mint);font-size:20px}
+.season-history-summary small{display:block;color:#a2b8ce}

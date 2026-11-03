@@ -48,6 +48,17 @@ module.exports = async (req, res) => {
     console.error('Archive maintenance unavailable:',error.message);
     result.archive={status:'prune_failed'};
   }
+  // Purge compact season/ranked observations older than 18 months.
+  // Runs through the existing secret-protected daily Vercel cron.
+  try {
+    const trimmed=await db.rpc('prune_player_season_snapshots');
+    result.seasonHistory=trimmed.error?{status:'prune_failed'}:
+      {status:'ok',removed:Number(trimmed.data)||0};
+    if(trimmed.error)console.error('Season-history prune failed:',trimmed.error.message);
+  }catch(error){
+    console.error('Season-history maintenance unavailable:',error.message);
+    result.seasonHistory={status:'prune_failed'};
+  }
   const failed = result.status === 'import_failed' &&
     result.dashboard.status === 'post_failed';
   return res.status(failed ? 502 : 200).json(result);
