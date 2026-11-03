@@ -1,6 +1,7 @@
 'use strict';
 const { createClient } = require('@supabase/supabase-js');
 const { importPendingBatch } = require('../lib/import-batch');
+const { collectClanSeasons } = require('../lib/clan-season-sync');
 const channelDashboard = require('../lib/channel-dashboard');
 
 // Vercel Hobby's daily cron is a fallback. /leaderboard can make progress
@@ -37,6 +38,14 @@ module.exports = async (req, res) => {
   } catch (error) {
     console.error('Scheduled Discord dashboard update failed:', error.message);
     result.dashboard = { status: 'post_failed' };
+  }
+  // Gradually populate genuine season/ranked results for verified clan
+  // members, after keeping the existing Discord dashboards up to date.
+  try {
+    result.seasonCollection=await collectClanSeasons(db);
+  } catch (error) {
+    console.error('Scheduled clan season collection failed:',error.message);
+    result.seasonCollection={status:'collection_failed'};
   }
   // Pruning occurs on the existing secret-protected daily sync.
   try {

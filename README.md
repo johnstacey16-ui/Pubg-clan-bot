@@ -305,3 +305,20 @@ reading or sorting leaderboards. The migration is retained in
 \`supabase/migrations/20261103_verified_clan_season_ranked_leaderboard.sql\`.
 Players outside the official clan never enter this leaderboard, while their
 individual season reports remain accessible separately.
+
+
+## Gradual clan season and ranked data coverage
+
+The existing protected daily sync now claims up to two verified clan members
+for current-season and ranked collection, after the usual Discord dashboard
+update. It validates their already-saved Xbox/PlayStation identity and
+atomically rotates candidates through the private Supabase table
+clan_season_sync_state. Each candidate is held from re-claim for 23 hours.
+
+PUBG season indexes are revalidated once per shard per scheduled invocation;
+player data uses the shared atomic reserve_pubg_requests rate limiter.
+At most six upstream counted requests are attempted (two console indexes
+and four player requests). Only fresh successful PUBG responses become
+new season/ranked snapshots; cache fallbacks do not masquerade as new data.
+If the shared API limit is busy, the batch stops rather than bypassing it.
+No additional Vercel cron, paid service or public credentials are involved.

@@ -82,7 +82,9 @@
 - [x] Weapon mastery views documenting StatsTotal, OfficialStatsTotal, CompetitiveStatsTotal, LevelCurrent, TierCurrent and XPTotal (separate categories)
 - [x] Real historical season/ranked snapshots and per-mode progression charts
 - [x] Historical season/ranked clan leaderboards from latest genuine per-player, per-mode, per-season observations with source timestamps (server-only SQL RPC, API, and website)
+- [x] Add persistent, budget-limited daily season/ranked collection for verified clan players through the existing Vercel cron (two players per run)
 - [ ] Verify historical clan leaderboard on live website with multiple real player snapshots
+- [ ] Observe and verify the next genuine production daily season/ranked collection
 
 ### Phase 4 — Secure updates and Discord integration
 - [ ] Authenticated manager-only website refresh using existing budget and database lock
