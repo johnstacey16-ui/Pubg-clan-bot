@@ -30,7 +30,7 @@ test('dashboard setup requires channel-management privileges', () => {
   assert.equal(canManage({member:{permissions:'8'}}),true);
   assert.equal(canManage({member:{permissions:'1024'}}),false);
 });
-test('dashboard renders five reusable Supabase-powered cards with refresh button', () => {
+test('dashboard renders eight reusable Supabase-powered cards with refresh button', () => {
   const rendered=renderDashboard(fixture());
   assert.deepEqual(Object.keys(rendered),SECTIONS);
   for(const card of Object.values(rendered)) {
