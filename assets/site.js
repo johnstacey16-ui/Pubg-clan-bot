@@ -233,7 +233,7 @@
         (result.archivedCount?' · '+result.archivedCount+' archived':'');
       if(!result.matches?.length){
         $('match-results').innerHTML='<p class="match-empty">No detailed match records are stored yet for this player. '+
-          'Use the Discord <strong>/recent</strong> command with their gamertag to populate the shared cache, then reload here.</p>';
+          'Select <strong>Refresh recent from PUBG</strong> above, or use Discord <strong>/recent</strong> to populate the shared cache.</p>';
         return;
       }
       $('match-results').innerHTML=result.matches.map(function(m){
