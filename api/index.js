@@ -126,23 +126,40 @@ async function formatStats(result, name) {
 }
 
 async function leaderboard(db) {
-  const { data, error } = await db.from('players')
+  const selectTop = () => db.from('players')
     .select('gamertag,platform,total_kills,total_wins,last_checked')
     .in('platform', ['xbox', 'psn'])
     .order('total_kills', { ascending: false }).limit(10);
-  if (error) throw error;
-  if (!data?.length) {
+  const first = await selectTop();
+  if (first.error) throw first.error;
+  if (!first.data?.length) {
     const result = await db.from('player_import_queue')
       .select('id', { count: 'exact', head: true }).eq('status', 'pending');
     if (result.error) throw result.error;
     return '📊 No verified console stats yet. ' + (result.count || 0) +
       ' names are waiting in the import queue. Use /stats to request an immediate check.';
   }
+  // Refresh at most two stale leaderboard accounts per lookup, preserving
+  // API capacity for normal searches and using the shared database rate budget.
+  const stale = first.data.filter(p =>
+    !p.last_checked || Date.now() - new Date(p.last_checked).getTime() >= 2 * 60 * 60 * 1000
+  ).slice(0, 2);
+  for (const p of stale) {
+    try {
+      await getStats(db, p.gamertag);
+    } catch (error) {
+      console.error('Leaderboard refresh unavailable:', error.message);
+    }
+  }
+  const latest = stale.length ? await selectTop() : first;
+  if (latest.error) throw latest.error;
+  const list = latest.data || [];
   return reply('🏆 **Console Clan Leaderboard — Lifetime Kills**\n' +
-    data.map((p, i) => (i + 1) + '. **' + safeDiscord(p.gamertag) +
+    list.map((p, i) => (i + 1) + '. **' + safeDiscord(p.gamertag) +
       '** (' + (p.platform === 'xbox' ? 'Xbox' : 'PS') + ') — ' +
-      (p.total_kills || 0) + ' kills · ' + (p.total_wins || 0) + ' wins')
-      .join('\n') + '\n_Stored stats refresh when queried; players may have different sync times._');
+      (p.total_kills || 0) + ' kills · ' + (p.total_wins || 0) +
+      ' wins' + (!p.last_checked ? ' · not synced' : ''))
+      .join('\n') + '\n_Stats are saved in Supabase. Up to two stale players refresh per leaderboard request, subject to PUBG API limits._');
 }
 
 async function processCommand(body) {
