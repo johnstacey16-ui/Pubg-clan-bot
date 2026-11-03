@@ -32,8 +32,12 @@
 ### Phase 2 — Complete profiles and discovery
 - [ ] Player search across tracked accounts with consent/public visibility policy
 - [ ] Richer solo, duo, squad, FPP/TPP stats, advanced damage metrics and charts
-- [ ] Full roster pagination, filters, saved player favourites and shareable profile URLs
-- [ ] Historical snapshots so graphs show **real changes over time**, not fabricated points
+- [x] Shareable official-clan player links (`/#player/<encoded-gamertag>`) and per-player detail panels
+- [x] Real daily snapshots from all PUBG player updates, including baseline captured at the real last-fetch timestamp
+- [x] Read-only private-table-backed history API, with no player IDs or tracked outsiders exposed
+- [x] Historical SVG charts that appear **only after two or more real snapshots**
+- [ ] Full roster pagination, advanced filters and saved player favourites
+- [ ] Verify a second genuine snapshot and resulting public chart after an actual PUBG refresh
 - [ ] Handle ambiguous platform names and missing accounts in an admin-only workflow
 
 ### Phase 3 — Match analysis (no replay features)

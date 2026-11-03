@@ -62,3 +62,18 @@ test('one actual snapshot never fabricates historic points',async()=>{
  assert.equal(r.data.points.length,1);
  assert.match(r.data.note,/baseline/);
 });
+
+test('tracked outsider is denied even if a database adapter returns that row',async()=>{
+ const db=makeDb();
+ const baseFrom=db.from.bind(db);
+ db.from=function(table){
+   const q=baseFrom(table);
+   if(table==='player_import_queue')q.limit=async()=>({data:[
+     {gamertag:'Xbox_Test',status:'matched',is_clan_member:false}
+   ],error:null});
+   return q;
+ };
+ const r=await playerHistory(db,'Xbox_Test');
+ assert.equal(r.status,404);
+ assert.deepEqual(db.calls,['player_import_queue']);
+});

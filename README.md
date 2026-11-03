@@ -74,6 +74,29 @@ Run npm test and npm run check. Verify deployments and /api/health, then exercis
 
 This is the *first comprehensive command pack*, not yet every possible PUBG API value. Planned additions: verified clan membership editing, richer mastery formatting, full per-weapon records, telemetry analytics (damage timeline, opponents, kills, revives, paths), match and telemetry-based analysis, official PUBG season leaderboard, multi-metric clan rankings, detailed match history storage, and robust free-tier cache retention. PUBG telemetry and match data are only available while the upstream source retains them.
 
+## Phase 2 — Shareable verified player profiles and real history
+
+Verified official-clan players now have shareable hash links, such as
+`https://pubg-clan-bot.vercel.app/#player/DrBeryl762`.
+The site opens the profile on any browser without logging into Discord. The
+player profile shows available lifetime mode details, a copyable link and a
+metric selector for **kills, wins and matches over time**.
+
+**History is genuine, not backfilled fiction.** The private
+`public.player_stat_snapshots` table is seeded only with each player's
+actual most recent saved PUBG lookup; a PostgreSQL trigger captures future bot
+and importer updates once per UTC day. The chart displays a line only when two
+or more real observations exist. A single point is labelled as a baseline,
+not a fabricated trend.
+
+`GET /api/player-history?name=<gamertag>` resolves exact verified
+official-clan membership before querying the private snapshot table. The
+service-role key stays exclusively in Vercel. The anonymous client only sees
+allowlisted timestamps and numeric totals — no internal player IDs, account
+IDs or tracked outsiders. The snapshot table has RLS enabled, no
+`anon`/`authenticated` privileges and an explicit service-role grant, as
+required by the Supabase October 2026 table exposure changes.
+
 ## Dedicated Discord dashboard channel
 
 1. Create a text channel in the clan Discord server (for example `#clan-stats`). Make it read-only for members if you want only the bot to post there. Ensure the bot has View Channel, Send Messages, and Embed Links permissions. Optional Pin Messages permission lets it pin each card automatically.

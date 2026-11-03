@@ -16,7 +16,7 @@ async function playerHistory(db, suppliedName) {
     .ilike('gamertag', escapeLike(name)).limit(10);
   if (roster.error) throw new Error('Cannot read clan membership');
   const member = match(roster.data);
-  if (!member || member.status !== 'matched')
+  if (!member || member.is_clan_member !== true || member.status !== 'matched')
     return { status: 404, data: { error: 'Verified clan player not found' } };
 
   const saved = await db.from('players')
