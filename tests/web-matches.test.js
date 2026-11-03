@@ -30,7 +30,8 @@ function fakeDb(opts={}) {
       select(){return this},eq(){return this},ilike(){return this},in(){return this},
       async limit(){
         if(table==='player_import_queue')return{data:[{gamertag:'ClanTester',status:opts.status||'matched',is_clan_member:opts.official!==false}],error:null};
-        if(table==='players')return{data:[{gamertag:'ClanTester',platform:'xbox',pubg_account_id:account}],error:null};
+        if(table==='players')return{data:[{id:11,gamertag:'ClanTester',platform:'xbox',pubg_account_id:account}],error:null};
+        if(table==='clan_match_archive')return{data:opts.archive||[],error:null};
         return{data:opts.missing?[]:[{cache_key:'pubg:v1:console/matches/'+ID,payload,fetched_at:'2026-11-03T10:00:00Z'}],error:null};
       },
       async maybeSingle(){
@@ -64,7 +65,7 @@ test('saved matches contain no internal IDs, URLs or opponent accounts',async()=
  assert.equal(r.status,200);
  assert.equal(r.body.availableCount,1);
  assert.equal(r.body.indexedCount,1);
- assert.deepEqual(db.calls,['player_import_queue','players','pubg_endpoint_cache','pubg_endpoint_cache']);
+ assert.deepEqual(db.calls,['player_import_queue','players','clan_match_archive','pubg_endpoint_cache','pubg_endpoint_cache']);
  assert.doesNotMatch(JSON.stringify(r.body),/account\.|private-telemetry|Enemy|cache_key|pubg_account_id/);
 });
 test('missing cache shows an honest empty state without PUBG requests',async()=>{
@@ -73,7 +74,7 @@ test('missing cache shows an honest empty state without PUBG requests',async()=>
  assert.equal(r.status,200);
  assert.equal(r.body.availableCount,0);
  assert.match(r.body.note,/No saved recent-match index/);
- assert.deepEqual(db.calls,['player_import_queue','players','pubg_endpoint_cache']);
+ assert.deepEqual(db.calls,['player_import_queue','players','clan_match_archive','pubg_endpoint_cache']);
 });
 test('known indexed matches are not invented when detail cache is absent',async()=>{
  const db=fakeDb({missing:true});
@@ -88,4 +89,31 @@ test('invalid multi-account and control inputs are rejected before database read
    assert.equal(r.status,400);
    assert.equal(db.calls.length,0);
  }
+});
+
+test('previously saved match survives absence of temporary cache',async()=>{
+ const archive=[{match_id:ID,played_at:'2026-11-03T09:50:02Z',
+   recorded_at:'2026-11-03T10:00:00Z',
+   summary:{id:ID,map:'Baltic_Main',mode:'squad',kills:8,damage:603.8,
+     placement:1,squad:[{name:'ClanTester',isSelf:true,kills:8,damage:603.8}],
+     telemetryURL:'https://private.example',pubg_account_id:account}}];
+ const db=fakeDb({archive,noIndex:true});
+ const r=await cachedPlayerMatches(db,'ClanTester');
+ assert.equal(r.status,200);
+ assert.equal(r.body.archivedCount,1);
+ assert.equal(r.body.availableCount,1);
+ assert.equal(r.body.matches[0].kills,8);
+ assert.equal(r.body.matches[0].archived,true);
+ assert.deepEqual(db.calls,['player_import_queue','players','clan_match_archive']);
+ assert.doesNotMatch(JSON.stringify(r.body),/account\.|telemetryURL|private\.example|player_id/);
+});
+test('archive output strips unknown keys and account IDs',async()=>{
+ const {safeArchivedSummary}=require('../lib/web-match-intel');
+ assert.equal(safeArchivedSummary({match_id:'bad',summary:{id:'bad'}}),null);
+ const r=safeArchivedSummary({match_id:ID,played_at:'2026-11-03T10:00:00Z',
+  summary:{id:ID,mode:'squad',damage:10,accountId:'secret',squad:[{
+    name:'Player',isSelf:true,playerId:'account.PRIVATE',kills:3}]}});
+ assert.equal(r.damage,10);
+ assert.equal(r.squad[0].kills,3);
+ assert.doesNotMatch(JSON.stringify(r),/accountId|playerId|PRIVATE/);
 });

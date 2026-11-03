@@ -141,3 +141,12 @@ remain roadmap tasks.
 The existing /api/public-stats response includes allowlisted advanced metrics from the official PUBG lifetime game modes: damage, headshot kills, assists, knockdowns, revives, Top 10 finishes, heals, boosts and longest kill. Additive values are summed over Solo/Duo/Squad TPP/FPP modes. Longest kill is the maximum across modes. Missing fields display a dash, not a fabricated zero.
 
 Leaderboards can rank by advanced metrics and player comparisons can select a specific TPP/FPP mode. These are Supabase-cache reads and do not make additional PUBG requests.
+
+
+## Persistent PUBG match archive
+
+The private Supabase `clan_match_archive` table stores sanitised summaries for **verified official clan members only**, populated automatically when the existing bot caches a PUBG match response. It contains no raw PUBG JSON, account IDs or telemetry URLs. Three previously cached genuine match reports were backfilled without new PUBG requests.
+
+Retention is **180 days from the match date**. The existing secret-protected Vercel cron calls `prune_clan_match_archive` during its daily run. If a scheduled run fails, the next successful run resumes pruning. The archive uses RLS and service-role-only grants.
+
+The website's `GET /api/public-matches?name=...` now prioritises up to 30 archived match summaries for a verified clan member. If the archive is empty, it falls back to the temporary PUBG cache. The backend checks roster membership before reading the archive and allowlists every field returned to public viewers.

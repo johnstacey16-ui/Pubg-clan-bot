@@ -146,7 +146,8 @@
       var result=await response.json();
       if(request!==matchRequest || matchName!==name)return;
       $('match-note').textContent=(result.note||'Saved PUBG matches only')+
-        ' · '+result.availableCount+' detailed match(es) stored';
+        ' · '+result.availableCount+' detailed match(es) stored'+
+        (result.archivedCount?' · '+result.archivedCount+' archived':'');
       if(!result.matches?.length){
         $('match-results').innerHTML='<p class="match-empty">No detailed match records are stored yet for this player. '+
           'Use the Discord <strong>/recent</strong> command with their gamertag to populate the shared cache, then reload here.</p>';

@@ -38,6 +38,16 @@ module.exports = async (req, res) => {
     console.error('Scheduled Discord dashboard update failed:', error.message);
     result.dashboard = { status: 'post_failed' };
   }
+  // Pruning occurs on the existing secret-protected daily sync.
+  try {
+    const pruned=await db.rpc('prune_clan_match_archive');
+    result.archive=pruned.error?{status:'prune_failed'}:
+      {status:'ok',removed:Number(pruned.data)||0};
+    if(pruned.error)console.error('Archive prune failed:',pruned.error.message);
+  }catch(error){
+    console.error('Archive maintenance unavailable:',error.message);
+    result.archive={status:'prune_failed'};
+  }
   const failed = result.status === 'import_failed' &&
     result.dashboard.status === 'post_failed';
   return res.status(failed ? 502 : 200).json(result);
