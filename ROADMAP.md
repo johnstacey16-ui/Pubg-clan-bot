@@ -51,6 +51,8 @@
 - [x] Retain official clan-only totals and separately track searched outsiders
 - [x] Shareable platform-specific links for arbitrary saved players
 - [x] Auto-detect a new player's console, save that one account, and reuse its confirmed platform/account ID on future refreshes
+- [x] Preserve official clan membership labels when the player is found through Auto-detect
+- [x] Accept omitted platform on website API requests as Auto-detect (no second account required)
 - [x] If both console shards return matching names, request a manual console choice instead of creating duplicate profiles
 - [ ] Evaluate genuinely distinct Xbox and PSN accounts sharing an identical displayed name only if this becomes a real requirement
 - [ ] Enable website mastery, seasons and recent match refreshes with independent quotas

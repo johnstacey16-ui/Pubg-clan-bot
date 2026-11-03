@@ -56,7 +56,7 @@ module.exports=async(req,res)=>{
  if(req.method==='POST'&&typeof body==='string'){
    try{body=JSON.parse(body)}catch(e){return res.status(400).json({error:'Invalid JSON'})}
  }
- if(!body||typeof body!=='object'||!validInput(body.name,body.platform))
+ if(!body||typeof body!=='object'||!validInput(body.name,body.platform??'auto'))
    return res.status(400).json({error:'Choose a valid player name and console'});
  if(!process.env.SUPABASE_URL||!process.env.SUPABASE_SERVICE_KEY)
    return res.status(503).json({error:'Data source is not configured'});
@@ -64,7 +64,7 @@ module.exports=async(req,res)=>{
    const db=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY,{
      auth:{autoRefreshToken:false,persistSession:false}
    });
-   const out=await processLookup(db,{name:body.name,platform:body.platform,refresh:req.method==='POST'});
+   const out=await processLookup(db,{name:body.name,platform:body.platform??'auto',refresh:req.method==='POST'});
    if(out.status===429)res.setHeader('Retry-After','90');
    return res.status(out.status).json(out.body);
  }catch(error){

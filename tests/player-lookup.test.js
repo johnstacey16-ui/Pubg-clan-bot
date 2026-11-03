@@ -77,3 +77,18 @@ test('a saved console mismatch returns the known platform without overwriting',a
  assert.equal(result.status,409);
  assert.equal(result.body.suggestedPlatform,'psn');
 });
+
+test('auto-detected official clan player remains identified as a member',async()=>{
+ const database=db({platform:'xbox',clan:true});
+ const r=await publicPlayer(database,'Outsider','auto');
+ assert.equal(r.status,200);
+ assert.equal(r.body.platform,'xbox');
+ assert.equal(r.body.isClanMember,true);
+});
+test('explicit platform and auto-detection agree on official clan membership',async()=>{
+ const database=db({platform:'psn',clan:true});
+ const auto=await publicPlayer(database,'Outsider','auto');
+ const selected=await publicPlayer(database,'Outsider','psn');
+ assert.equal(auto.body.isClanMember,true);
+ assert.equal(selected.body.isClanMember,true);
+});
