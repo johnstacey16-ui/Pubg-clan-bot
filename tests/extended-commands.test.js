@@ -6,12 +6,12 @@ const core = require('../lib/commands-core');
 const extra = require('../lib/commands-extra');
 const { matchEndpoint } = require('../lib/pubg-endpoints');
 
-test('all twelve Discord commands have unique names and valid required-option order', () => {
-  assert.equal(commands.length, 13);
+test('all fourteen Discord commands have unique names and valid required-option order', () => {
+  assert.equal(commands.length, 14);
   assert.equal(new Set(commands.map(x => x.name)).size, commands.length);
   const names = new Set(commands.map(x => x.name));
   for (const name of ['stats','leaderboard','roster','help','clan',
-    'compare','modes','replay','recent','match','mastery','season','ranked'])
+    'compare','modes','recent','match','squad','teammates','mastery','season','ranked'])
     assert.ok(names.has(name), 'Missing command ' + name);
   for (const cmd of commands) {
     assert.match(cmd.name, /^[a-z]{1,32}$/);
@@ -78,14 +78,3 @@ test('only valid match IDs are requested', async () => {
   assert.equal(result.state, 'invalid');
 });
 
-test('official replay button only links to the trusted PUBG Bridge homepage', async () => {
-  const { replay, BRIDGE_URL, bridgeButton } = require('../lib/replay-links');
-  assert.equal(BRIDGE_URL, 'https://bridge.pubg.com/');
-  const withoutGamertag = await replay(null, { data: { name: 'replay', options: [] } });
-  const btn = withoutGamertag.components[0].components[0];
-  assert.equal(btn.style, 5);
-  assert.equal(btn.type, 2);
-  assert.equal(btn.url, BRIDGE_URL);
-  assert.match(withoutGamertag.content, /KRAFTON ID/);
-  assert.match(bridgeButton('Match ID: abc').content, /abc/);
-});

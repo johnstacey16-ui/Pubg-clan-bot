@@ -2,7 +2,7 @@
 
 A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional **Groq** AI commentary. It supports **Xbox and PlayStation only** (no PC). Match/season/mastery features are subject to actual PUBG API availability.
 
-## Commands (13)
+## Commands (14)
 
 | Discord command | What it does |
 |---|---|
@@ -12,9 +12,10 @@ A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional *
 | /clan | Official clan totals and verified member counts |
 | /compare player1 player2 | Compare two Xbox/PSN players using actual saved PUBG statistics |
 | /modes gamertag [mode] | Detailed Solo/Duo/Squad lifetime statistics, including FPP modes |
-| /replay [gamertag] | Official PUBG Bridge link button; optionally shows last known match context, without inventing a deep link |
 | /recent gamertag [count] | Player's recent match IDs, placements, kills, damage and maps |
 | /match gamertag matchid | Individual match result, player kills, placement, assists and more |
+| /squad gamertag matchid | Squad breakdown for one match: teammates, kills, damage, assists and knocks |
+| /teammates gamertag [count] | Most frequent teammates in the last 1–5 available matches |
 | /mastery gamertag type | Weapon or survival mastery, if PUBG returns it |
 | /season gamertag | Current-season game modes and results |
 | /ranked gamertag | Current ranked tier, rank points and game results, where available |
@@ -45,8 +46,6 @@ Important: the legacy public.players, public.matches and public.clan_records Sup
 
 ## Validation and roadmap
 
-For **official 2D replays**, use `/replay [gamertag]`, `/recent`, or `/match` in Discord. They include an **Open official PUBG 2D replays** link button pointing only to https://bridge.pubg.com/. Sign in with the KRAFTON ID linked to your console and select the match in your history. The API match identifier is not a Bridge share token; the bot never guesses a per-match URL. PUBG also offers a browser-view/QR link from the game's Career > Match History.
-
 Run npm test and npm run check. Verify deployments and /api/health, then exercise commands inside Discord.
 
-This is the *first comprehensive command pack*, not yet every possible PUBG API value. Planned additions: verified clan membership editing, richer mastery formatting, full per-weapon records, telemetry analytics (damage timeline, opponents, kills, revives, paths), map-based telemetry analysis (using official PUBG Bridge for replays), official PUBG season leaderboard, multi-metric clan rankings, detailed match history storage, and robust free-tier cache retention. PUBG telemetry and match data are only available while the upstream source retains them.
+This is the *first comprehensive command pack*, not yet every possible PUBG API value. Planned additions: verified clan membership editing, richer mastery formatting, full per-weapon records, telemetry analytics (damage timeline, opponents, kills, revives, paths), match and telemetry-based analysis, official PUBG season leaderboard, multi-metric clan rankings, detailed match history storage, and robust free-tier cache retention. PUBG telemetry and match data are only available while the upstream source retains them.
