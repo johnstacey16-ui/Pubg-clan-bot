@@ -27,7 +27,7 @@ function fakeDb(opts={}) {
   from(table){
     calls.push(table);
     const query={
-      select(){return this},eq(){return this},ilike(){return this},in(){return this},
+      select(){return this},eq(){return this},ilike(){return this},in(){return this},order(){return this},
       async limit(){
         if(table==='player_import_queue')return{data:[{gamertag:'ClanTester',status:opts.status||'matched',is_clan_member:opts.official!==false}],error:null};
         if(table==='players')return{data:[{id:11,gamertag:'ClanTester',platform:'xbox',pubg_account_id:account}],error:null};
