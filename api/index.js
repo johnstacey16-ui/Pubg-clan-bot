@@ -52,7 +52,18 @@ async function handleCommand(body) {
       .ilike('gamertag', gamertag).limit(5);
     if (error) throw error;
     const player = players?.find(p => p.gamertag.toLowerCase() === gamertag.toLowerCase());
-    if (!player) return response('No saved stats for that gamertag yet. PUBG syncing has not been enabled.', true);
+    if (!player) {
+      const { data: queued, error: queueError } = await db.from('player_import_queue')
+        .select('status,platform,note')
+        .ilike('gamertag', gamertag).limit(10);
+      if (queueError) throw queueError;
+      const entry = queued?.find(q => true);
+      if (entry?.status === 'pending') return response('⏳ **' + gamertag + '** is in the Xbox/PlayStation import queue. No verified stats yet.', true);
+      if (entry?.status === 'ambiguous') return response('🎮 **' + gamertag + '** matches accounts on both Xbox and PlayStation. Platform confirmation is needed.', true);
+      if (entry?.status === 'not_found') return response('🔎 No exact Xbox or PlayStation account was found for **' + gamertag + '**. Double-check spelling.', true);
+      if (entry?.status === 'error') return response('⚠️ The import for **' + gamertag + '** encountered an error. It can be retried.', true);
+      return response('No verified Xbox or PlayStation stats for that gamertag yet.', true);
+    }
     const { data: matches, error: matchError } = await db.from('matches')
       .select('match_id,kills,win,match_date')
       .eq('player_id', player.id).order('match_date', { ascending: false }).limit(5);
@@ -74,7 +85,12 @@ async function handleCommand(body) {
       .select('gamertag,total_kills,total_wins')
       .order('total_kills', { ascending: false }).limit(10);
     if (error) throw error;
-    if (!data?.length) return response('📊 No players saved yet. The leaderboard will appear after the first import.');
+    if (!data?.length) {
+      const { count, error: queueError } = await db.from('player_import_queue')
+        .select('id', { count: 'exact', head: true }).eq('status', 'pending');
+      if (queueError) throw queueError;
+      return response('📊 No verified player stats yet. ' + (count || 0) + ' console players are awaiting import.');
+    }
     return response('🏆 **Clan leaderboard — kills**\n' + data.map((p, i) =>
       (i + 1) + '. **' + p.gamertag.replaceAll('*', '\\*') + '** — ' + (p.total_kills || 0) +
       ' kills · ' + (p.total_wins || 0) + ' wins').join('\n'));
