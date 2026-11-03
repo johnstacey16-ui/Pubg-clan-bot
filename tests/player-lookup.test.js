@@ -32,7 +32,7 @@ test('unknown person can search before requesting first PUBG refresh',async()=>{
 test('same gamertag across consoles never overwrites another account',async()=>{
  const r=await publicPlayer(db(),'Outsider','psn');
  assert.equal(r.status,409);
- assert.match(r.body.error,/other console/);
+ assert.match(r.body.error,/already saved on/);
 });
 test('refresh requests are separately throttled before PUBG API access',async()=>{
  const f=db(),r=await processLookup(f,{name:'Outsider',platform:'xbox',refresh:true});
