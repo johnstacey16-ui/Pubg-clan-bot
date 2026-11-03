@@ -90,7 +90,9 @@ test('favourites persist locally, filter roster and are never sent upstream',asy
   b.events.click({target:{closest(selector){
     return selector==='[data-favourite]'?{dataset:{favourite:'Member 01'}}:null;
   }}});
-  assert.equal(rows(b),0);
+  assert.equal(rows(b),1); // The table deliberately renders one empty-state row.
+  assert.match(b.get('roster-table').innerHTML,/No players match the chosen filters/);
+  assert.match(b.get('roster-count').textContent,/No matching members/);
   assert.equal(JSON.parse(saved['pubg-clan-roster-favourites-v1']).length,0);
 });
 test('roster controls, labels and client-only storage are present',()=>{

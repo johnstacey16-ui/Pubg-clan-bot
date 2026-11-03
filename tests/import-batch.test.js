@@ -8,7 +8,7 @@ function fakeDatabase(size = 10) {
     players: [],
     player_lifetime_details: [],
     player_import_queue: Array.from({ length: size }, (_, i) => ({
-      id: i + 1, gamertag: 'Mock' + i, status: 'pending',
+      id: i + 1, gamertag: 'Mock' + i, status: 'pending', is_clan_member: true,
       pubg_account_id: null, platform: null
     })),
     pubg_sync_control: [{ id: 1, locked_until: '1970-01-01T00:00:00.000Z' }]
