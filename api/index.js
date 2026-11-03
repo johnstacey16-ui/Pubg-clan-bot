@@ -227,6 +227,7 @@ async function processCommand(body) {
     return formatStats(result, name);
   }
   if (body.data?.name === 'leaderboard') return leaderboard(db);
+  if (body.data?.name === 'setup') return channelDashboard.setup(db, body);
   if (body.data?.name === 'dashboard') return channelDashboard.command(db, body);
   if (body.data?.name === 'help') return core.help();
   if (body.data?.name === 'roster') return core.roster(db, body);
@@ -297,7 +298,7 @@ module.exports = async (req, res) => {
   if (body.guild_id === CLAN_GUILD) {
     waitUntil(Promise.allSettled([work, ensureGuildCommands(createDb())]));
   } else waitUntil(work);
-  return res.status(200).json(isDashboardButton || body.data?.name === 'dashboard'
+  return res.status(200).json(isDashboardButton || (body.data?.name === 'dashboard' || body.data?.name === 'setup')
     ? { type: 5, data: { flags: 64 } }
     : { type: 5 });
 };
