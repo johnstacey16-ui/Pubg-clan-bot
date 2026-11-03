@@ -1,9 +1,25 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" }
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/interactions", "dest": "api/index.js" }
+    {
+      "src": "/interactions",
+      "dest": "api/index.js"
+    },
+    {
+      "src": "/api/sync",
+      "dest": "api/sync.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/sync",
+      "schedule": "0 5 * * *"
+    }
   ]
 }
