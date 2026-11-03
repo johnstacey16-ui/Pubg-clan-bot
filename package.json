@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check api/index.js && node --check api/sync.js && node --check api/health.js && node --check lib/live-stats.js && node --check lib/pubg-endpoints.js && node --check lib/commands-core.js && node --check lib/commands-extra.js && node --check lib/squad-analysis.js && node --check lib/command-definitions.js && node --check api/public-stats.js && node --check lib/web-stats.js && node --check assets/site.js"
+    "check": "node --check api/index.js && node --check api/sync.js && node --check api/health.js && node --check lib/live-stats.js && node --check lib/pubg-endpoints.js && node --check lib/commands-core.js && node --check lib/commands-extra.js && node --check lib/squad-analysis.js && node --check lib/command-definitions.js && node --check api/public-stats.js && node --check lib/web-stats.js && node --check assets/site.js && node --check api/player-history.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.45.0",

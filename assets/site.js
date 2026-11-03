@@ -13,7 +13,7 @@
   var modeName = function (s) { return String(s).replace('-fpp',' FPP').toUpperCase(); };
   var dateText = function (s) { return s ? new Date(s).toLocaleString('en-GB', {dateStyle:'medium',timeStyle:'short'}) : 'Not available'; };
   var findPlayer = function (name) { return data && data.players.find(function (p) { return p.name === name; }); };
-  function go(page) {
+  function go(page, preserveHash) {
     if (['overview','leaderboard','players','modes','compare','roadmap'].indexOf(page) === -1) return;
     current = page;
     document.querySelectorAll('.page').forEach(function (el) { el.hidden = el.id !== 'page-' + page; });
@@ -23,7 +23,7 @@
       else el.removeAttribute('aria-current');
     });
     $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',roadmap:'Roadmap'}[page];
-    try { history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
+    try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
     window.scrollTo(0,0);
   }
   function chart(target, totals, modes) {
@@ -128,7 +128,60 @@
       }).join('') +
       '<p class="small muted">Values are from actual stored PUBG stats. Kills per match uses kills ÷ player matches.</p>';
   }
-  function openProfile(name) {
+
+  var profileRequest = 0;
+  function makeHistoryChart(points, metric) {
+    var w=620,h=205,left=44,right=14,top=16,bottom=31;
+    var values=points.map(function(p){return Math.max(0,Number(p[metric])||0);});
+    var lo=Math.min.apply(null,values),hi=Math.max.apply(null,values);
+    var span=Math.max(1,hi-lo),usableW=w-left-right,usableH=h-top-bottom;
+    var mapped=values.map(function(n,i){
+      return {x:left+(points.length===1?usableW/2:i*usableW/(points.length-1)),
+        y:top+(hi-n)*usableH/span};
+    });
+    var route=mapped.map(function(p){return p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
+    var circles=mapped.filter(function(p,i){return i===0||i===mapped.length-1||mapped.length<=12;})
+      .map(function(p){return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.7" fill="#39e4c3"/>';}).join('');
+    return '<svg viewBox="0 0 620 205" role="img" aria-label="Verified lifetime '+escapeHtml(metric)+' history chart">'+
+      '<line x1="'+left+'" y1="'+(h-bottom)+'" x2="'+(w-right)+'" y2="'+(h-bottom)+'" stroke="#43556d" stroke-width="1"/>'+
+      '<line x1="'+left+'" y1="'+top+'" x2="'+left+'" y2="'+(h-bottom)+'" stroke="#43556d" stroke-width="1"/>'+
+      '<text x="5" y="'+(top+5)+'" fill="#a1b5d1" font-size="12">'+fmt(hi)+'</text>'+
+      '<text x="5" y="'+(h-bottom)+'" fill="#a1b5d1" font-size="12">'+fmt(lo)+'</text>'+
+      '<polyline fill="none" stroke="#39e4c3" stroke-linejoin="round" stroke-linecap="round" stroke-width="3" points="'+route+'"/>'+
+      circles+'</svg>';
+  }
+  async function loadProfileHistory(name) {
+    var id=++profileRequest,element=$('profile-history');
+    if(!element)return;
+    element.textContent='Loading actual saved PUBG snapshots…';
+    try {
+      var response=await fetch('/api/player-history?name='+encodeURIComponent(name),{headers:{Accept:'application/json'}});
+      if(!response.ok)throw Error('History API returned HTTP '+response.status);
+      var result=await response.json();
+      if(id!==profileRequest || $('profile-name').textContent!==name)return;
+      var points=Array.isArray(result.points)?result.points:[];
+      if(points.length<2) {
+        element.innerHTML='<p class="history-empty">📈 Only the first verified snapshot is saved so far. The chart will grow as the bot refreshes this player from PUBG.</p>'+
+          (points[0]?'<p class="small muted">Baseline saved: '+escapeHtml(dateText(points[0].date))+'</p>':'');
+        $('history-metric').disabled=true;
+        return;
+      }
+      $('history-metric').disabled=false;
+      function paint() {
+        var key=$('history-metric').value,first=Number(points[0][key])||0,last=Number(points[points.length-1][key])||0;
+        element.innerHTML='<div class="history-meta"><strong>'+fmt(last-first)+' '+escapeHtml(key)+' change</strong><span>'+
+          points.length+' verified daily points · '+escapeHtml(dateText(points[0].date))+' to '+escapeHtml(dateText(points[points.length-1].date))+'</span></div>'+
+          '<div class="history-chart">'+makeHistoryChart(points,key)+'</div>'+
+          '<p class="small muted">Recorded lifetime totals, not per-match performance. A point is added only after a PUBG update.</p>';
+      }
+      $('history-metric').addEventListener('change',paint);
+      paint();
+    } catch(error) {
+      if(id===profileRequest && element) element.textContent='Saved history is temporarily unavailable. Lifetime statistics above are unaffected.';
+    }
+  }
+
+  function openProfile(name, fromLink) {
     var p=findPlayer(name);if(!p)return;
     $('profile-name').textContent=p.name;
     $('profile-console').textContent=p.platform==='xbox'?'Xbox':'PlayStation';
@@ -143,9 +196,15 @@
         return '<div class="profile-mode"><strong>'+escapeHtml(modeName(m))+'</strong><span>'+fmt(s.roundsPlayed)+
           ' matches · '+fmt(s.kills)+' kills · '+fmt(s.wins)+' wins</span></div>';
       }).join('') || '<p class="muted">No mode details saved yet.</p>') +
-      '<p class="small muted">Last saved player update: '+escapeHtml(dateText(p.updatedAt))+'. Upstream PUBG refresh is managed through the Discord dashboard.</p>';
-    if(typeof $('profile').showModal==='function')$('profile').showModal();
-    else $('profile').setAttribute('open','');
+      '<p class="small muted">Last saved player update: '+escapeHtml(dateText(p.updatedAt))+'. Upstream PUBG refresh is managed through the Discord dashboard.</p>'+
+      '<div class="profile-history"><div class="profile-history-header"><h3>📈 Actual lifetime progress</h3><label>Metric <select id="history-metric">'+
+      '<option value="kills">Kills</option><option value="wins">Wins</option><option value="matches">Matches</option></select></label></div>'+
+      '<div id="profile-history" aria-live="polite">Loading history…</div></div>';
+    if(!fromLink) history.pushState(null,'','/#player/'+encodeURIComponent(p.name));
+    if(typeof $('profile').showModal==='function') {
+      if(!$('profile').open)$('profile').showModal();
+    } else $('profile').setAttribute('open','');
+    loadProfileHistory(p.name);
   }
   async function reload() {
     $('reload').disabled=true;
@@ -167,6 +226,21 @@
   document.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click',function () {go(b.dataset.go);}); });
   document.addEventListener('click',function (e) {var b=e.target.closest&&e.target.closest('[data-profile]');if(b)openProfile(b.dataset.profile);});
   $('profile-close').addEventListener('click',function () { $('profile').close(); });
+  $('profile').addEventListener('close',function(){
+    profileRequest++;
+    if(location.hash.startsWith('#player/')) history.replaceState(null,'',current==='overview'?'/':'/#'+current);
+  });
+  $('share-profile').addEventListener('click',async function(){
+    var name=$('profile-name').textContent;
+    var url=location.origin+'/#player/'+encodeURIComponent(name);
+    try {
+      if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(url);
+      this.textContent='✓ Link copied';
+    } catch (error) {
+      window.prompt('Copy this player profile link:',url);
+    }
+  });
   $('profile').addEventListener('click',function(e) {if(e.target===$('profile'))$('profile').close();});
   ['sort','leader-console'].forEach(function (id) {$(id).addEventListener('change',renderLeaderboard);});
   ['player-console','player-status'].forEach(function (id) {$(id).addEventListener('change',renderRoster);});
@@ -175,6 +249,15 @@
   $('compare-two').addEventListener('change',function(e){compareB=e.target.value;renderCompare();});
   $('reload').addEventListener('click',reload);
   var hash=location.hash.slice(1);
-  go(['overview','leaderboard','players','modes','compare','roadmap'].includes(hash)?hash:'overview');
-  reload();
+  var sharedName=null;
+  if(hash.startsWith('player/')){
+    try { sharedName=decodeURIComponent(hash.slice(7)); } catch(error) {}
+  }
+  go(sharedName?'players':(['overview','leaderboard','players','modes','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
+  reload().then(function(){
+    if(sharedName) {
+      if(findPlayer(sharedName))openProfile(sharedName,true);
+      else if(data){$('notice').hidden=false;$('notice').textContent='This profile is not part of the verified public clan roster.';}
+    }
+  });
 })();
