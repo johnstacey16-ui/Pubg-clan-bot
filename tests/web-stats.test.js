@@ -65,3 +65,22 @@ test('pending, ambiguous or missing roster names are never counted in verified t
  assert.equal(d.totals.kills,100);
  assert.equal(d.roster.states.ambiguous,1);
 });
+
+test('advanced totals aggregate available modes without inventing missing values',()=>{
+ const d=shapeWebStats(fixture());
+ assert.equal(d.players[0].advanced.damage,22000);
+ assert.equal(d.players[0].advanced.assists,35);
+ assert.equal(d.players[0].advanced.headshots,null);
+ assert.equal(d.players[1].advanced.headshots,30);
+ assert.equal(d.players[1].advanced.damage,null);
+ assert.equal(d.modeTotals.squad.assists,35);
+ assert.equal(d.modeTotals.solo.headshots,30);
+});
+test('longest kill uses maximum across modes, not summed distance',()=>{
+ const {summarizeAdvanced}=require('../lib/web-stats');
+ const a=summarizeAdvanced({solo:{longestKill:100,headshotKills:3},
+   squad:{longestKill:185,headshotKills:8}});
+ assert.equal(a.longestKill,185);
+ assert.equal(a.headshots,11);
+ assert.equal(a.revives,null);
+});

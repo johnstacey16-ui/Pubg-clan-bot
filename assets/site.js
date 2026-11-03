@@ -66,18 +66,30 @@
         '<div class="leader-kills">' + fmt(p.kills) + '<small>KILLS</small></div></div>';
     }).join('') || '<p class="empty">No verified clan players yet.</p>';
   }
+  function rankingMetric(p,key) {
+    if(Object.hasOwn(p,key))return p[key];
+    return p.advanced ? p.advanced[key] : null;
+  }
+  function statValue(value,decimal) {
+    return value===null||value===undefined?'—':(decimal?Number(value).toFixed(2):fmt(value));
+  }
   function renderLeaderboard() {
     if (!data) return;
     var platform = $('leader-console').value;
     var key = $('sort').value;
     var players = data.players.filter(function (p) { return platform === 'all' || platform === p.platform; });
-    players.sort(function (a,b) { return Number(b[key] == null ? -1 : b[key]) - Number(a[key] == null ? -1 : a[key]) || b.kills - a.kills; });
+    players.sort(function (a,b) {
+      var av=rankingMetric(a,key),bv=rankingMetric(b,key);
+      return Number(bv==null?-1:bv)-Number(av==null?-1:av)||b.kills-a.kills;
+    });
+    $('leader-stat-label').textContent=($('sort').options?.[$('sort').selectedIndex]?.textContent||key).toUpperCase();
     $('ranking-table').innerHTML = players.map(function (p,i) {
       return '<tr><td><strong>' + String(i+1).padStart(2,'0') + '</strong></td><td>' + playerLink(p) +
         ' <span class="badge">' + (p.platform==='xbox'?'Xbox':'PS') + '</span></td>' +
         '<td><strong>' + fmt(p.kills) + '</strong></td><td>' + fmt(p.wins) + '</td><td>' + fmt(p.matches) +
-        '</td><td>' + dec(p.kd) + '</td><td>' + (p.winRate==null?'—':dec(p.winRate)+'%') + '</td></tr>';
-    }).join('') || '<tr><td class="empty" colspan="7">No players for this filter.</td></tr>';
+        '</td><td>' + dec(p.kd) + '</td><td>' + (p.winRate==null?'—':dec(p.winRate)+'%') +
+        '</td><td><strong class="mint">' + statValue(rankingMetric(p,key),key==='kd'||key==='winRate'||key==='longestKill') + '</strong></td></tr>';
+    }).join('') || '<tr><td class="empty" colspan="8">No players for this filter.</td></tr>';
   }
   function renderRoster() {
     if (!data) return;
@@ -169,28 +181,52 @@
       $('match-results').innerHTML='<p class="match-empty">The website could not read saved match records. Try Reload saved matches.</p>';
     }
   }
+  function compareValue(p,key,mode) {
+    var raw=mode==='all'?null:p.modes?.[mode];
+    if(mode!=='all' && !raw)return null;
+    if(key==='kills')return mode==='all'?p.kills:raw.kills??null;
+    if(key==='wins')return mode==='all'?p.wins:raw.wins??null;
+    if(key==='matches')return mode==='all'?p.matches:raw.roundsPlayed??null;
+    if(key==='kd'||key==='winRate'){
+      if(mode==='all')return p[key];
+      var rounds=raw.roundsPlayed||0;
+      return rounds?Number((key==='kd'?(raw.kills||0)/rounds:
+        (raw.wins||0)*100/rounds).toFixed(2)):null;
+    }
+    var fields={damage:'damageDealt',headshots:'headshotKills',
+      assists:'assists',knocks:'dBNOs',revives:'revives',
+      top10:'top10s',longestKill:'longestKill'};
+    return mode==='all'?(p.advanced?.[key]??null):(raw[fields[key]]??null);
+  }
   function renderCompare() {
-    if (!data) return;
-    var names = data.players.map(function (p) { return p.name; });
-    if (!names.length) { $('compare-output').textContent = 'No verified clan players yet.'; return; }
-    if (!names.includes(compareA)) compareA=names[0];
-    if (!names.includes(compareB)) compareB=names[Math.min(1,names.length-1)];
-    [['compare-one',compareA],['compare-two',compareB]].forEach(function (pair) {
-      $(pair[0]).innerHTML = names.map(function (name) {
-        return '<option value="' + escapeHtml(name) + '"' + (name===pair[1]?' selected':'') + '>' + escapeHtml(name) + '</option>';
+    if(!data)return;
+    var names=data.players.map(function(p){return p.name;});
+    if(!names.length){$('compare-output').textContent='No verified clan players yet.';return;}
+    if(!names.includes(compareA))compareA=names[0];
+    if(!names.includes(compareB))compareB=names[Math.min(1,names.length-1)];
+    [['compare-one',compareA],['compare-two',compareB]].forEach(function(pair){
+      $(pair[0]).innerHTML=names.map(function(n){
+        return '<option value="'+escapeHtml(n)+'"'+(n===pair[1]?' selected':'')+'>'+escapeHtml(n)+'</option>';
       }).join('');
     });
-    var a=findPlayer(compareA), b=findPlayer(compareB);
-    var rows=[['Lifetime kills','kills'],['Wins','wins'],['Matches','matches'],['Kills per match','kd'],['Win rate','winRate']];
-    $('compare-output').innerHTML =
-      '<div class="compare-grid"><strong>' + escapeHtml(a.name) + '</strong><span>VS</span><strong>' + escapeHtml(b.name) + '</strong></div>' +
-      rows.map(function (row) {
-        var aa=Number(a[row[1]] || 0),bb=Number(b[row[1]] || 0),decimal=row[1]==='kd'||row[1]==='winRate';
-        return '<div class="compare-grid"><strong class="' + (aa>bb?'winner':'') + '">' + (decimal?dec(a[row[1]]):fmt(a[row[1]])) +
-          '</strong><span>' + escapeHtml(row[0]) + '</span><strong class="' + (bb>aa?'winner':'') + '">' +
-          (decimal?dec(b[row[1]]):fmt(b[row[1]])) + '</strong></div>';
-      }).join('') +
-      '<p class="small muted">Values are from actual stored PUBG stats. Kills per match uses kills ÷ player matches.</p>';
+    var a=findPlayer(compareA),b=findPlayer(compareB),mode=$('compare-mode').value;
+    var rows=[
+      ['Kills','kills'],['Wins','wins'],['Matches','matches'],
+      ['Kills per match','kd'],['Win rate (%)','winRate'],
+      ['Damage dealt','damage'],['Headshots','headshots'],['Assists','assists'],
+      ['Knockdowns','knocks'],['Revives','revives'],['Top 10 finishes','top10'],
+      ['Longest kill (m)','longestKill']
+    ];
+    $('compare-output').innerHTML=
+      '<div class="compare-grid"><strong>'+escapeHtml(a.name)+'</strong><span>VS</span><strong>'+escapeHtml(b.name)+'</strong></div>'+
+      rows.map(function(row){
+        var av=compareValue(a,row[1],mode),bv=compareValue(b,row[1],mode);
+        var decimal=['kd','winRate','longestKill'].includes(row[1]);
+        return '<div class="compare-grid"><strong class="'+(av!=null&&bv!=null&&av>bv?'winner':'')+'">'+
+          statValue(av,decimal)+'</strong><span>'+escapeHtml(row[0])+'</span><strong class="'+
+          (av!=null&&bv!=null&&bv>av?'winner':'')+'">'+statValue(bv,decimal)+'</strong></div>';
+      }).join('')+
+      '<p class="small muted">Only saved PUBG mode data is compared. Unavailable values show —; longest kill uses the maximum distance, not a total.</p>';
   }
 
   var profileRequest = 0;
@@ -261,6 +297,13 @@
           ' matches · '+fmt(s.kills)+' kills · '+fmt(s.wins)+' wins</span></div>';
       }).join('') || '<p class="muted">No mode details saved yet.</p>') +
       '<p><button class="secondary" type="button" data-match-player="'+escapeHtml(p.name)+'">⚑ View saved match analysis</button></p>'+
+      '<h3>Advanced lifetime statistics</h3><div class="advanced-stats">'+
+      [['Damage',p.advanced?.damage],['Headshots',p.advanced?.headshots],['Assists',p.advanced?.assists],
+       ['Knockdowns',p.advanced?.knocks],['Revives',p.advanced?.revives],['Top 10',p.advanced?.top10],
+       ['Longest kill (m)',p.advanced?.longestKill],['Heals',p.advanced?.heals],
+       ['Boosts',p.advanced?.boosts]].map(function(item){
+         return '<div><small>'+escapeHtml(item[0])+'</small><strong>'+statValue(item[1],item[0]==='Longest kill (m)')+'</strong></div>';
+       }).join('')+'</div>'+
       '<p class="small muted">Last saved player update: '+escapeHtml(dateText(p.updatedAt))+'. Upstream PUBG refresh is managed through the Discord dashboard.</p>'+
       '<div class="profile-history"><div class="profile-history-header"><h3>📈 Actual lifetime progress</h3><label>Metric <select id="history-metric">'+
       '<option value="kills">Kills</option><option value="wins">Wins</option><option value="matches">Matches</option></select></label></div>'+
@@ -321,6 +364,7 @@
   $('search').addEventListener('input',renderRoster);
   $('compare-one').addEventListener('change',function(e){compareA=e.target.value;renderCompare();});
   $('compare-two').addEventListener('change',function(e){compareB=e.target.value;renderCompare();});
+  $('compare-mode').addEventListener('change',renderCompare);
   $('reload').addEventListener('click',reload);
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);

@@ -31,7 +31,8 @@
 
 ### Phase 2 — Complete profiles and discovery
 - [ ] Player search across tracked accounts with consent/public visibility policy
-- [ ] Richer solo, duo, squad, FPP/TPP stats, advanced damage metrics and charts
+- [x] Add real advanced lifetime profile metrics and per-mode comparisons (damage, headshots, assists, knockdowns, revives and Top 10s)
+- [ ] Add weapon-specific mastery and richer advanced charts
 - [x] Shareable official-clan player links (`/#player/<encoded-gamertag>`) and per-player detail panels
 - [x] Real daily snapshots from all PUBG player updates, including baseline captured at the real last-fetch timestamp
 - [x] Read-only private-table-backed history API, with no player IDs or tracked outsiders exposed

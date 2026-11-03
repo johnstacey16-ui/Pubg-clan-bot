@@ -134,3 +134,10 @@ internal PUBG account IDs.
 
 The long-term archive, additional match collection and protected site refresh
 remain roadmap tasks.
+
+
+## Advanced lifetime profiles and comparisons
+
+The existing /api/public-stats response includes allowlisted advanced metrics from the official PUBG lifetime game modes: damage, headshot kills, assists, knockdowns, revives, Top 10 finishes, heals, boosts and longest kill. Additive values are summed over Solo/Duo/Squad TPP/FPP modes. Longest kill is the maximum across modes. Missing fields display a dash, not a fabricated zero.
+
+Leaderboards can rank by advanced metrics and player comparisons can select a specific TPP/FPP mode. These are Supabase-cache reads and do not make additional PUBG requests.
