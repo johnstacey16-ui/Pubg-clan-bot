@@ -86,10 +86,15 @@ async function handleCommand(body) {
       .order('total_kills', { ascending: false }).limit(10);
     if (error) throw error;
     if (!data?.length) {
-      const { count, error: queueError } = await db.from('player_import_queue')
-        .select('id', { count: 'exact', head: true }).eq('status', 'pending');
+      const { data: queue, error: queueError } = await db.from('player_import_queue')
+        .select('status').limit(1000);
       if (queueError) throw queueError;
-      return response('📊 No verified player stats yet. ' + (count || 0) + ' console players are awaiting import.');
+      const counts = (queue || []).reduce((a, row) => {
+        a[row.status] = (a[row.status] || 0) + 1; return a;
+      }, {});
+      return response('📊 No verified player stats yet. ' + (counts.pending || 0) +
+        ' awaiting import · ' + (counts.ambiguous || 0) + ' need platform confirmation · ' +
+        (counts.error || 0) + ' awaiting retry.');
     }
     return response('🏆 **Clan leaderboard — kills**\n' + data.map((p, i) =>
       (i + 1) + '. **' + p.gamertag.replaceAll('*', '\\*') + '** — ' + (p.total_kills || 0) +
