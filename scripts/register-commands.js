@@ -8,11 +8,8 @@ if (!DISCORD_BOT_TOKEN || !DISCORD_CLIENT_ID || !DISCORD_GUILD_ID) {
 }
 const url = 'https://discord.com/api/v10/applications/' + encodeURIComponent(DISCORD_CLIENT_ID) +
   '/guilds/' + encodeURIComponent(DISCORD_GUILD_ID) + '/commands';
-const commands = [
-  { name: 'stats', description: 'Show saved PUBG stats for a player', type: 1,
-    options: [{ name: 'gamertag', description: 'PUBG gamertag', type: 3, required: true }] },
-  { name: 'leaderboard', description: 'Show the clan leaderboard by kills', type: 1 }
-];
+const { commands } = require('../lib/command-definitions');
+
 (async () => {
   const result = await fetch(url, {
     method: 'PUT',
