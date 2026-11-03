@@ -8,12 +8,12 @@ const HEADERS = () => ({
   Accept: 'application/vnd.api+json'
 });
 
-async function pubg(path) {
+async function pubg(path, allowNotFound = false) {
   const result = await fetch('https://api.pubg.com/shards/' + path, {
     headers: HEADERS(),
     signal: AbortSignal.timeout(12000)
   });
-  if (result.status === 404) return { data: [] };
+  if (result.status === 404 && allowNotFound) return { data: [] };
   if (!result.ok) {
     const retry = result.headers.get('x-ratelimit-reset') || result.headers.get('retry-after');
     throw new Error('PUBG API HTTP ' + result.status + (retry ? ' (retry after/reset: ' + retry + ')' : ''));
@@ -21,7 +21,8 @@ async function pubg(path) {
   return result.json();
 }
 function lifetimeSummary(payload) {
-  const stats = payload?.data?.attributes?.gameModeStats || {};
+  const stats = payload?.data?.attributes?.gameModeStats;
+  if (!stats || typeof stats !== 'object') throw new Error('PUBG lifetime statistics unavailable');
   return MODES.reduce((totals, mode) => {
     const item = stats[mode] || {};
     totals.kills += Number(item.kills) || 0;
@@ -81,7 +82,7 @@ module.exports = async (req, res) => {
       const matches = {};
       for (const platform of SHARDS) {
         const params = new URLSearchParams({ 'filter[playerNames]': names.join(',') });
-        const result = await pubg(platform + '/players?' + params);
+        const result = await pubg(platform + '/players?' + params, true);
         matches[platform] = result.data || [];
       }
       for (const row of pending) {
