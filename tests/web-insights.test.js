@@ -79,14 +79,14 @@ test('teammate analysis groups recurring names without exposing archive internal
  assert.equal(result.body.items[0].kills,7);
  assert.equal(result.body.items[0].damage,560);
  assert.doesNotMatch(JSON.stringify(result.body),/account\.|telemetry|match_id|player_id|secretId/);
- assert.deepEqual(database.calls,['player_import_queue','players','clan_match_archive']);
+ assert.deepEqual(database.calls,['players','clan_match_archive']);
 });
-test('out-of-clan and pending players denied before cache or archive queries',async()=>{
+test('saved outside-clan and pending players can view existing insights',async()=>{
  for(const config of [{official:false},{status:'pending'}]){
   const database=db(config);
   const result=await publicInsights(database,{name:'ClanTester',kind:'teammates'});
-  assert.equal(result.status,404);
-  assert.deepEqual(database.calls,['player_import_queue']);
+  assert.equal(result.status,200);
+  assert.deepEqual(database.calls,['players','clan_match_archive']);
  }
 });
 test('unknown type and invalid multi-name input cannot access stored data',async()=>{

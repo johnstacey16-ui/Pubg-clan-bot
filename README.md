@@ -176,3 +176,8 @@ games played together, wins together, the partner's kills, damage, assists
 and knockdowns, and most recent archived match. The summary reflects
 **archived games only**, not guaranteed full PUBG career coverage, and
 does not imply that opponents are identified as rivals.
+
+
+### Expanded saved-player access
+
+All saved Xbox and PlayStation accounts, including people outside the official clan, can use the individual history, match, weapon and teammate views. The 180-day match archive trigger now accepts every saved console player instead of checking clan membership. Official clan totals are deliberately calculated only from the 55-name roster. The private `web_refresh_guard` table and RPC are versioned in `supabase/migrations/` and never accessible to browser-side Supabase credentials.

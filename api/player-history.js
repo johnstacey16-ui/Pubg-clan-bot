@@ -2,30 +2,21 @@
 const { createClient } = require('@supabase/supabase-js');
 const { escapeLike } = require('../lib/pubg-utils');
 
-// Only verified official clan members are eligible for this public read.
-// Never return player database IDs, PUBG account IDs, or tracked outsiders.
+// Saved Xbox and PlayStation players are eligible, including non-clan accounts.
+// Never expose internal player IDs, PUBG account IDs, or raw database records.
 async function playerHistory(db, suppliedName) {
   const name = String(suppliedName || '').trim();
   if (!name || name.length > 100 || /[\u0000-\u001f\u007f,]/.test(name))
     return { status: 400, data: { error: 'Invalid player name' } };
   const match = rows => (rows || []).find(x =>
     x.gamertag?.toLowerCase() === name.toLowerCase());
-  const roster = await db.from('player_import_queue')
-    .select('gamertag,status,is_clan_member')
-    .eq('is_clan_member', true)
-    .ilike('gamertag', escapeLike(name)).limit(10);
-  if (roster.error) throw new Error('Cannot read clan membership');
-  const member = match(roster.data);
-  if (!member || member.is_clan_member !== true || member.status !== 'matched')
-    return { status: 404, data: { error: 'Verified clan player not found' } };
-
   const saved = await db.from('players')
     .select('id,gamertag,platform')
     .ilike('gamertag', escapeLike(name)).limit(10);
   if (saved.error) throw new Error('Cannot read verified player');
   const player = match(saved.data);
   if (!player || !['xbox','psn'].includes(player.platform))
-    return { status: 404, data: { error: 'Verified clan player not found' } };
+    return { status: 404, data: { error: 'Saved console player not found' } };
 
   const history = await db.from('player_stat_snapshots')
     .select('observed_at,kills,wins,matches')
@@ -46,7 +37,7 @@ async function playerHistory(db, suppliedName) {
     metric: 'Lifetime totals, sampled after verified PUBG refreshes',
     points,
     note: points.length < 2
-      ? 'Only a genuine baseline is available. History grows as the bot refreshes PUBG statistics.'
+      ? 'Only a genuine baseline is available. History grows as the website or Discord bot refreshes PUBG statistics.'
       : 'Each point is a saved PUBG lifetime total. Changes between points may span multiple sessions.'
   } };
 }

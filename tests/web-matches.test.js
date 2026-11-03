@@ -53,11 +53,11 @@ test('correctly summarises PUBG roster, placement and performance',()=>{
  assert.equal(r.squad[0].isSelf,true);
  assert.doesNotMatch(JSON.stringify(r),/account\.|telemetry-link|Enemy/);
 });
-test('only verified clan players can fetch saved matches',async()=>{
+test('saved non-clan players can inspect their real cached matches',async()=>{
  const db=fakeDb({official:false});
  const r=await cachedPlayerMatches(db,'ClanTester');
- assert.equal(r.status,404);
- assert.deepEqual(db.calls,['player_import_queue']);
+ assert.equal(r.status,200);
+ assert.deepEqual(db.calls,['players','clan_match_archive','pubg_endpoint_cache','pubg_endpoint_cache']);
 });
 test('saved matches contain no internal IDs, URLs or opponent accounts',async()=>{
  const db=fakeDb();
@@ -65,7 +65,7 @@ test('saved matches contain no internal IDs, URLs or opponent accounts',async()=
  assert.equal(r.status,200);
  assert.equal(r.body.availableCount,1);
  assert.equal(r.body.indexedCount,1);
- assert.deepEqual(db.calls,['player_import_queue','players','clan_match_archive','pubg_endpoint_cache','pubg_endpoint_cache']);
+ assert.deepEqual(db.calls,['players','clan_match_archive','pubg_endpoint_cache','pubg_endpoint_cache']);
  assert.doesNotMatch(JSON.stringify(r.body),/account\.|private-telemetry|Enemy|cache_key|pubg_account_id/);
 });
 test('missing cache shows an honest empty state without PUBG requests',async()=>{
@@ -74,7 +74,7 @@ test('missing cache shows an honest empty state without PUBG requests',async()=>
  assert.equal(r.status,200);
  assert.equal(r.body.availableCount,0);
  assert.match(r.body.note,/No saved recent-match index/);
- assert.deepEqual(db.calls,['player_import_queue','players','clan_match_archive','pubg_endpoint_cache']);
+ assert.deepEqual(db.calls,['players','clan_match_archive','pubg_endpoint_cache']);
 });
 test('known indexed matches are not invented when detail cache is absent',async()=>{
  const db=fakeDb({missing:true});
@@ -104,7 +104,7 @@ test('previously saved match survives absence of temporary cache',async()=>{
  assert.equal(r.body.availableCount,1);
  assert.equal(r.body.matches[0].kills,8);
  assert.equal(r.body.matches[0].archived,true);
- assert.deepEqual(db.calls,['player_import_queue','players','clan_match_archive']);
+ assert.deepEqual(db.calls,['players','clan_match_archive']);
  assert.doesNotMatch(JSON.stringify(r.body),/account\.|telemetryURL|private\.example|player_id/);
 });
 test('archive output strips unknown keys and account IDs',async()=>{

@@ -47,9 +47,9 @@
 - [x] Read-only cached PUBG match-intelligence API (official players only; no public upstream calls)
 - [x] Responsive Match Intelligence website tab with optional squad breakdown
 - [x] Verify match-cache shape in Supabase; use existing Discord /recent to populate
-- [x] Persistent verified-clan match archive, 180-day retention, daily pruning via the existing secret-protected cron
+- [x] Persistent match archive for all saved Xbox/PS players, 180-day retention, daily pruning through protected cron
 - [x] Backfill three genuine saved match reports without using the PUBG API
-- [x] Private RLS and verified-roster access; public output uses an explicit field allowlist
+- [x] Private RLS and verified console-player lookup; public output uses an explicit field allowlist
 - [ ] Confirm trigger archiving on the next newly retrieved PUBG match in production
 - [x] Archived match details and squad breakdown on the website
 - [x] Recurring teammate analysis from real archived squads (games, wins, kills, damage and last played)

@@ -29,17 +29,18 @@ test('public history is chronological, real and excludes private IDs', async()=>
  const db=makeDb();
  const r=await playerHistory(db,'Xbox_Test');
  assert.equal(r.status,200);
- assert.deepEqual(db.calls,['player_import_queue','players','player_stat_snapshots']);
+ assert.deepEqual(db.calls,['players','player_stat_snapshots']);
  assert.deepEqual(r.data.points.map(p=>p.kills),[290,300]);
  assert.equal(r.data.platform,'xbox');
  assert.doesNotMatch(JSON.stringify(r.data),/account\.PRIVATE|"id":11/);
 });
-test('history requires verified clan membership before reading private player table',async()=>{
+test('tracked nonmembers have genuine saved history too',async()=>{
  const db=makeDb('pending');
  const r=await playerHistory(db,'Xbox_Test');
- assert.equal(r.status,404);
- assert.deepEqual(db.calls,['player_import_queue']);
+ assert.equal(r.status,200);
+ assert.deepEqual(db.calls,['players','player_stat_snapshots']);
 });
+
 test('invalid names and comma-separated searches are rejected',async()=>{
  for(const name of ['','name,outsider','\n','x'.repeat(101)]) {
    const db=makeDb();
@@ -63,17 +64,8 @@ test('one actual snapshot never fabricates historic points',async()=>{
  assert.match(r.data.note,/baseline/);
 });
 
-test('tracked outsider is denied even if a database adapter returns that row',async()=>{
+test('read-only history never returns private PUBG IDs',async()=>{
  const db=makeDb();
- const baseFrom=db.from.bind(db);
- db.from=function(table){
-   const q=baseFrom(table);
-   if(table==='player_import_queue')q.limit=async()=>({data:[
-     {gamertag:'Xbox_Test',status:'matched',is_clan_member:false}
-   ],error:null});
-   return q;
- };
  const r=await playerHistory(db,'Xbox_Test');
- assert.equal(r.status,404);
- assert.deepEqual(db.calls,['player_import_queue']);
+ assert.doesNotMatch(JSON.stringify(r.data),/account\.PRIVATE|pubg_account_id|player_id/);
 });

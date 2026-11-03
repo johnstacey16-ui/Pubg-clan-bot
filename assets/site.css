@@ -54,3 +54,20 @@
 #page-teammates table{min-width:730px}
 #page-weapons table{min-width:670px}
 @media(max-width:740px){.weapon-bar-row{grid-template-columns:minmax(75px,115px) 1fr 60px;gap:7px}.weapon-bar-row strong{font-size:10px}}
+
+/* Public Xbox / PSN search, isolated from official clan ranking totals. */
+.console-lookup{margin-top:18px}
+.console-lookup .panel-heading{flex-wrap:wrap}
+.console-lookup h2{margin:4px 0;font-size:21px}
+.console-search-form{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.console-search-form label{display:flex;flex-direction:column;gap:6px;color:#9fb3cf;font-size:10px;font-weight:800;letter-spacing:1px}
+.console-search-form input,.console-search-form select{min-height:43px;background:#0f1c2f;border:1px solid #37506b;border-radius:9px;padding:9px 12px;color:var(--text)}
+.console-search-form label:first-child{flex:1 1 220px}
+.console-search-form label:first-child input{width:100%}
+.console-search-form button{min-height:43px}
+.console-search-result{margin-top:16px;padding:15px;border-radius:11px;border:1px solid #2e4863;background:#14253d;color:#c2d4e8}
+.console-search-result strong{color:var(--text)}
+.console-search-result .lookup-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.console-search-result .lookup-stats{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0;font-variant-numeric:tabular-nums}
+.console-search-result .lookup-stats strong{color:var(--mint)}
+@media(max-width:740px){.console-search-form button{flex:1}.console-lookup .panel-heading{gap:9px}}

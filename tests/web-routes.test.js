@@ -14,6 +14,7 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(routes['/api/health'],'api/health.js');
  assert.equal(routes['/api/public-stats'],'api/public-stats.js');
  assert.equal(routes['/api/player-history'],'api/player-history.js');
+ assert.equal(routes['/api/player-lookup'],'api/player-lookup.js');
  assert.equal(routes['/api/public-matches'],'api/public-matches.js');
  assert.equal(routes['/api/public-insights'],'api/public-insights.js');
  assert.ok(v.builds.some(x=>x.src==='index.html'&&x.use==='@vercel/static'));
@@ -31,6 +32,7 @@ test('static web app assets and original reference pictures are present',()=>{
    assert.ok(read(f).length>100,'Missing asset '+f);
  const js=read('assets/site.js');
  assert.match(js,/\/api\/public-stats/);
+ assert.match(js,/\/api\/player-lookup/);
  assert.match(js,/\/api\/player-history/);
  assert.match(js,/\/api\/public-matches/);
  assert.match(js,/\/api\/public-insights/);

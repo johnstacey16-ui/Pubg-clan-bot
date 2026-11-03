@@ -1,6 +1,7 @@
 'use strict';
 (function () {
   var data = null;
+  var extraPlayers = [];
   var current = 'overview';
   var compareA = null;
   var compareB = null;
@@ -17,7 +18,77 @@
   }); };
   var modeName = function (s) { return String(s).replace('-fpp',' FPP').toUpperCase(); };
   var dateText = function (s) { return s ? new Date(s).toLocaleString('en-GB', {dateStyle:'medium',timeStyle:'short'}) : 'Not available'; };
-  var findPlayer = function (name) { return data && data.players.find(function (p) { return p.name === name; }); };
+  var visiblePlayers = function () {
+    var combined=[...(data?.players||[])];
+    for(const p of extraPlayers) {
+      var i=combined.findIndex(x=>x.name.toLowerCase()===p.name.toLowerCase());
+      if(i>=0)combined[i]=p;else combined.push(p);
+    }
+    return combined;
+  };
+  var findPlayer = function (name) {
+    return visiblePlayers().find(p=>p.name.toLowerCase()===String(name).toLowerCase())||null;
+  };
+  async function lookupAnyPlayer(refresh,nameValue,platformValue,openAfter) {
+    var name=String(nameValue||$('console-gamertag').value).trim();
+    var platform=platformValue||$('console-platform').value;
+    var result=$('console-search-result');
+    if(!name||name.length>100||name.includes(',')||!['xbox','psn'].includes(platform)){
+      result.textContent='Enter one valid gamertag and select Xbox or PlayStation.';
+      return false;
+    }
+    $('console-gamertag').value=name;
+    $('console-platform').value=platform;
+    $('console-search').disabled=true;
+    $('console-refresh').disabled=true;
+    result.textContent=refresh?'Checking the shared PUBG API request budget…':'Searching saved PUBG statistics…';
+    try {
+      var url='/api/player-lookup';
+      var response=await fetch(refresh?url:url+'?name='+encodeURIComponent(name)+'&platform='+platform,
+        refresh?{
+          method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+          body:JSON.stringify({name,platform})
+        }:{cache:'no-store',headers:{Accept:'application/json'}});
+      var payload=await response.json();
+      if(!response.ok) {
+        result.textContent=(payload.error||'Unable to retrieve player')+
+          (payload.retryAfterSeconds?' Try again in about '+payload.retryAfterSeconds+' seconds.':'');
+        return false;
+      }
+      if(!payload.found){
+        result.innerHTML='<strong>'+escapeHtml(name)+'</strong> ('+
+          (platform==='xbox'?'Xbox':'PlayStation')+') — not in Supabase yet. '+
+          'Select Refresh from PUBG to request a first lookup.';
+        return false;
+      }
+      var p=payload.player;
+      extraPlayers=extraPlayers.filter(x=>!(x.name.toLowerCase()===p.name.toLowerCase()));
+      extraPlayers.push(p);
+      if(data){
+        renderCompare();chooseMatchPlayer(matchName);chooseInsightPlayers();
+      }
+      result.innerHTML='<div class="lookup-top"><strong>'+escapeHtml(p.name)+
+        ' · '+(platform==='xbox'?'Xbox':'PlayStation')+'</strong><span class="badge '+
+        (payload.isClanMember?'verified':'')+'">'+
+        (payload.isClanMember?'Official clan':'Other console player')+'</span></div>'+
+        '<div class="lookup-stats"><span><strong>'+fmt(p.kills)+'</strong> kills</span>'+
+        '<span><strong>'+fmt(p.wins)+'</strong> wins</span>'+
+        '<span><strong>'+fmt(p.matches)+'</strong> matches</span></div>'+
+        '<p class="small muted">Saved PUBG update: '+escapeHtml(dateText(p.updatedAt))+
+        (payload.refreshState?' · '+escapeHtml(payload.refreshState):'')+'</p>'+
+        '<button type="button" class="secondary" data-profile="'+escapeHtml(p.name)+'">Open full player profile →</button>';
+      if(openAfter)openProfile(p.name,true);
+      if(refresh&&payload.refreshState==='refreshed')reload();
+      return true;
+    }catch(error){
+      result.textContent='Saved PUBG statistics are temporarily unavailable. Please try again.';
+      return false;
+    }finally{
+      $('console-search').disabled=false;
+      $('console-refresh').disabled=false;
+    }
+  }
+
   function go(page, preserveHash) {
     if (['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'].indexOf(page) === -1) return;
     current = page;
@@ -127,7 +198,7 @@
 
   function chooseMatchPlayer(preferred) {
     if(!data)return;
-    var names=data.players.map(function(p){return p.name;});
+    var names=visiblePlayers().map(function(p){return p.name;});
     if(preferred && names.indexOf(preferred)!==-1)matchName=preferred;
     if(names.indexOf(matchName)===-1)matchName=names[0]||null;
     $('match-player').innerHTML=names.map(function(name){
@@ -206,7 +277,7 @@
 
   function chooseInsightPlayers(preferredKind,preferredName) {
     if(!data)return;
-    var names=data.players.map(function(p){return p.name;});
+    var names=visiblePlayers().map(function(p){return p.name;});
     for(const kind of ['weapons','teammates']){
       if(preferredKind===kind&&names.includes(preferredName))insightNames[kind]=preferredName;
       if(!names.includes(insightNames[kind]))insightNames[kind]=names[0]||null;
@@ -287,7 +358,7 @@
   }
   function renderCompare() {
     if(!data)return;
-    var names=data.players.map(function(p){return p.name;});
+    var names=visiblePlayers().map(function(p){return p.name;});
     if(!names.length){$('compare-output').textContent='No verified clan players yet.';return;}
     if(!names.includes(compareA))compareA=names[0];
     if(!names.includes(compareB))compareB=names[Math.min(1,names.length-1)];
@@ -397,7 +468,7 @@
       '<div class="profile-history"><div class="profile-history-header"><h3>📈 Actual lifetime progress</h3><label>Metric <select id="history-metric">'+
       '<option value="kills">Kills</option><option value="wins">Wins</option><option value="matches">Matches</option></select></label></div>'+
       '<div id="profile-history" aria-live="polite">Loading history…</div></div>';
-    if(!fromLink) history.pushState(null,'','/#player/'+encodeURIComponent(p.name));
+    if(!fromLink) history.pushState(null,'','/#player/'+p.platform+'/'+encodeURIComponent(p.name));
     if(typeof $('profile').showModal==='function') {
       if(!$('profile').open)$('profile').showModal();
     } else $('profile').setAttribute('open','');
@@ -449,7 +520,8 @@
   });
   $('share-profile').addEventListener('click',async function(){
     var name=$('profile-name').textContent;
-    var url=location.origin+'/#player/'+encodeURIComponent(name);
+    var player=findPlayer(name);
+    var url=location.origin+'/#player/'+(player?.platform||'xbox')+'/'+encodeURIComponent(name);
     try {
       if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
       await navigator.clipboard.writeText(url);
@@ -466,6 +538,11 @@
   $('compare-two').addEventListener('change',function(e){compareB=e.target.value;renderCompare();});
   $('compare-mode').addEventListener('change',renderCompare);
   $('reload').addEventListener('click',reload);
+  $('console-player-form').addEventListener('submit',function(e){
+    if(e?.preventDefault)e.preventDefault();
+    lookupAnyPlayer(false);
+  });
+  $('console-refresh').addEventListener('click',function(){lookupAnyPlayer(true);});
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);
   for(const kind of ['weapons','teammates']){
@@ -477,15 +554,26 @@
   $('weapon-category').addEventListener('change',renderWeaponInsights);
   $('weapon-search').addEventListener('input',renderWeaponInsights);
   var hash=location.hash.slice(1);
-  var sharedName=null;
+  var sharedName=null,sharedPlatform=null;
   if(hash.startsWith('player/')){
-    try { sharedName=decodeURIComponent(hash.slice(7)); } catch(error) {}
+    try {
+      var path=hash.slice(7),slash=path.indexOf('/');
+      if(slash>=0 && ['xbox','psn'].includes(path.slice(0,slash))){
+        sharedPlatform=path.slice(0,slash);
+        sharedName=decodeURIComponent(path.slice(slash+1));
+      } else sharedName=decodeURIComponent(path);
+    }catch(error){}
   }
-  go(sharedName?'players':(['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
-  reload().then(function(){
-    if(sharedName) {
-      if(findPlayer(sharedName))openProfile(sharedName,true);
-      else if(data){$('notice').hidden=false;$('notice').textContent='This profile is not part of the verified public clan roster.';}
+  go(sharedName?'overview':(['overview','leaderboard','players','modes','matches','weapons','teammates','compare','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
+  reload().then(async function(){
+    if(!sharedName)return;
+    if(findPlayer(sharedName) && (!sharedPlatform||findPlayer(sharedName).platform===sharedPlatform)){
+      openProfile(sharedName,true);
+    } else if(sharedPlatform) {
+      await lookupAnyPlayer(false,sharedName,sharedPlatform,true);
+    } else {
+      $('console-gamertag').value=sharedName;
+      $('console-search-result').textContent='Select a console for this shared player, then search saved data.';
     }
   });
 })();

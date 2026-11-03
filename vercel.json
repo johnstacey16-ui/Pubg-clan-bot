@@ -36,6 +36,10 @@
       "dest": "api/public-stats.js"
     },
     {
+      "src": "/api/player-lookup",
+      "dest": "api/player-lookup.js"
+    },
+    {
       "src": "/api/player-history",
       "dest": "api/player-history.js"
     },
