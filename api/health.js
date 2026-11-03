@@ -10,13 +10,14 @@ module.exports = async (req, res) => {
     const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false }
     });
-    const [queue, players, run, registered] = await Promise.all([
+    const [queue, players, run, registered, dashboard] = await Promise.all([
       db.from('player_import_queue').select('status,is_clan_member').limit(1000),
       db.from('players').select('id', { count: 'exact', head: true }),
       db.from('pubg_sync_control').select('last_run_at').eq('id', 1).maybeSingle(),
-      db.from('bot_metadata').select('value').eq('setting', 'guild_commands:1411949587299569788').maybeSingle()
+      db.from('bot_metadata').select('value').eq('setting', 'guild_commands:1411949587299569788').maybeSingle(),
+      db.from('discord_dashboard_channels').select('channel_id,last_rendered_at').eq('guild_id','1411949587299569788').maybeSingle()
     ]);
-    if (queue.error || players.error || run.error || registered.error) throw new Error('Database query failed');
+    if (queue.error || players.error || run.error || registered.error || dashboard.error) throw new Error('Database query failed');
     const counts = (queue.data || []).reduce((result, item) => {
       result[item.status] = (result[item.status] || 0) + 1;
       return result;
@@ -26,6 +27,7 @@ module.exports = async (req, res) => {
       clan_roster: (queue.data || []).filter(x => x.is_clan_member).length,
       tracked_names: (queue.data || []).filter(x => !x.is_clan_member).length,
       discord_commands: { expected: commands.length, registered: registered.data?.value === VERSION },
+      dashboard: { configured: Boolean(dashboard.data?.channel_id),last_rendered_at: dashboard.data?.last_rendered_at || null },
       queue: { pending: counts.pending || 0, matched: counts.matched || 0,
         ambiguous: counts.ambiguous || 0, not_found: counts.not_found || 0,
         error: counts.error || 0 },

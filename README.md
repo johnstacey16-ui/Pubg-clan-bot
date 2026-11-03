@@ -2,11 +2,12 @@
 
 A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional **Groq** AI commentary. It supports **Xbox and PlayStation only** (no PC). Match/season/mastery features are subject to actual PUBG API availability.
 
-## Commands (14)
+## Commands (15)
 
 | Discord command | What it does |
 |---|---|
 | /stats gamertag | Fetch a verified console player, cache lifetime stats for two hours, display Groq commentary |
+| /dashboard setup, refresh, status | Configure permanent Supabase-backed Discord dashboard cards, edit in place, and refresh from PUBG on request |
 | /leaderboard | Rank **official roster** players by saved lifetime kills and progressively import pending names |
 | /roster [page] | View the 55 supplied clan names and import progress |
 | /clan | Official clan totals and verified member counts |
@@ -49,3 +50,14 @@ Important: the legacy public.players, public.matches and public.clan_records Sup
 Run npm test and npm run check. Verify deployments and /api/health, then exercise commands inside Discord.
 
 This is the *first comprehensive command pack*, not yet every possible PUBG API value. Planned additions: verified clan membership editing, richer mastery formatting, full per-weapon records, telemetry analytics (damage timeline, opponents, kills, revives, paths), match and telemetry-based analysis, official PUBG season leaderboard, multi-metric clan rankings, detailed match history storage, and robust free-tier cache retention. PUBG telemetry and match data are only available while the upstream source retains them.
+
+## Dedicated Discord dashboard channel
+
+1. Create a text channel in the clan Discord server (for example `#clan-stats`). Make it read-only for members if you want only the bot to post there. Ensure the bot has View Channel, Send Messages, and Embed Links permissions. Optional Pin Messages permission lets it pin each card automatically.
+2. As a member with Manage Channels permission, run `/dashboard setup` **inside that channel**. The bot creates five permanent cards: **overview, lifetime leaderboard, six game-mode totals, roster/import progress, and saved records/recent updates**. Message IDs and the channel are recorded in Supabase; running setup again edits existing messages instead of flooding the channel.
+3. Any member can tap **Refresh dashboards** on a card. The bot checks for pending roster imports and up to two stale players, uses the existing atomic PUBG API budget, saves any available changes in Supabase, then edits the original five posts. A global 90-second click cooldown and database lock prevent duplicate requests. The user gets a private confirmation instead of a new public chat message.
+4. `/dashboard status` (channel managers) reports the configured location and last refresh. `/dashboard refresh` also triggers a refresh without using a button.
+
+Dashboard cards show **saved Supabase data immediately**, without wasting API calls every time someone opens Discord. Detailed player, match, and weapon reports remain available from the other slash commands. New account identities continue to be imported in batches within rate limits. This is a message dashboard (Discord embeds), not an arbitrary interactive website embedded in a Discord message.
+
+If dashboard setup fails, verify that the bot is installed in the server and can send embeds in the chosen channel. Dashboard data is not publicly exposed through Supabase; only the signed Discord bot backend uses its service key.

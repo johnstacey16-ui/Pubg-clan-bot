@@ -9,6 +9,7 @@ const core = require('../lib/commands-core');
 const extra = require('../lib/commands-extra');
 const { ensureGuildCommands } = require('../lib/register-commands');
 const squadAnalysis = require('../lib/squad-analysis');
+const channelDashboard = require('../lib/channel-dashboard');
 
 const CLAN_GUILD = '1411949587299569788';
 const createDb = () => createClient(process.env.SUPABASE_URL,
@@ -226,6 +227,7 @@ async function processCommand(body) {
     return formatStats(result, name);
   }
   if (body.data?.name === 'leaderboard') return leaderboard(db);
+  if (body.data?.name === 'dashboard') return channelDashboard.command(db, body);
   if (body.data?.name === 'help') return core.help();
   if (body.data?.name === 'roster') return core.roster(db, body);
   if (body.data?.name === 'clan') return core.clan(db);
@@ -269,14 +271,20 @@ module.exports = async (req, res) => {
   catch { return res.status(400).json({ error: 'Invalid JSON' }); }
 
   if (body.type === 1) return res.status(200).json({ type: 1 });
-  if (body.type !== 2) return res.status(200).json({
+  const isDashboardButton = body.type === 3 &&
+    body.data?.custom_id === channelDashboard.REFRESH_BUTTON;
+  if (body.type !== 2 && !isDashboardButton) return res.status(200).json({
     type: 4, data: { content: 'Unsupported interaction.', flags: 64 }
   });
 
   // Acknowledge in Discord's three-second window. Vercel keeps the task alive
   // via waitUntil; once complete we replace the loading state with real stats.
   const work = Promise.resolve()
-    .then(() => processCommand(body))
+    .then(() => isDashboardButton
+      ? body.guild_id === CLAN_GUILD
+        ? channelDashboard.refresh(createDb(), body, true)
+        : 'This button is not available outside the clan server.'
+      : processCommand(body))
     .catch(error => {
       console.error('Discord stats command failed:', error.message);
       return '⚠️ Stats are temporarily unavailable. Please try again shortly.';
@@ -289,6 +297,6 @@ module.exports = async (req, res) => {
   if (body.guild_id === CLAN_GUILD) {
     waitUntil(Promise.allSettled([work, ensureGuildCommands(createDb())]));
   } else waitUntil(work);
-  return res.status(200).json({ type: 5 });
+  return res.status(200).json({ type: 5, data: { flags: 64 } });
 };
 module.exports.config = { api: { bodyParser: false } };

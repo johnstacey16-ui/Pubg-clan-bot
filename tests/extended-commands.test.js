@@ -6,12 +6,12 @@ const core = require('../lib/commands-core');
 const extra = require('../lib/commands-extra');
 const { matchEndpoint } = require('../lib/pubg-endpoints');
 
-test('all fourteen Discord commands have unique names and valid required-option order', () => {
-  assert.equal(commands.length, 14);
+test('all fifteen Discord commands have unique names and valid required-option order', () => {
+  assert.equal(commands.length, 15);
   assert.equal(new Set(commands.map(x => x.name)).size, commands.length);
   const names = new Set(commands.map(x => x.name));
   for (const name of ['stats','leaderboard','roster','help','clan',
-    'compare','modes','recent','match','squad','teammates','mastery','season','ranked'])
+    'compare','modes','recent','match','squad','teammates','mastery','season','ranked','dashboard'])
     assert.ok(names.has(name), 'Missing command ' + name);
   for (const cmd of commands) {
     assert.match(cmd.name, /^[a-z]{1,32}$/);
