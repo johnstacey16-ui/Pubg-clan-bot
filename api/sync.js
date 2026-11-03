@@ -41,6 +41,17 @@ async function checked(promise, label) {
   if (result.error) throw new Error(label + ': ' + result.error.message);
   return result.data;
 }
+async function saveLifetimeDetails(db, playerId, platform, lifetime) {
+  const modes = lifetime?.data?.attributes?.gameModeStats;
+  if (!modes || typeof modes !== 'object' || Array.isArray(modes))
+    throw new Error('Invalid PUBG lifetime game-mode response');
+  await checked(db.from('player_lifetime_details').upsert({
+    player_id: playerId,
+    platform,
+    game_mode_stats: modes,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'player_id' }).select('player_id'), 'Save game-mode details');
+}
 function exactPlayer(list, gamertag) {
   return (list || []).find(item => item?.attributes?.name?.toLowerCase() === gamertag.toLowerCase());
 }
@@ -102,6 +113,7 @@ module.exports = async (req, res) => {
             total_kills: totals.kills, total_wins: totals.wins,
             matches_played: totals.rounds, last_checked: new Date().toISOString()
           }).eq('id', player.id).select('id'), 'Refresh player');
+          await saveLifetimeDetails(db, player.id, player.platform, data);
           summary.refreshed++;
         } catch (error) {
           if (/HTTP 429/.test(error.message)) throw error;
@@ -141,13 +153,14 @@ module.exports = async (req, res) => {
             const lifetime = await pubg(platform + '/players/' +
               encodeURIComponent(player.id) + '/seasons/lifetime');
             const totals = lifetimeSummary(lifetime);
-            await checked(db.from('players').upsert({
+            const saved = await checked(db.from('players').upsert({
               gamertag: row.gamertag, platform,
               pubg_account_id: player.id,
               total_kills: totals.kills, total_wins: totals.wins,
               matches_played: totals.rounds,
               last_checked: new Date().toISOString()
-            }, { onConflict: 'gamertag' }).select('id'), 'Save player');
+            }, { onConflict: 'gamertag' }).select('id').single(), 'Save player');
+            await saveLifetimeDetails(db, saved.id, platform, lifetime);
             await checked(db.from('player_import_queue').update({
               status: 'matched', platform, pubg_account_id: player.id,
               checked_at: new Date().toISOString(), note: 'Lifetime stats imported'
