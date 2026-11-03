@@ -1,19 +1,12 @@
 'use strict';
 const crypto = require('node:crypto');
 const { createClient } = require('@supabase/supabase-js');
+const { escapeLike, safeDiscord, topPlayedModes } = require('../lib/pubg-utils');
 
 // Discord requires a response within three seconds. The core commands intentionally
 // use deterministic formatting rather than waiting for an external AI completion.
 const allowedSkewSeconds = 300;
 const HOME_GUILD_ID = '1411949587299569788';
-function escapeLike(value) {
-  // PostgreSQL ILIKE treats % and _ as wildcards unless escaped.
-  return value.replace(/[\\%_]/g, ch => '\\' + ch);
-}
-function safeDiscord(value) {
-  return String(value).replace(/[\\*_`~|>]/g, ch => '\\' + ch).slice(0, 120);
-}
-
 const response = (content, ephemeral = false) => ({
   type: 4,
   data: { content: String(content).slice(0, 2000), allowed_mentions: { parse: [] }, ...(ephemeral ? { flags: 64 } : {}) }
@@ -88,13 +81,9 @@ async function handleCommand(body) {
     if (matchResult.error) throw matchResult.error;
     if (modesResult.error) throw modesResult.error;
     const matches = matchResult.data;
-    const modes = Object.entries(modesResult.data?.game_mode_stats || {})
-      .filter(([key, stats]) => ['solo', 'duo', 'squad', 'solo-fpp', 'duo-fpp', 'squad-fpp'].includes(key)
-        && stats && Number(stats.roundsPlayed) > 0)
-      .sort((a, b) => Number(b[1].roundsPlayed) - Number(a[1].roundsPlayed));
-    const topModeLines = modes.slice(0, 3).map(([mode, stats]) =>
-      '• ' + mode.toUpperCase() + ': ' + (stats.roundsPlayed || 0) +
-      ' played · ' + (stats.kills || 0) + ' kills · ' + (stats.wins || 0) + ' wins');
+    const topModeLines = topPlayedModes(modesResult.data?.game_mode_stats).map(m =>
+      '• ' + m.mode.toUpperCase() + ': ' + m.rounds +
+      ' played · ' + m.kills + ' kills · ' + m.wins + ' wins');
     const games = Number(player.matches_played) || 0;
     const kills = Number(player.total_kills) || 0;
     const lastSync = player.last_checked ? new Date(player.last_checked).toISOString().slice(0, 10) : 'Not yet synced';
