@@ -18,6 +18,10 @@ test('all fifteen Discord commands have unique names and valid required-option o
     assert.ok(cmd.description.length <= 100);
     let optionalSeen = false;
     for (const option of cmd.options || []) {
+      if (cmd.name === 'dashboard') {
+        assert.equal(option.type, 1, 'Dashboard options must be subcommands');
+        continue;
+      }
       assert.ok(option.type === 3 || option.type === 4);
       if (!option.required) optionalSeen = true;
       if (option.required) assert.equal(optionalSeen, false,
