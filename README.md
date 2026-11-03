@@ -322,3 +322,5 @@ and four player requests). Only fresh successful PUBG responses become
 new season/ranked snapshots; cache fallbacks do not masquerade as new data.
 If the shared API limit is busy, the batch stops rather than bypassing it.
 No additional Vercel cron, paid service or public credentials are involved.
+
+Collection progress is also exposed safely in the public /api/health response under season_collection, showing how many clan players have been attempted and the most recent result and completion time. No account IDs or player identities are included.

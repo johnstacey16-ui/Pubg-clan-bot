@@ -88,3 +88,12 @@ test('missing API key avoids all database claims',async()=>{
   else process.env.PUBG_API_KEY=old;
  }
 });
+
+test('public health exposes collection status without PUBG account IDs',()=>{
+ const fs=require('node:fs');const path=require('node:path');
+ const code=fs.readFileSync(path.join(__dirname,'../api/health.js'),'utf8');
+ assert.match(code,/clan_season_sync_state/);
+ assert.match(code,/players_attempted:/);
+ assert.match(code,/last_finished_at:/);
+ assert.doesNotMatch(code,/select\('.*pubg_account_id/);
+});

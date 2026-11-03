@@ -17,7 +17,7 @@
 - [x] Build overview, sortable leaderboard, searchable roster, per-player mode details and comparisons
 - [x] Add visualizations from real stored mode data; no invented statistics
 - [x] Test web response shaping, routes and sensitive-data exclusion with development checks (19/19 passed)
-- [x] Run all repository Node tests in independent GitHub Actions CI (97/97 passing on 2026-11-03; workflow installs pinned backend dependencies)
+- [x] Run all repository Node tests in independent GitHub Actions CI (103/103 passing on 2026-11-03; workflow installs pinned backend dependencies)
 
 ## Deployment and acceptance gates
 
@@ -94,7 +94,7 @@
 - [ ] Accessibility and performance regression gate
 
 ### Phase 5 — Production hardening
-- [x] Full automated Node regression suite: 97/97 tests pass in GitHub Actions on 2026-11-03
+- [x] Full automated Node regression suite: 103/103 tests pass in GitHub Actions on 2026-11-03
 - [ ] Complete live desktop, Android and Xbox browser checks
 - [ ] Error monitoring, stale-data indicators and backoff
 - [ ] Confirm free-tier usage, hosting and API-request budgets
