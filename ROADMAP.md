@@ -44,7 +44,7 @@
 
 ### Phase 4 — Secure updates and Discord integration
 - [ ] Authenticated manager-only website refresh using existing budget and database lock
-- [ ] Discord dashboard **View full dashboard** link
+- [x] Discord dashboard **View full dashboard** link
 - [ ] Configurable Discord clan membership management
 - [ ] Audit remaining legacy RLS/grants before any new public write feature
 - [ ] Accessibility and performance regression gate

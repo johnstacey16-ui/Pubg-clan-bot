@@ -41,6 +41,8 @@ test('dashboard renders eight reusable Supabase-powered cards with refresh butto
     assert.equal(card.components[0].components[0].type,10);
     assert.equal(card.components[1].components[0].custom_id,REFRESH_BUTTON);
     assert.equal(card.components[1].components[0].style,1);
+    assert.equal(card.components[1].components[1].style,5);
+    assert.equal(card.components[1].components[1].url,'https://pubg-clan-bot.vercel.app/');
     assert.deepEqual(card.allowed_mentions,{parse:[]});
   }
   const content = name => rendered[name].components[0].components.map(x=>x.content||'').join('\n');
