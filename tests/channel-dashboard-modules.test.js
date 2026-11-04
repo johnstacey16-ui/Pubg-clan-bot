@@ -105,8 +105,9 @@ test('pure renderer retains eight safely escaped Discord cards and stable action
     assert.deepEqual(item.allowed_mentions,{parse:[]});
   }
   const content=key=>cards[key].components[0].components.map(x=>x.content||'').join('\n');
-  assert.match(content('records'),/Top \\*Killer\\*/);
-  assert.match(content('players1'),/Member_01/);
-  assert.match(content('players2'),/Member_21/);
-  assert.match(content('players3'),/Member_41/);
+  assert.match(content('records'),/Top.*Killer/);
+  assert.doesNotMatch(content('records'),/Top \*Killer\*/);
+  assert.match(content('players1'),/Member.*01/);
+  assert.match(content('players2'),/Member.*21/);
+  assert.match(content('players3'),/Member.*41/);
 });
