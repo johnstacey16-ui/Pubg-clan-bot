@@ -6,7 +6,8 @@ A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional *
 
 The website and Discord bot now share **this repository, Vercel project, and Supabase**.
 
-- Website: https://pubg-clan-bot.vercel.app/
+- Website: https://pubg-help-clan.vercel.app/
+- The previous `https://pubg-clan-bot.vercel.app/` address remains attached to the same Vercel project as a compatibility URL until Discord's Interactions Endpoint URL is switched to the new address.
 - Read-only web API: `GET /api/public-stats`
 - Existing Discord webhook: `POST /interactions` (unchanged)
 - Existing scheduled sync: `GET /api/sync` (unchanged)
@@ -64,7 +65,7 @@ The original 55 supplied names are marked as official clan members in player_imp
 
 ## Configuration and security
 
-Production Vercel environment variables: DISCORD_PUBLIC_KEY, DISCORD_CLIENT_ID, DISCORD_BOT_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY, PUBG_API_KEY, CRON_SECRET, optionally GROQ_API_KEY. Never print, paste into chat, or commit secret values. Set Discord Interactions Endpoint URL to https://pubg-clan-bot.vercel.app/interactions. The bot validates Ed25519 signatures over the raw Discord request body before processing or registering commands. The backend acknowledges slash commands immediately and edits the deferred reply after fetching data.
+Production Vercel environment variables: DISCORD_PUBLIC_KEY, DISCORD_CLIENT_ID, DISCORD_BOT_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY, PUBG_API_KEY, CRON_SECRET, optionally GROQ_API_KEY. Never print, paste into chat, or commit secret values. Set Discord Interactions Endpoint URL to https://pubg-help-clan.vercel.app/interactions. The bot validates Ed25519 signatures over the raw Discord request body before processing or registering commands. The backend acknowledges slash commands immediately and edits the deferred reply after fetching data.
 
 Important: the legacy public.players, public.matches and public.clan_records Supabase tables **still have RLS disabled**. Restrict their access using deliberate grants/RLS policies before treating the system as fully secured; avoid enabling RLS blindly without reviewing client access.
 
@@ -77,7 +78,7 @@ This is the *first comprehensive command pack*, not yet every possible PUBG API 
 ## Phase 2 — Shareable verified player profiles and real history
 
 Any saved Xbox/PlayStation player can have a shareable platform-aware hash link, such as
-`https://pubg-clan-bot.vercel.app/#player/DrBeryl762`.
+`https://pubg-help-clan.vercel.app/#player/DrBeryl762`.
 The site opens the profile on any browser without logging into Discord. The
 player profile shows available lifetime mode details, a copyable link and a
 metric selector for **kills, wins and matches over time**.
@@ -507,4 +508,4 @@ The vendored legacy 320px preview runner previously served the neutral SVG manne
 
 ### Public production HTTP acceptance
 
-GitHub Actions now verifies the actual public `https://pubg-clan-bot.vercel.app` host *after* the local Chrome job on a main-branch push. It checks six public static GET resources: clan homepage, toolkit homepage, navigation CSS, mannequin SVG, sensitivity JS and the original calculator bundle, including expected content/MIME and the two-way navigation links. No PUBG, Supabase, or Discord APIs are contacted. A source deployment marked READY is not treated as proof of HTTP accessibility until this separate test passes. A protected/inaccessible URL causes an explicit failed external verification; no automatic bypass or paid upgrade is attempted.
+GitHub Actions now verifies the actual public `https://pubg-help-clan.vercel.app` host *after* the local Chrome job on a main-branch push. It checks six public static GET resources: clan homepage, toolkit homepage, navigation CSS, mannequin SVG, sensitivity JS and the original calculator bundle, including expected content/MIME and the two-way navigation links. No PUBG, Supabase, or Discord APIs are contacted. A source deployment marked READY is not treated as proof of HTTP accessibility until this separate test passes. A protected/inaccessible URL causes an explicit failed external verification; no automatic bypass or paid upgrade is attempted.
