@@ -37,7 +37,7 @@ test('only genuine current season IDs are accepted',()=>{
  assert.equal(currentId({data:[{id:'unsafe/id',attributes:{isCurrentSeason:true}}]}),null);
  assert.equal(currentId({data:[]}),null);
 });
-test('collects two verified players with one index request per shard',()=>withKey(async()=>{
+test('collects three verified players with one index request per shard',()=>withKey(async()=>{
  const db=fakeDb([player(),player(12),player(13)]),indexes=[],calls=[];
  const status=await collectClanSeasons(db,{
   cachedEndpoint:async(_db,shard,path,ttl,opts)=>{
