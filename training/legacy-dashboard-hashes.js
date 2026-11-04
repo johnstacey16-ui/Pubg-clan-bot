@@ -4,6 +4,7 @@
 // to /dashboard/, while #panel-* and calculator anchors belong to the toolkit.
 (function(){
   if(typeof window==='undefined'||!window.location)return;
+  if(window.location.pathname==='/dashboard/'||window.location.pathname==='/dashboard')return;
   var hash=window.location.hash.slice(1);
   var pages=new Set(['overview','leaderboard','players','modes','matches',
     'weapons','season','teammates','compare','awards','analysis','data-tools',

@@ -567,3 +567,7 @@ that key quota, but we still cap per-run work and downloads.
 
 
 The adaptive limit is defined in `supabase/migrations/20261104_adaptive_pubg_user_priority.sql`. The first user arriving after a fully utilised idle period may still wait up to one rolling 65-second window; cached profiles remain readable in the meantime. This policy never exceeds the one-key ten-request budget.
+
+### Fully embedded Clan Dashboard tool
+
+The HELP Toolkit is the only visual shell. Its first sidebar tool is **Clan Dashboard** (`panel-clan`) with all 18 PUBG API data sections rendered as sub-tabs in the same DOM and styled with the trainer's typography, header, controls and palette. **Back to Toolkit** returns to the previously active training tool, including on mobile. There is no iframe and dashboard assets load only when the tool is opened. `/dashboard/#player/...`, Discord buttons and old deep links open the same integrated panel; `/index.html` redirects to `/dashboard/`. See `training/clan-dashboard-shell.css`, `training/clan-dashboard-scoped.css`, and `training/js/clan-dashboard-loader.js`.

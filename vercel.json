@@ -113,7 +113,7 @@
     },
     {
       "src": "/dashboard/",
-      "dest": "/index.html"
+      "dest": "/training/index.html"
     },
     {
       "src": "/",
@@ -121,7 +121,8 @@
     },
     {
       "src": "/index.html",
-      "dest": "/index.html"
+      "status": 308,
+      "headers": {"Location": "/dashboard/"}
     }
   ],
   "crons": [

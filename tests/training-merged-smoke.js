@@ -26,7 +26,7 @@ const server=http.createServer(async(req,res)=>{
  if(p==='/training')return respond(res,308,'',undefined);
  if(p==='/training/')p='/training/index.html';
  if(p==='/')p='/training/index.html';
- if(p==='/dashboard/')p='/index.html';
+ if(p==='/dashboard/')p='/training/index.html';
  if(p==='/favicon.ico')return respond(res,204,'');
  if(p==='/ _vercel/insights/script.js'.replace(' ',''))return respond(res,200,'','text/javascript');
  const full=path.resolve(ROOT,'.'+p);
@@ -58,12 +58,12 @@ async function main(){
    });
    const entry=await page.goto(base+'/',{waitUntil:'domcontentloaded'});
    assert.equal(entry.status(),200);
-   await page.waitForSelector('.command-centre-bridge a[href="/dashboard/"]');
+   // At mobile widths the sidebar is deliberately off-canvas until opened.
+   await page.waitForSelector('#app-toolnav [data-open-panel="panel-clan"]',{state:'attached'});
    assert.match(await page.title(),/HELP/);
-   assert.equal(await page.locator('#app-toolnav [data-open-panel]').count(),6);
+   assert.equal(await page.locator('#app-toolnav [data-open-panel]').count(),7);
    assert.equal(await page.locator('#active-tool-index').getAttribute('aria-label'),'Tool 2 of 7');
-   assert.match(await page.locator('.command-centre-bridge').innerText(),
-    /HELP CLAN/);
+   assert.match(await page.locator('#site-masthead').textContent(),/HELP CLAN/);
    for(const id of panels){
     await page.evaluate(panel=>{
      const btn=document.querySelector('#app-toolnav [data-open-panel="'+panel+'"]');
@@ -79,11 +79,10 @@ async function main(){
    assert.match(await image.text(),/<svg/);
    const script=await page.request.get(base+'/training/js/sensitivity.js');
    assert.equal(script.status(),200);
-   const stylesheet=await page.request.get(base+'/training/command-centre-bridge.css');
+   const stylesheet=await page.request.get(base+'/training/clan-dashboard-shell.css');
    assert.equal(stylesheet.status(),200);
-   const mainLink=await page.locator('.command-centre-bridge a[href="/dashboard/"]').getAttribute('href');
-   assert.equal(mainLink,'/dashboard/');
-   assert.equal(await page.locator('#app-toolnav .unified-clan-entry').getAttribute('href'),'/dashboard/');
+   assert.equal(await page.locator('#app-toolnav .unified-clan-entry').getAttribute('aria-controls'),'panel-clan');
+   assert.ok((await stylesheet.text()).includes('.clan-tool-header'));
    // Real navigation between both pages (not an iframe) shares the same origin.
    // On narrow screens the shared navigation is an accessible off-canvas menu.
    if(width<=900){
@@ -92,10 +91,13 @@ async function main(){
    }
    await page.locator('#app-toolnav .unified-clan-entry').click();
    await page.waitForURL(base+'/dashboard/');
-   assert.match(await page.title(),/HELP Clan.*Clan Dashboard/);
-   await page.locator('.brand[href="/"]').click();
-   await page.waitForURL(base+'/');
-   assert.match(await page.title(),/HELP/);
+   assert.ok(await page.locator('#panel-clan').evaluate(el=>el.classList.contains('active')));
+   assert.equal(await page.locator('#active-tool-index').getAttribute('aria-label'),'Tool 1 of 7');
+   assert.equal(await page.locator('#clan-section-tabs [data-page]').count(),18);
+   assert.equal(await page.locator('iframe').count(),0);
+   await page.locator('[data-return-tool]').click();
+   assert.match(page.url(),/\/#panel-backpack$/);
+   assert.ok(await page.locator('#panel-backpack').evaluate(el=>el.classList.contains('active')));
    assert.deepEqual(notFound,[],'Unresolved training assets at '+width+'px');
    assert.deepEqual(errors,[],'JavaScript errors at '+width+'px');
    console.log('UNIFIED HELP CHROME PASS: '+width+'px; 7 shared tools, root and dashboard navigation');

@@ -1,62 +1,67 @@
 'use strict';
-const test=require('node:test');
-const assert=require('node:assert/strict');
-const fs=require('node:fs');
-const vm=require('node:vm');
-const path=require('node:path');
-const root=path.resolve(__dirname,'..');
-const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-test('HELP toolkit owns the root with clan as the first unified navigation entry',()=>{
-  const routes=JSON.parse(read('vercel.json')).routes;
-  assert.equal(routes.find(x=>x.src==='/')?.dest,'/training/index.html');
-  assert.equal(routes.find(x=>x.src==='/dashboard/')?.dest,'/index.html');
-  const toolkit=read('training/index.html');
-  const nav=toolkit.slice(toolkit.indexOf('<nav id="app-toolnav"'),toolkit.indexOf('</nav>',toolkit.indexOf('<nav id="app-toolnav"')));
-  assert.ok(nav.indexOf('href="/dashboard/"')<nav.indexOf('data-open-panel="panel-sensitivity"'));
-  assert.match(toolkit,/<base href="\/training\/">/);
-  assert.match(read('index.html'),/href="\/assets\/toolkit-theme\.css"/);
-  assert.match(read('index.html'),/class="nav-link suite-current" href="\/dashboard\/"/);
-  assert.match(read('assets/toolkit-theme.css'),/--mint:#e9bc77/);
+const test=require('node:test'),assert=require('node:assert/strict');
+const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const read=p=>fs.readFileSync(path.join(__dirname,'..',p),'utf8');
+test('Clan Dashboard is a real first tool inside the original HELP Toolkit shell',()=>{
+ const routes=JSON.parse(read('vercel.json')).routes;
+ assert.equal(routes.find(x=>x.src==='/')?.dest,'/training/index.html');
+ assert.equal(routes.find(x=>x.src==='/dashboard/')?.dest,'/training/index.html');
+ const html=read('training/index.html');
+ const nav=html.slice(html.indexOf('<nav id="app-toolnav"'),html.indexOf('</nav>',html.indexOf('<nav id="app-toolnav"')));
+ assert.ok(nav.indexOf('data-open-panel="panel-clan"')<nav.indexOf('data-open-panel="panel-sensitivity"'));
+ assert.match(html,/id="panel-clan" class="hub-main clan-workspace"/);
+ assert.match(html,/data-return-tool aria-label="Back to Toolkit"/);
+ assert.match(html,/id="clan-section-tabs"/);
+ assert.equal((html.match(/class="page"/g)||[]).length,18);
+ assert.match(html,/<base href="\/training\/"/);
+ assert.doesNotMatch(html,/<iframe\b/);
+ assert.doesNotMatch(html,/class="command-centre-bridge"/);
 });
-test('root legacy clan hashes redirect without interrupting toolkit anchor links',()=>{
-  const script=read('training/legacy-dashboard-hashes.js');
-  for(const [hash,expected] of [
-    ['#player/xbox/Example','/dashboard/#player/xbox/Example'],
-    ['#matches','/dashboard/#matches'],['#panel-sensitivity',null],['#panel-combat',null]
-  ]){
-    let to=null;
-    const location={hash,replace:x=>{to=x;}};
-    vm.runInNewContext(script,{window:{location}});
-    assert.equal(to,expected);
-  }
+test('dashboard scripts load lazily inside the same DOM',()=>{
+ const loader=read('training/js/clan-dashboard-loader.js');
+ assert.match(loader,/help:panel-changed/);
+ assert.match(loader,/detail\?\.id==='panel-clan'/);
+ for(const script of ['site.js','clan-analytics.js','command-centre.js',
+   'telemetry-view.js','survival-view.js','cache-health.js'])
+   assert.ok(loader.includes('/assets/'+script),script);
+ const nav=read('training/js/app-navigation.js');
+ assert.match(nav,/lastToolkitPanel/);
+ assert.match(nav,/selectPanel\(lastToolkitPanel/);
+ assert.match(nav,/location\.pathname\.startsWith\('\/dashboard'\)/);
+ assert.match(nav,/id\.startsWith\('player\/'\)/);
 });
-test('dashboard player history and Discord links remain under /dashboard/',()=>{
-  const js=read('assets/site.js'),discord=read('lib/channel-dashboard-render.js');
-  assert.match(js,/location\.origin\+'\/dashboard\/#player\//);
-  assert.match(discord,/https:\/\/pubg-help-clan\.vercel\.app\/dashboard\//);
-  assert.doesNotMatch(js,/location\.origin\+'\/#player\//);
+test('legacy player and match links target toolkit dashboard without a redirect loop',()=>{
+ const script=read('training/legacy-dashboard-hashes.js');
+ for(const [pathname,hash,expected] of [
+   ['/','#player/xbox/Example','/dashboard/#player/xbox/Example'],
+   ['/','#matches','/dashboard/#matches'],
+   ['/','#panel-sensitivity',null],
+   ['/dashboard/','#matches',null]]){
+   let redirected=null;
+   vm.runInNewContext(script,{window:{location:{
+     pathname,hash,replace:x=>{redirected=x;}
+   }}});
+   assert.equal(redirected,expected);
+ }
+ const js=read('assets/site.js');
+ const discord=read('lib/channel-dashboard-render.js');
+ assert.match(js,/location\.origin\+'\/dashboard\/#player\//);
+ assert.match(discord,/https:\/\/pubg-help-clan\.vercel\.app\/dashboard\//);
 });
-
-
-test('shared HELP navigation counts the dashboard as tool one and avoids redundant toolkit links',()=>{
-  const toolkit=read('training/index.html');
-  const nav=read('training/js/app-navigation.js');
-  const dashboard=read('index.html');
-  assert.match(toolkit,/aria-label="Tool 2 of 7">02 <i>\/<\/i> 07/);
-  assert.match(nav,/const toolCount = panelIds.length \+ externalToolCount/);
-  assert.match(dashboard,/href="\/#panel-sensitivity">Open Sensitivity Studio/);
-  assert.doesNotMatch(dashboard,/Training toolkit ↗/);
-  assert.match(read('training/command-centre-bridge.css'),/#e9bc77/);
+test('old dashboard CSS is isolated and inherits the real HELP trainer palette',()=>{
+ const css=read('training/clan-dashboard-scoped.css');
+ const theme=read('training/clan-dashboard-shell.css');
+ assert.match(css,/#panel-clan \.hero/);
+ assert.match(css,/#panel-clan \.page/);
+ assert.match(css,/#panel-clan \.nav-link/);
+ assert.match(theme,/Barlow Condensed/);
+ assert.match(theme,/#e9bc77/);
+ assert.match(theme,/clan-section-tabs/);
+ assert.doesNotMatch(css,/(^|\n)\.sidebar\s*\{/);
 });
-
-
-test('production smoke validates the new dashboard links rather than removed legacy navigation',()=>{
-  const smoke=read('tests/production-http-smoke.js');
-  const dashboard=read('index.html');
-  assert.match(smoke,/Dashboard must link to the unified HELP training navigation/);
-  assert.match(smoke,/Toolkit must number Clan Dashboard as the first tool/);
-  assert.match(smoke,/legacy player-link compatibility/);
-  assert.match(dashboard,/href="\/#panel-sensitivity"/);
-  assert.doesNotMatch(dashboard,/href="\/training\/"/);
-  assert.doesNotMatch(smoke,/Clan homepage must link into training/);
+test('production smoke verifies the shared toolkit shell on every entry route',()=>{
+ const smoke=read('tests/production-http-smoke.js');
+ assert.match(smoke,/toolkit shell/);
+ assert.match(smoke,/clan-dashboard-scoped\.css/);
+ assert.match(smoke,/Back to Toolkit/);
 });

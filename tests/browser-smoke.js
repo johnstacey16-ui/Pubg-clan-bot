@@ -30,7 +30,7 @@ const health={status:'ok',last_sync_attempt:'2026-11-03T20:00:00Z',
  cache_health:{schemaVersion:1,checkedAt:'2026-11-04T00:30:00Z',
   cache:{total:8,fresh:4,expired:4,newestFetchedAt:'2026-11-03T20:00:00Z',
    byCategory:{matches:3,player_profiles:1}},
-  budget:{reservations:2,limit:8,windowSeconds:65},
+  budget:{reservations:2,limit:10,windowSeconds:65},
   observations:{lifetimePlayers:51,seasonPlayers:1,seasonAttempts:0}}
 };
 function reply(res,code,body){
@@ -39,6 +39,13 @@ function reply(res,code,body){
 }
 const server=http.createServer(async(req,res)=>{
  const uri=new URL(req.url,'http://127.0.0.1');
+ // Vercel serves this analytics route in production; it is intentionally inert
+ // in the offline Chrome fixture. Chrome also probes favicon.ico automatically.
+ if(uri.pathname==='/_vercel/insights/script.js'){
+  res.writeHead(204,{'Content-Type':'text/javascript'});res.end();return;
+ }
+ if(uri.pathname==='/favicon.ico'){res.writeHead(204);res.end();return;}
+
  if(uri.pathname==='/api/public-stats')return reply(res,200,fixture);
  if(uri.pathname==='/api/health')return reply(res,200,health);
  if(uri.pathname==='/api/public-insights'&&uri.searchParams.get('kind')==='survival')
@@ -52,9 +59,9 @@ const server=http.createServer(async(req,res)=>{
  if(uri.pathname.startsWith('/api/'))return reply(res,200,{
   schemaVersion:1,items:[],matches:[],rows:[],entries:[],error:'No synthetic records'
  });
- const uriPath=(uri.pathname==='/'||uri.pathname==='/dashboard/')?'/index.html':path.posix.normalize(uri.pathname);
- if(uriPath.includes('..')||!(/^\/(?:assets|design)\/[\w./-]+$/.test(uriPath)||
-   uriPath==='/index.html'))return reply(res,404,{error:'Invalid asset'});
+ const uriPath=(uri.pathname==='/'||uri.pathname==='/dashboard/'||uri.pathname==='/training/')?'/training/index.html':path.posix.normalize(uri.pathname);
+ if(uriPath.includes('..')||!(/^\/(?:assets|design|training)\/[\w./-]+$/.test(uriPath)))
+   return reply(res,404,{error:'Invalid asset'});
  try{
   const file=path.join(root,uriPath.substring(1)),bytes=await fs.readFile(file);
   const ext=path.extname(file),types={
@@ -78,6 +85,10 @@ async function run(){
    const errors=[],page=await browser.newPage({viewport:{width,height:850}});
    page.on('pageerror',e=>errors.push(e.message));
    page.on('console',e=>{if(e.type()==='error')errors.push(e.text());});
+   page.on('response',response=>{
+    if(response.status()>=400 && response.url().startsWith('http://127.0.0.1:'))
+      errors.push('HTTP '+response.status()+' '+response.url());
+   });
    const response=await page.goto('http://127.0.0.1:'+server.address().port+'/dashboard/',{
     waitUntil:'networkidle'});
    assert.equal(response.status(),200);
@@ -98,7 +109,7 @@ async function run(){
    await click(page,'health');
    await page.waitForFunction(()=>document.getElementById('health-metrics')
     .textContent.includes('Shared PUBG reservations'));
-   assert.match(await page.locator('#health-metrics').innerText(),/2 \/ 8/);
+   assert.match(await page.locator('#health-metrics').innerText(),/2 \/ 10/);
    await click(page,'sources');
    assert.ok(await page.locator('#dictionary-kind option').count()>0);
    await click(page,'survival');
