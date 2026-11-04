@@ -3,13 +3,12 @@
 <head>
 <base href="/training/">
 <script src="/training/legacy-dashboard-hashes.js"></script>
-<link rel="stylesheet" href="command-centre-bridge.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#090f18">
+<meta name="theme-color" content="#0a1019">
 <!-- Vercel Web Analytics for this plain HTML site (no React package needed). -->
 <script defer src="/_vercel/insights/script.js"></script>
-<title>HELP — PUBG Field Toolkit</title>
+<title>HELP Clan — PUBG Field Toolkit &amp; Clan Dashboard</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
@@ -412,13 +411,10 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
 <link rel="stylesheet" href="unified-workspace.css">
 <link rel="stylesheet" href="recoil-analyzer.css">
 <link rel="stylesheet" href="damage-guide.css">
+<link rel="stylesheet" href="/training/clan-dashboard-scoped.css">
+<link rel="stylesheet" href="/training/clan-dashboard-shell.css">
 </head>
 <body>
-<nav class="command-centre-bridge" aria-label="PUBG Command Centre cross navigation">
-  <a href="/dashboard/" aria-label="Open HELP Clan dashboard">← Clan Dashboard</a>
-  <strong>HELP CLAN <span>/ FIELD TOOLKIT</span></strong>
-  <a href="/dashboard/#matches">Matches &amp; replays →</a>
-</nav>
 <div id="app-shell">
   <aside id="app-sidebar" aria-label="Toolkit navigation">
     <header id="site-masthead" aria-label="HELP Clan PUBG Toolkit">
@@ -435,11 +431,11 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
       <nav id="app-toolnav" aria-label="Toolkit tools">
         <div class="nav-tool-group">
   <div class="nav-group-label"><span>01</span>ALL TOOLS</div>
-  <a class="nav-tool unified-clan-entry" href="/dashboard/" aria-label="Open Clan Dashboard">
+  <button class="nav-tool unified-clan-entry" type="button" data-open-panel="panel-clan" aria-controls="panel-clan" aria-label="Open Clan Dashboard">
     <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
     <span class="nav-tool-name">Clan Dashboard</span>
     <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-  </a>
+  </button>
   <button class="nav-tool active" type="button" data-open-panel="panel-sensitivity" aria-controls="panel-sensitivity" aria-current="page">
     <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5" fill="#111f2c"/><circle cx="16" cy="17" r="2.5" fill="#111f2c"/></svg></span>
     <span class="nav-tool-name">Sensitivity Studio</span>
@@ -501,6 +497,451 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
       </div>
     </header>
     <main id="app-workspace" aria-label="Toolkit workspace">
+<!-- Clan Dashboard lives inside the HELP Toolkit, not in an iframe. -->
+<div id="panel-clan" class="hub-main clan-workspace" aria-hidden="true">
+  <div class="clan-tool-header">
+    <div class="clan-tool-heading">
+      <p class="clan-kicker">01 / HELP CLAN · LIVE PUBG INTELLIGENCE</p>
+      <h1>CLAN <span>DASHBOARD</span></h1>
+      <p class="clan-intro">Real console statistics, player search, roster, leaderboards, matches, replays and analysis — all inside the toolkit.</p>
+      <p class="clan-section-current">Viewing / <strong id="crumb">Overview</strong></p>
+    </div>
+    <div class="clan-tool-controls">
+      <a href="/#panel-sensitivity" class="clan-return" data-return-tool aria-label="Back to Toolkit">← BACK TO TOOLKIT</a>
+      <button type="button" class="clan-reload" id="reload">↻ RELOAD SAVED STATS</button>
+    </div>
+  </div>
+  <div class="clan-tool-subnav-label">CLAN DATA &amp; API TOOLS <span>SELECT A SECTION</span></div>
+  <nav id="clan-section-tabs" class="clan-section-tabs" aria-label="Clan Dashboard sections">
+
+      <button class="nav-link active" type="button" data-page="overview"><span>◫</span> Overview</button>
+      <button class="nav-link" type="button" data-page="leaderboard"><span>🏆</span> Leaderboards</button>
+      <button class="nav-link" type="button" data-page="players"><span>♙</span> Player roster</button>
+      <button class="nav-link" type="button" data-page="modes"><span>▥</span> Game modes</button>
+      <button class="nav-link" type="button" data-page="matches"><span>⚑</span> Match intelligence</button>
+      <button class="nav-link" type="button" data-page="weapons"><span>⌖</span> Weapon mastery</button>
+      <button class="nav-link" type="button" data-page="season"><span>🏆</span> Season & ranked</button>
+      <button class="nav-link" type="button" data-page="teammates"><span>♟</span> Teammate insights</button>
+      <button class="nav-link" type="button" data-page="compare"><span>⚔</span> Compare players</button>
+      <button class="nav-link" type="button" data-page="awards"><span>🥇</span> Clan awards</button>
+      <button class="nav-link" type="button" data-page="analysis"><span>◈</span> Deep analysis</button>
+      <button class="nav-link" type="button" data-page="data-tools"><span>⇩</span> Data tools</button>
+      <button class="nav-link" type="button" data-page="help"><span>?</span> Analytics guide</button>
+      <button class="nav-link" type="button" data-page="survival"><span>♧</span> Survival mastery</button>
+      <button class="nav-link" type="button" data-page="sources"><span>▤</span> PUBG data library</button>
+      <button class="nav-link" type="button" data-page="global"><span>◎</span> Official regional ranks</button>
+      <button class="nav-link" type="button" data-page="health"><span>◉</span> Data health</button>
+      <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
+    
+  </nav>
+  <div id="content" class="clan-dashboard-content">
+
+    <p id="notice" role="status" aria-live="polite" class="notice">Loading saved PUBG statistics…</p>
+    <section class="page" id="page-overview">
+      <div class="hero"><div><p class="eyebrow">◢ XBOX + PLAYSTATION. EVERY PLAYER.</p><h1>Console <em>intelligence.</em></h1><p>Search and refresh any PUBG console player. Your clan's achievements and rankings stay together below.</p><div class="hero-actions"><button type="button" class="primary" data-go="leaderboard">Explore rankings ↗</button><button type="button" class="secondary" data-go="players">Browse roster →</button><a class="secondary toolkit-hero-link" href="/#panel-sensitivity">Open Sensitivity Studio ↗</a></div></div><div class="hero-mark" aria-hidden="true"><div class="ring"></div><b>C<span>//</span>C</b><small>DATA · INSIGHT · PERFORMANCE</small></div></div>
+      <section class="card panel console-lookup" aria-labelledby="player-search-title">
+        <div class="panel-heading"><div><p class="eyebrow subtle">ANY XBOX OR PLAYSTATION PLAYER</p>
+          <h2 id="player-search-title">Find a player. Refresh their stats.</h2></div>
+          <span class="chip">PUBG LIVE + SUPABASE</span></div>
+        <form id="console-player-form" class="console-search-form">
+          <label>GAMERTAG <input id="console-gamertag" type="search" maxlength="100"
+            placeholder="Enter an Xbox gamertag or PSN ID" autocomplete="off" required></label>
+          <label>PLATFORM <select id="console-platform"><option value="auto" selected>Auto-detect (recommended)</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label>
+          <button id="console-search" class="secondary" type="submit">⌕ Search saved</button>
+          <button id="console-refresh" class="primary" type="button">↻ Refresh from PUBG</button>
+        </form>
+        <div id="console-search-result" class="console-search-result" role="status" aria-live="polite">
+          Enter a gamertag. We'll check saved data first, then detect Xbox or PlayStation if you request a PUBG refresh.
+        </div>
+        <p class="small muted">PUBG only needs both console checks for a new, unknown name. After discovery we save its console and account ID, so later refreshes use that account directly. All requests share the Discord bot's rate budget.</p>
+      </section>
+      <div class="section-heading"><div><p class="eyebrow subtle">AT A GLANCE</p><h2>Lifetime performance</h2></div><span class="muted small" id="snapshot">Waiting for saved data</span></div>
+      <div class="stats">
+        <article class="card metric"><div class="metric-title">TOTAL KILLS <span class="mint">⌖</span></div><strong id="kills">—</strong><small>Verified player lifetime kills</small></article>
+        <article class="card metric"><div class="metric-title">TOTAL WINS <span class="lavender">★</span></div><strong id="wins">—</strong><small>Lifetime victories</small></article>
+        <article class="card metric"><div class="metric-title">PLAYER MATCHES <span class="sky">▥</span></div><strong id="matches">—</strong><small>Summed player records</small></article>
+        <article class="card metric"><div class="metric-title">ROSTER VERIFIED <span class="gold">♙</span></div><strong id="verified">—</strong><small id="verified-caption">Official clan members</small></article>
+      </div>
+      <div class="two-columns">
+        <article class="card panel"><div class="panel-heading"><div><p class="eyebrow subtle">PERFORMANCE SPLIT</p><h3>Kills by game mode</h3></div><button type="button" class="text-button" data-go="modes">Full breakdown ↗</button></div><div id="overview-chart" class="bars" aria-label="Kills by game mode"></div><p class="small muted">Real lifetime totals from saved PUBG game mode data.</p></article>
+        <article class="card panel"><div class="panel-heading"><div><p class="eyebrow subtle">CLAN ELITE</p><h3>Top performers</h3></div><button type="button" class="text-button" data-go="leaderboard">See all ↗</button></div><div id="top-five"></div></article>
+      </div>
+      <div class="two-columns balanced">
+        <article class="card panel"><div class="panel-heading"><h3>Roster verification</h3></div><div class="progress-meta"><strong id="roster-percent">—</strong><span id="roster-fraction">—</span></div><div class="progress"><div id="roster-progress"></div></div><p id="roster-status" class="small muted">Waiting for import status</p></article>
+        <article class="card panel"><div class="panel-heading"><h3>Console split</h3></div><div class="platform-totals"><span class="round xbox">X</span><div>Xbox <strong id="xbox-count">—</strong></div><span class="round ps">PS</span><div>PlayStation <strong id="ps-count">—</strong></div></div><p class="small muted">Only official, verified clan members are counted.</p></article>
+      </div>
+    </section>
+    <section class="page" id="page-leaderboard" hidden><div class="page-head"><p class="eyebrow">THE COMPETITIVE EDGE</p><h1>Clan <em>leaderboards.</em></h1><p>Sort actual saved statistics; change platforms instantly.</p></div><div class="card panel"><div class="filters"><label>Rank by <select id="sort"><option value="kills">Lifetime kills</option><option value="wins">Lifetime wins</option><option value="matches">Matches played</option><option value="kd">Kills per match</option><option value="winRate">Win rate</option><option value="headshots">Headshots</option><option value="damage">Total damage</option><option value="assists">Assists</option><option value="knocks">Knockdowns</option><option value="revives">Revives</option><option value="top10">Top 10 finishes</option><option value="longestKill">Longest kill</option></select></label><label>Platform <select id="leader-console"><option value="all">Both consoles</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label></div><div class="scroll-table"><table><thead><tr><th>#</th><th>PLAYER</th><th>KILLS</th><th>WINS</th><th>MATCHES</th><th>KILLS/MATCH</th><th>WIN RATE</th><th id="leader-stat-label">RANKED VALUE</th></tr></thead><tbody id="ranking-table"></tbody></table></div></div></section>
+    <section class="page" id="page-players" hidden><div class="page-head"><p class="eyebrow">THE FULL ROSTER</p><h1>Every <em>clan member.</em></h1><p>See verified accounts alongside names still being imported.</p></div><div class="card panel"><div class="filters"><label>Player search <input id="search" type="search" placeholder="Search gamer tags…" autocomplete="off"></label><label>Console <select id="player-console"><option value="all">Both consoles</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option><option value="unknown">Unconfirmed</option></select></label><label>Import status <select id="player-status"><option value="all">All players</option><option value="verified">Verified</option><option value="pending">Pending</option><option value="ambiguous">Ambiguous</option><option value="not_found">Not found</option></select></label><label>Sort roster <select id="roster-sort"><option value="name">Name A–Z</option><option value="kills">Most kills</option><option value="wins">Most wins</option><option value="favourites">Favourites first</option></select></label><label class="roster-fav-filter">Favourites only <input type="checkbox" id="roster-favs-only"></label><label>Per page <select id="roster-page-size"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select></label></div><div class="scroll-table"><table><thead><tr><th>PLAYER / FAVOURITE</th><th>PLATFORM</th><th>STATUS</th><th>KILLS</th><th>WINS</th><th>MATCHES</th></tr></thead><tbody id="roster-table"></tbody></table></div><div class="roster-pagination"><p id="roster-count" class="small muted" aria-live="polite"></p><div class="roster-page-buttons"><button type="button" id="roster-prev" class="secondary" aria-label="Previous roster page">← Previous</button><span id="roster-page-label" aria-live="polite">Page 1 of 1</span><button type="button" id="roster-next" class="secondary" aria-label="Next roster page">Next →</button></div></div></div></section>
+    <section class="page" id="page-modes" hidden><div class="page-head"><p class="eyebrow">PLAYSTYLE BREAKDOWN</p><h1>Every <em>game mode.</em></h1><p>Solo, Duo, Squad and FPP: all actual saved PUBG lifetime numbers.</p></div><div class="card panel"><h3>Clan kills by mode</h3><div id="modes-chart" class="bars"></div><div class="scroll-table"><table><thead><tr><th>MODE</th><th>MATCHES</th><th>KILLS</th><th>WINS</th><th>KILLS/MATCH</th><th>DAMAGE</th><th>ASSISTS</th></tr></thead><tbody id="modes-table"></tbody></table></div></div></section>
+    <section class="page" id="page-matches" hidden>
+      <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore archived squad and match results saved for up to 180 days. Read cached results for free, or open actual recorded PUBG telemetry for 2D coordinate replay and match-local rival analysis.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Saved console player <select id="match-player"></select></label>
+          <button type="button" class="secondary" id="match-reload">↻ Reload saved matches</button>
+          <button type="button" class="primary" id="match-refresh">↻ Refresh recent from PUBG</button>
+        </div>
+        <p id="match-note" class="small muted" aria-live="polite">Choose a saved console player to explore existing match records.</p>
+        <div id="match-results" class="match-results" aria-live="polite"></div>
+      </div>
+
+      <div class="card panel telemetry-panel" id="telemetry-panel">
+        <div class="panel-heading"><div><p class="eyebrow subtle">REAL MATCH EVENTS · NO ESTIMATES</p>
+          <h2>Combat intelligence and 2D telemetry replay</h2></div>
+          <span class="chip">REAL RECORDED COORDINATES</span></div>
+        <p class="small muted">The replay requires a genuine saved match with an official PUBG telemetry asset. The server verifies the selected player actually participated, checks the telemetry host, and reuses saved derived reports. Match CDN requests are separate from rate-limited PUBG statistics, but the shared web cooldown still applies.</p>
+        <div class="filters">
+          <label>Saved match <select id="telemetry-match"></select></label>
+          <button id="telemetry-load" type="button" class="primary" disabled>Analyse selected match</button>
+        </div>
+        <p id="telemetry-status" class="small muted" aria-live="polite">Select a player and load their saved matches above.</p>
+        <div id="telemetry-report" aria-live="polite"></div>
+
+        <div class="telemetry-events">
+          <div class="panel-heading"><div><h3>Source-indexed player event explorer</h3>
+            <p class="small muted">Find the selected player's meaningful recorded events. Positions remain in the replay tracks. Event indexes refer to the original PUBG telemetry array.</p></div>
+            <button id="telemetry-event-export" type="button" class="secondary">Download safe activity JSON</button>
+          </div>
+          <div class="filters">
+            <label>Event type <select id="telemetry-event-type"><option value="">All recorded player events</option></select></label>
+            <label>Filter actor, subject or event <input id="telemetry-event-search" type="search" maxlength="120" placeholder="Search recorded events"></label>
+            <button id="telemetry-event-prev" type="button" class="secondary">← Earlier events</button>
+            <button id="telemetry-event-next" type="button" class="secondary">Later events →</button>
+          </div>
+          <p id="telemetry-event-count" class="small muted" aria-live="polite">Load real match telemetry to explore events.</p>
+          <div class="scroll-table"><table><thead><tr>
+            <th>SOURCE #</th><th>TIME</th><th>TYPE</th><th>ACTOR</th><th>SUBJECT</th><th>REPLAY</th>
+          </tr></thead><tbody id="telemetry-event-list"></tbody></table></div>
+          <p class="small muted">The analysis may return a bounded sample of events for exceptionally long matches. Event indexes and genuine event times are preserved; no absent events or positions are invented.</p>
+        </div>
+        <div class="telemetry-rival-trends">
+          <div class="panel-heading"><div><h3>Opponent trends across saved match analyses</h3>
+            <p class="small muted">Compare rivals across distinct saved match reports. No new PUBG fetch and no guessed career totals.</p></div>
+            <button id="telemetry-rivals-refresh" type="button" class="secondary">Read saved rival trends</button>
+          </div>
+          <p id="telemetry-rivals-note" class="small muted" aria-live="polite">Select a player and read analysed match reports.</p>
+          <div class="scroll-table"><table><thead><tr>
+            <th>VISIBLE NAME</th><th>MATCHES OBSERVED</th><th>YOU KILLED</th>
+            <th>THEY KILLED YOU</th><th>DAMAGE DEALT</th><th>DAMAGE TAKEN</th><th>LAST SAVED MATCH</th>
+          </tr></thead><tbody id="telemetry-rivals-table"></tbody></table></div>
+        </div>
+
+        <div class="telemetry-controls">
+          <label>Player track <select id="telemetry-track"></select></label>
+          <label>Speed <select id="telemetry-speed"><option value="1">1×</option><option value="5" selected>5×</option><option value="15">15×</option><option value="30">30×</option></select></label>
+          <label>Map zoom <select id="telemetry-zoom"><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+          <button id="telemetry-play" type="button" class="secondary">▶ Play</button>
+          <button id="telemetry-reset" type="button" class="secondary">Reset view</button>
+          <button id="telemetry-center" type="button" class="secondary">Centre selected</button>
+          <button id="telemetry-pan-left" type="button" class="secondary" aria-label="Pan map left">←</button>
+          <button id="telemetry-pan-right" type="button" class="secondary" aria-label="Pan map right">→</button>
+          <button id="telemetry-pan-up" type="button" class="secondary" aria-label="Pan map up">↑</button>
+          <button id="telemetry-pan-down" type="button" class="secondary" aria-label="Pan map down">↓</button>
+        </div>
+        <label class="telemetry-time-label">Replay position <input type="range" id="telemetry-time" min="0" max="0" step=".1" value="0"></label>
+        <p id="telemetry-timer" class="small muted">No replay loaded.</p>
+        <div class="telemetry-map" id="telemetry-map" aria-live="off"></div>
+        <p id="telemetry-position" class="small muted">Coordinates appear when an actual recorded track is available.</p>
+        <p class="small muted">This shows telemetry samples, not video, real-time tracking or interpolated movement. Points more than 30 seconds old are faint. Paths break at gaps over 30 seconds. Without a verified matching terrain image, the grid is the correct map background.</p>
+      </div>
+    </section>
+        <section class="page" id="page-weapons" hidden>
+      <div class="page-head"><p class="eyebrow">WEAPON PERFORMANCE</p><h1>Weapon <em>mastery.</em></h1>
+        <p>Real PUBG mastery levels, kills, headshots, damage and XP from saved API responses.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Saved console player <select id="weapons-player"></select></label>
+          <label>Stat category <select id="weapon-category">
+            <option value="total">All recorded stats</option>
+            <option value="official">Official</option>
+            <option value="competitive">Competitive</option></select></label>
+          <label>Search weapons <input type="search" id="weapon-search" placeholder="Weapon name…" autocomplete="off"></label>
+          <button type="button" id="weapons-reload" class="secondary">↻ Reload saved mastery</button>
+          <button type="button" id="weapons-refresh" class="primary">↻ Refresh mastery from PUBG</button>
+        </div>
+        <p class="small muted" id="weapons-note" aria-live="polite">Choose a player to view stored weapon mastery.</p>
+        <div id="weapon-bars" class="weapon-bars" aria-label="Top recorded weapon kills"></div>
+        <div class="scroll-table"><table><thead><tr>
+          <th>WEAPON</th><th>LEVEL / TIER</th><th>KILLS</th><th>HEADSHOTS</th><th>DAMAGE</th><th>XP</th>
+        </tr></thead><tbody id="weapons-table"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-season" hidden>
+      <div class="page-head"><p class="eyebrow">CURRENT PUBG SEASON</p>
+        <h1>Season <em>& ranked.</em></h1>
+        <p>Real saved current-season PUBG performance and ranked tiers. Refresh on demand using the shared API budget.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Saved console player <select id="season-player"></select></label>
+          <label>Statistics <select id="season-type">
+            <option value="season">Current season</option>
+            <option value="ranked">Ranked season</option>
+          </select></label>
+          <button class="secondary" id="season-reload" type="button">↻ Reload saved season</button>
+          <button class="primary" id="season-refresh" type="button">↻ Refresh from PUBG</button>
+        </div>
+        <p id="season-note" class="small muted" aria-live="polite">Choose a saved player to inspect season statistics.</p>
+        <div id="season-results" class="season-results" aria-live="polite"></div>
+        <section class="season-history season-leaderboard" aria-labelledby="season-board-title">
+          <div class="panel-heading"><div>
+            <p class="eyebrow subtle">SAVED CLAN PERFORMANCE</p>
+            <h2 id="season-board-title">Historical clan leaderboards</h2>
+          </div><span class="chip">REAL OBSERVATIONS ONLY</span></div>
+          <p class="small muted">Compare latest saved statistics from each verified clan player in the same season and game mode. Player observations may have different timestamps; missing scores are never treated as zero.</p>
+          <div class="filters">
+            <label>Statistics <select id="season-board-type">
+              <option value="ranked">Ranked</option><option value="season">Season</option>
+            </select></label>
+            <label>Game mode <select id="season-board-mode">
+              <option value="squad">Squad</option><option value="squad-fpp">Squad FPP</option>
+              <option value="duo">Duo</option><option value="duo-fpp">Duo FPP</option>
+              <option value="solo">Solo</option><option value="solo-fpp">Solo FPP</option>
+            </select></label>
+            <label>Saved season <select id="season-board-season" disabled></select></label>
+            <label>Rank by <select id="season-board-metric">
+              <option value="rankPoints">Rank points</option>
+              <option value="kills">Kills</option><option value="wins">Wins</option>
+              <option value="matches">Matches</option><option value="damage">Damage</option>
+            </select></label>
+            <button class="secondary" id="season-board-reload" type="button">↻ Reload saved leaderboard</button>
+          </div>
+          <p id="season-board-note" class="small muted" aria-live="polite">Reading saved clan observations…</p>
+          <div class="scroll-table"><table>
+            <thead><tr><th>#</th><th>CLAN PLAYER</th><th>CONSOLE</th>
+              <th id="season-board-metric-label">RANK POINTS</th>
+              <th>RANKED TIER</th><th>OBSERVED AT</th></tr></thead>
+            <tbody id="season-board-table"></tbody>
+          </table></div>
+        </section>
+        <section class="season-history" aria-labelledby="season-history-title">
+          <div class="panel-heading"><div>
+            <p class="eyebrow subtle">GENUINE PUBG OBSERVATIONS</p>
+            <h2 id="season-history-title">Season progression</h2>
+          </div><span class="chip">18-MONTH RETENTION</span></div>
+          <p class="small muted">History starts with the first real saved PUBG response. No estimated past seasons, wins or rank points.</p>
+          <div class="filters">
+            <label>Saved season <select id="season-history-season" aria-label="Choose a season to chart"></select></label>
+            <label>Game mode <select id="season-history-mode" aria-label="Choose a game mode to chart">
+              <option value="squad">SQUAD</option><option value="squad-fpp">SQUAD FPP</option>
+              <option value="duo">DUO</option><option value="duo-fpp">DUO FPP</option>
+              <option value="solo">SOLO</option><option value="solo-fpp">SOLO FPP</option>
+            </select></label>
+          </div>
+          <p id="season-history-note" class="small muted" aria-live="polite">
+            Choose a saved player to see real progression observations.</p>
+          <div id="season-history-chart" class="season-chart" role="img"
+            aria-label="Season progression chart based on real PUBG refreshes"></div>
+          <div id="season-history-summary" class="season-history-summary"></div>
+        </section>
+      </div>
+    </section>
+    <section class="page" id="page-teammates" hidden>
+      <div class="page-head"><p class="eyebrow">SQUAD CONNECTIONS</p><h1>Teammate <em>insights.</em></h1>
+        <p>Find recurring partners using actual archived squad matches, not estimated lifetime statistics.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Saved console player <select id="teammates-player"></select></label>
+          <button type="button" id="teammates-reload" class="secondary">↻ Reload saved teammates</button>
+        </div>
+        <p class="small muted" id="teammates-note" aria-live="polite">Choose a player to review archived squad partners.</p>
+        <div class="scroll-table"><table><thead><tr>
+          <th>PARTNER</th><th>GAMES TOGETHER</th><th>WINS TOGETHER</th>
+          <th>PARTNER KILLS</th><th>PARTNER DAMAGE</th><th>ASSISTS</th><th>LAST PLAYED</th>
+        </tr></thead><tbody id="teammates-table"></tbody></table></div>
+      </div>
+    </section>
+<section class="page" id="page-compare" hidden><div class="page-head"><p class="eyebrow">HEAD TO HEAD</p><h1>Player <em>comparison.</em></h1><p>Two players, one side-by-side view of real verified lifetime statistics.</p></div><div class="card panel"><div class="compare-controls"><label>PLAYER ONE <select id="compare-one"></select></label><b>VS</b><label>PLAYER TWO <select id="compare-two"></select></label></div>
+      <div class="compare-mode-control"><label>GAME MODE
+        <select id="compare-mode"><option value="all">All lifetime modes</option>
+          <option value="solo">Solo TPP</option><option value="duo">Duo TPP</option>
+          <option value="squad">Squad TPP</option><option value="solo-fpp">Solo FPP</option>
+          <option value="duo-fpp">Duo FPP</option><option value="squad-fpp">Squad FPP</option>
+        </select></label></div><div id="compare-output"></div><div class="cc-radar" id="compare-radar" aria-live="polite"></div></div></section>
+
+    <section class="page" id="page-awards" hidden>
+      <div class="page-head"><p class="eyebrow">CLAN ACHIEVEMENTS</p>
+        <h1>Player <em>awards.</em></h1>
+        <p>Six evidence-based achievement categories adapted from your original command centre. These are unofficial awards calculated from saved, verified PUBG lifetime results.</p></div>
+      <div class="card panel"><h2>Real-data winners</h2>
+        <p id="cc-awards-note" class="small muted" aria-live="polite"></p>
+        <div class="cc-awards-grid" id="cc-awards-grid"></div>
+        <p class="small muted">Awards require a minimum number of matches. Unavailable advanced statistics are never guessed. A consistency award needs enough genuine multi-day observations and is not issued prematurely.</p>
+      </div>
+    </section>
+    <section class="page" id="page-analysis" hidden>
+      <div class="page-head"><p class="eyebrow">PERFORMANCE INTELLIGENCE</p>
+        <h1>Deep <em>analysis.</em></h1>
+        <p>Role classification, optional unofficial performance ratings, trusted data checks and real history comparisons. Adapted from the old command centre with no imported bot accusations.</p></div>
+      <div class="card panel">
+        <div class="panel-heading"><div><h2>What-if scoring policy</h2>
+          <p class="small muted">Adjust analysis without changing official PUBG statistics or stored clan data.</p></div><span class="chip">LOCAL SIMULATION</span></div>
+        <div class="filters cc-policy">
+          <label>Minimum matches <input id="cc-min-matches" type="range" min="10" max="150" step="10" value="30">
+            <output id="cc-min-output">30</output></label>
+          <label>Teamwork weighting <input id="cc-team-weight" type="range" min="0" max="250" step="25" value="100">
+            <output id="cc-weight-output">100%</output></label>
+        </div>
+        <p class="small muted">This model uses clan-relative percentiles for kills/match, damage/match, win rate, assists/match, revives/match and Top 10 rate. Sample-size bands are descriptive, not confidence intervals. Missing axes are omitted and weights renormalised.</p>
+      </div>
+      <div class="card panel"><div class="panel-heading"><h2>Player roles and performance ratings</h2></div>
+        <p id="cc-score-note" class="small muted"></p>
+        <div class="scroll-table"><table><thead><tr><th>#</th><th>PLAYER</th><th>MODELLED ROLE</th>
+          <th>UNOFFICIAL RATING</th><th>SAMPLE BAND</th><th>OBSERVED METRICS</th></tr></thead>
+          <tbody id="cc-scores"></tbody></table></div></div>
+      <div class="card panel"><div class="panel-heading"><h2>Genuine weekly performance changes</h2></div>
+        <p id="cc-progress-note" class="small muted" aria-live="polite"></p>
+        <p class="small muted">Only actual lifetime snapshots 6–14 days apart are compared. Delta K/match describes kills earned between observations divided by matches added, not an estimated week's individual matches.</p>
+        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>NEW KILLS</th><th>ADDED MATCHES</th>
+          <th>DELTA K/MATCH</th><th>STATUS</th><th>LATEST OBSERVATION</th></tr></thead>
+          <tbody id="cc-progress"></tbody></table></div></div>
+      <div class="card panel"><div class="panel-heading"><h2>Saved data-quality review</h2></div>
+        <p id="cc-quality-note" class="small muted"></p>
+        <p class="small muted" id="cc-data-integrity"></p>
+        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>CHECK</th></tr></thead>
+          <tbody id="cc-quality"></tbody></table></div></div>
+    </section>
+    <section class="page" id="page-data-tools" hidden>
+      <div class="page-head"><p class="eyebrow">SAFE EXPORTS AND IMPORTS</p>
+        <h1>Data <em>workbench.</em></h1>
+        <p>Export official stored PUBG values, or compare your historical CSVs locally without modifying Supabase or the official clan rankings.</p></div>
+      <div class="card panel"><h2>Official export</h2>
+        <button id="cc-export" type="button" class="primary">↓ Export verified clan CSV</button>
+        <p id="cc-export-note" class="small muted"></p></div>
+      <div class="card panel"><h2>Local historical snapshots</h2>
+        <p class="small muted">Files are processed only inside this browser session: no upload to the bot or Supabase. Maximum 200 rows and 256 KB per file. Required columns: name, matches, kills. Optional: wins, damage, assists, revives, top10, botPct. Duplicate names, malformed rows and invalid numbers block the preview.</p>
+        <div class="filters">
+          <label>Earlier CSV <input id="cc-before-file" type="file" accept=".csv,text/csv"></label>
+          <label>Later CSV <input id="cc-after-file" type="file" accept=".csv,text/csv"></label>
+        </div>
+        <p id="cc-before-status" class="small muted"></p>
+        <p id="cc-after-status" class="small muted"></p>
+        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>OBSERVED STATUS</th>
+          <th>KILLS ADDED</th><th>MATCHES ADDED</th><th>KILLS/ADDED MATCH</th>
+          <th>BOT EXPOSURE CHANGE (UNVERIFIED)</th></tr></thead>
+          <tbody id="cc-local-comparison"></tbody></table></div></div>
+      <div class="card panel"><h2>Imported source exposure versus performance</h2>
+        <p class="small muted">Only external source-provided exposure percentages are plotted. PUBG bot exposure is not inferred from the official player stats or used to label anybody as a bot farmer.</p>
+        <div class="cc-scatter" id="cc-scatter"></div>
+      </div>
+    </section>
+    <section class="page" id="page-help" hidden>
+      <div class="page-head"><p class="eyebrow">ANALYTICS METHODOLOGY</p><h1>How the <em>numbers work.</em></h1>
+        <p>A plain-language guide to the original command centre's ideas, adapted for confirmed official PUBG data.</p></div>
+      <div class="card panel cc-glossary">
+        <h2>Metric definitions</h2>
+        <dl>
+          <dt>Kills per match</dt><dd>Reported lifetime or mode kills divided by rounds played. Not PUBG K/D, because deaths can differ from matches.</dd>
+          <dt>Damage per match</dt><dd>Official saved damage dealt divided by saved rounds in the same scope.</dd>
+          <dt>Win and Top 10 rate</dt><dd>Reported wins or Top 10 finishes divided by rounds played. These depend on the game mode.</dd>
+          <dt>Roles</dt><dd>Exploratory Fragger, Support, Survivor or Hybrid classification relative to the current verified clan. Insufficient data is shown until enough real evidence exists.</dd>
+          <dt>Unofficial rating</dt><dd>A weighted 0–100 within-clan percentile model. Only sufficiently observed profiles are rated. This is not PUBG's official ranked rating or a statistical confidence interval.</dd>
+          <dt>Real historical change</dt><dd>Two actual observations dated 6–14 days apart. Counter resets and missing baseline dates do not become imagined improvements or declines.</dd>
+          <dt>Source-provided bot exposure</dt><dd>An unverified field in a local CSV file; not an official PUBG API measure here. It never changes the live player rating, clan roster or awards.</dd>
+          <dt>CSV imports</dt><dd>Local preview only. The official Supabase database is untouched. A future manager-only persistent import would need authenticated authorisation and a separate source label.</dd>
+          <dt>Sample size</dt><dd>Large, Medium and Limited labels describe observed match counts. They are not a confidence level or probability of accuracy.</dd>
+        </dl>
+      </div>
+    </section>
+    <section class="page" id="page-survival" hidden>
+      <div class="page-head"><p class="eyebrow">OFFICIAL PUBG SURVIVAL PROGRESSION</p>
+        <h1>Survival <em>mastery.</em></h1>
+        <p>Actual account-wide XP, level, tier and qualifying matches from the PUBG developer API. This is independent of seasonal and ranked scores.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Saved Xbox or PlayStation gamertag <input id="survival-name" list="survival-known" type="search" maxlength="100" placeholder="Exact saved player name" autocomplete="off"><datalist id="survival-known"></datalist></label>
+          <button id="survival-load" type="button" class="secondary">Reload saved mastery</button>
+          <button id="survival-refresh" type="button" class="primary">↻ Refresh Survival from PUBG</button>
+        </div>
+        <p id="survival-status" class="small muted" aria-live="polite">Select a saved console player. Reading existing statistics makes no PUBG request.</p>
+        <div id="survival-data" class="cc-awards-grid"></div>
+        <p class="small muted">These are original Survival Mastery attributes. Missing values display — rather than invented zeroes. Explicit refresh requests use the same atomic PUBG API budget and public website cooldown as other player features.</p>
+      </div>
+    </section>
+    <section class="page" id="page-sources" hidden>
+      <div class="page-head"><p class="eyebrow">OFFICIAL SOURCE TRANSPARENCY</p>
+        <h1>PUBG <em>data library.</em></h1>
+        <p>Inspect every saved public-safe field from genuine PUBG responses, including missing/null values. No extra PUBG requests or second backend.</p></div>
+      <div class="card panel">
+        <div class="panel-heading"><h2>Saved source browser</h2><span class="chip">READ ONLY</span></div>
+        <div class="filters">
+          <label>Saved player <input type="search" id="source-name" maxlength="100" placeholder="Exact gamertag" autocomplete="off"></label>
+          <label>Console <select id="source-platform"><option value="auto">Saved console (auto)</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label>
+          <label>Response <select id="source-kind"><option value="profile">Player profile</option><option value="seasons">Season catalogue</option><option value="season">Current season</option><option value="ranked">Current ranked</option><option value="weapons">Weapon mastery</option><option value="survival">Survival mastery</option><option value="match">Specific saved match</option></select></label>
+          <label id="source-match-wrap" hidden>Match UUID <input id="source-match" maxlength="36" placeholder="Saved match ID"></label>
+          <button class="primary" type="button" id="source-load">Inspect saved response</button>
+          <button class="secondary" type="button" id="source-download">Download safe JSON</button>
+        </div>
+        <p class="small muted" id="source-note" aria-live="polite">Enter a known console player and select a saved resource. Player account IDs, asset URLs and private database information are never included.</p>
+        <div class="filters"><label>Find a field <input id="source-filter" type="search" placeholder="Search nested field paths and values"></label>
+          <p id="source-count" class="small muted">0 fields</p>
+          <button id="source-prev" type="button" class="secondary">← Previous fields</button>
+          <button id="source-next" type="button" class="secondary">Next fields →</button></div>
+        <div class="scroll-table"><table><thead><tr><th>ORIGINAL FIELD PATH</th><th>RETURNED VALUE</th><th>TYPE</th><th>PUBLISHER LABEL</th></tr></thead>
+          <tbody id="source-table"></tbody></table></div>
+      </div>
+      <div class="card panel"><div class="panel-heading"><div>
+          <p class="eyebrow subtle">PINNED OFFICIAL TERMINOLOGY</p><h2>PUBG dictionary catalogue</h2></div></div>
+        <p id="dictionary-provenance" class="small muted"></p>
+        <div class="filters"><label>Dictionary <select id="dictionary-kind"></select></label>
+          <label>Search codes or names <input id="dictionary-filter" type="search" autocomplete="off"></label></div>
+        <p id="dictionary-count" class="small muted"></p>
+        <div class="scroll-table"><table><thead><tr><th>PUBG CODE</th><th>OFFICIAL DESCRIPTION</th></tr></thead>
+          <tbody id="dictionary-table"></tbody></table>
+        </div>
+        <p class="small muted">© KRAFTON. Original codes are preserved; missing or newly introduced codes are not guessed.
+          <a href="https://github.com/pubg/api-assets" target="_blank" rel="noopener noreferrer">Publisher source ↗</a></p>
+      </div>
+    </section>
+    <section class="page" id="page-global" hidden>
+      <div class="page-head"><p class="eyebrow">OFFICIAL PUBG CONSOLE RANKINGS</p>
+        <h1>Regional <em>leaderboards.</em></h1>
+        <p>These are official PUBG rankings for a selected console, region, season and game mode. They are not your clan's private or official roster leaderboard.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Console <select id="global-platform"><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label>
+          <label>Region <select id="global-region"></select></label>
+          <label>Mode <select id="global-mode"><option value="squad">Squad TPP</option><option value="squad-fpp">Squad FPP</option><option value="duo">Duo TPP</option><option value="duo-fpp">Duo FPP</option><option value="solo">Solo TPP</option><option value="solo-fpp">Solo FPP</option></select></label>
+          <label>Season ID (optional) <input id="global-season" type="text" maxlength="128" placeholder="Use saved current season"></label>
+          <button class="primary" id="global-load" type="button">Load official leaderboard</button>
+          <button class="secondary" id="global-download" type="button">Export safe JSON</button>
+        </div>
+        <p class="small muted">PUBG's regional leaderboard refreshes on its own schedule, normally every two hours for an active season. Cached reads use no PUBG requests. Cache misses pass the shared web cooldown and the same atomic PUBG request budget used by Discord and this website.</p>
+        <p id="global-status" class="small muted" aria-live="polite">Choose your console and region. Unsupported region/mode combinations are reported as unavailable.</p>
+        <div class="filters"><label>Filter returned players <input type="search" id="global-filter" placeholder="Name or exact returned rank"></label></div>
+        <p id="global-count" class="small muted"></p>
+        <p id="global-cutlines" class="small muted"></p>
+        <div class="scroll-table"><table><thead id="global-table-head"><tr><th>RANK</th><th>PLAYER</th></tr></thead>
+          <tbody id="global-table"></tbody></table></div>
+      </div>
+    </section>
+    <section class="page" id="page-health" hidden>
+      <div class="page-head"><p class="eyebrow">TRANSPARENT SHARED INFRASTRUCTURE</p>
+        <h1>Data <em>health.</em></h1>
+        <p>Shared PUBG API reservations, Supabase cache freshness and genuine observation coverage. This report is read-only and makes no upstream PUBG requests.</p></div>
+      <div class="card panel">
+        <div class="panel-heading"><div><h2>Live aggregate diagnostics</h2>
+          <p class="small muted">Our bot and website share one Supabase database and atomic request budget.</p></div>
+          <button id="health-refresh" type="button" class="secondary">↻ Reload diagnostics</button></div>
+        <p id="health-status" class="small muted" role="status" aria-live="polite">Open this page to inspect the existing cache.</p>
+        <div class="cc-awards-grid" id="health-metrics"></div>
+        <p id="health-season-note" class="small muted"></p>
+        <p id="health-source-note" class="small muted">PUBG request reservations are not guaranteed successful responses.</p>
+      </div>
+      <div class="card panel"><h2>Saved PUBG cache categories</h2>
+        <p class="small muted">Counts only. The website never receives private cache keys, player account IDs, raw payloads or credentials.</p>
+        <div class="scroll-table"><table><thead><tr><th>RESOURCE</th><th>CACHED RESPONSES</th></tr></thead>
+          <tbody id="health-types"></tbody></table></div>
+        <p class="small muted">Expired entries are not deleted by this panel and may remain available as clearly labelled stale fallbacks elsewhere.</p>
+      </div>
+    </section>
+    <section class="page" id="page-roadmap" hidden><div class="page-head"><p class="eyebrow">THE DEVELOPMENT PLAN</p><h1>What's <em>next.</em></h1><p>Tracked in GitHub: no claiming features are done before their acceptance checks.</p></div><div class="roadmap-grid"><article class="card panel"><span class="mint">FOUNDATION</span><h3>First working web app</h3><p>Responsive website, saved-data API, roster, leaderboard, modes, comparisons.</p></article><article class="card panel"><span class="lavender">PHASE TWO</span><h3>Profiles and discovery</h3><p>Advanced statistics, real historical snapshots, shareable player profiles.</p></article><article class="card panel"><span class="lavender">PHASE THREE</span><h3>Match, weapon and replay analysis</h3><p>Real match records, rivals, weapons, ranked histories and sampled-coordinate replays.</p></article><article class="card panel"><span class="lavender">PHASE FOUR</span><h3>Protected refresh and release</h3><p>Admin web controls, Discord integration, browser regression and Xbox checks.</p></article></div><div class="card panel"><h3>Saved visual references & roadmap</h3><p>The original vector example pictures are versioned in GitHub.</p><div class="links"><a href="/design/overview-reference.svg" target="_blank" rel="noopener noreferrer">Overview reference ↗</a><a href="/design/leaderboard-reference.svg" target="_blank" rel="noopener noreferrer">Leaderboard reference ↗</a><a href="https://github.com/johnstacey16-ui/Pubg-clan-bot/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Full checklist ↗</a></div></div></section>
+    <footer>CONSOLE//CLAN INTELLIGENCE <span>Xbox + PlayStation · Saved official PUBG data</span><span>Same Discord bot · Same Supabase database</span></footer>
+
+  </div>
+  <dialog id="profile"><div class="profile-heading"><div><p class="eyebrow">PLAYER PROFILE</p><h2 id="profile-name"></h2><span id="profile-console" class="muted"></span></div><div class="profile-actions"><button type="button" id="share-profile" class="secondary">↗ Copy profile link</button><button type="button" id="profile-close" class="secondary" aria-label="Close player profile">✕</button></div></div><div id="profile-body"></div></dialog>
+</div>
 <div id="panel-combat" class="hub-main">
 
 <div class="wrap">
@@ -1232,6 +1673,7 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
 
 
 
+<script src="js/clan-dashboard-loader.js"></script>
 <script src="js/app-navigation.js"></script>
 
 <script src="js/shared.js"></script>
