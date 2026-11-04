@@ -524,8 +524,10 @@ When all nine public resources pass, run `/setup` in the already configured Disc
 
 The default publisher API-key allowance is **10 rate-limited calls per minute**. A
 single atomic Supabase budget now permits **10 reservations per rolling 65 seconds**;
-background collection stops at **8** so at least two unspent slots remain for
-interactive player searches. No second API key, fake data, or in-memory-only
+background collection can use all **10** when no player has recently requested
+fresh data. During the following ten-minute demand window, background stops
+at **7** and reserves three slots for an unknown player's console lookup and
+lifetime stats. No second API key, fake data, or in-memory-only
 limiter is used. Official match detail and telemetry endpoints do not consume
 that key quota, but we still cap per-run work and downloads.
 
@@ -563,3 +565,5 @@ that key quota, but we still cap per-run work and downloads.
   events on the service. Deep telemetry remains selected-match/on-demand to
   avoid downloading giant assets and flooding free hosting.
 
+
+The adaptive limit is defined in `supabase/migrations/20261104_adaptive_pubg_user_priority.sql`. The first user arriving after a fully utilised idle period may still wait up to one rolling 65-second window; cached profiles remain readable in the meantime. This policy never exceeds the one-key ten-request budget.
