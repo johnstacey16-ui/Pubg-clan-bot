@@ -1,11 +1,11 @@
 /* Navigation bridge only; HELP calculators and visual designs are preserved. */
 .command-centre-bridge{display:flex;align-items:center;justify-content:space-between;
- gap:14px;padding:10px clamp(14px,3vw,36px);background:#0e1d32;color:#eef7ff;
- border-bottom:1px solid #2e5064;font:600 13px/1.4 system-ui,Arial,sans-serif}
-.command-centre-bridge a{color:#6ff7da;text-decoration:none;border:1px solid #35677a;
+ gap:14px;padding:10px clamp(14px,3vw,36px);background:#0e1722;color:#f7f3eb;
+ border-bottom:1px solid rgba(181,202,222,.16);font:600 13px/1.4 system-ui,Arial,sans-serif}
+.command-centre-bridge a{color:#f1cc99;text-decoration:none;border:1px solid rgba(233,188,119,.25);
  border-radius:9px;padding:9px 12px;white-space:nowrap}
 .command-centre-bridge a:hover,.command-centre-bridge a:focus-visible{
- background:#153c4d;color:#fff;outline-offset:2px}
+ background:rgba(233,188,119,.14);color:#fff4df;outline:2px solid #e9bc77;outline-offset:2px}
 .command-centre-bridge strong{letter-spacing:.085em;text-align:center}
 .command-centre-bridge strong span{color:#9eb3c9;font-weight:500}
 @media(max-width:540px){

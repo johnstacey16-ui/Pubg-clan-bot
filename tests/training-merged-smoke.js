@@ -25,7 +25,8 @@ const server=http.createServer(async(req,res)=>{
  catch{return respond(res,400,'Bad URI');}
  if(p==='/training')return respond(res,308,'',undefined);
  if(p==='/training/')p='/training/index.html';
- if(p==='/')p='/index.html';
+ if(p==='/')p='/training/index.html';
+ if(p==='/dashboard/')p='/index.html';
  if(p==='/favicon.ico')return respond(res,204,'');
  if(p==='/ _vercel/insights/script.js'.replace(' ',''))return respond(res,200,'','text/javascript');
  const full=path.resolve(ROOT,'.'+p);
@@ -55,11 +56,12 @@ async function main(){
     if(response.url().startsWith(base+'/training/')&&response.status()>=400)
      notFound.push(response.status()+' '+response.url());
    });
-   const entry=await page.goto(base+'/training/',{waitUntil:'domcontentloaded'});
+   const entry=await page.goto(base+'/',{waitUntil:'domcontentloaded'});
    assert.equal(entry.status(),200);
    await page.waitForSelector('.command-centre-bridge a[href="/dashboard/"]');
    assert.match(await page.title(),/HELP/);
    assert.equal(await page.locator('#app-toolnav [data-open-panel]').count(),6);
+   assert.equal(await page.locator('#active-tool-index').getAttribute('aria-label'),'Tool 2 of 7');
    assert.match(await page.locator('.command-centre-bridge').innerText(),
     /HELP CLAN/);
    for(const id of panels){
@@ -71,6 +73,7 @@ async function main(){
     assert.ok(await page.locator('#'+id).evaluate(el=>el.classList.contains('active')),
      'Navigation failed for '+id+' at '+width);
    }
+   assert.equal(await page.locator('#active-tool-index').getAttribute('aria-label'),'Tool 7 of 7');
    const image=await page.request.get(base+'/training/assets/damage-training-mannequin.svg');
    assert.equal(image.status(),200);
    assert.match(await image.text(),/<svg/);
@@ -81,9 +84,16 @@ async function main(){
    const mainLink=await page.locator('.command-centre-bridge a[href="/dashboard/"]').getAttribute('href');
    assert.equal(mainLink,'/dashboard/');
    assert.equal(await page.locator('#app-toolnav .unified-clan-entry').getAttribute('href'),'/dashboard/');
+   // Real navigation between both pages (not an iframe) shares the same origin.
+   await page.locator('#app-toolnav .unified-clan-entry').click();
+   await page.waitForURL(base+'/dashboard/');
+   assert.match(await page.title(),/HELP Clan.*Clan Dashboard/);
+   await page.locator('.brand[href="/"]').click();
+   await page.waitForURL(base+'/');
+   assert.match(await page.title(),/HELP/);
    assert.deepEqual(notFound,[],'Unresolved training assets at '+width+'px');
    assert.deepEqual(errors,[],'JavaScript errors at '+width+'px');
-   console.log('MERGED HELP CHROME PASS: '+width+'px; 6 tool workspaces, static assets, cross-navigation');
+   console.log('UNIFIED HELP CHROME PASS: '+width+'px; 7 shared tools, root and dashboard navigation');
    await page.close();
   }
  }finally{

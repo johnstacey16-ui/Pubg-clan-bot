@@ -9,8 +9,8 @@ function verify(){
  const main=read('index.html'),toolkit=read('training/index.html');
  const source=read('training/SOURCE.md');
  const v=JSON.parse(read('vercel.json'));
- assert.match(main,/href="\/training\/"/);
- assert.match(main,/Explore training tools/);
+ assert.match(main,/href="\/#panel-sensitivity"/);
+ assert.match(main,/Open Sensitivity Studio/);
  assert.match(toolkit,/command-centre-bridge/);
  assert.match(toolkit,/href="\/dashboard\/"/);
  assert.match(toolkit,/\/training\/assets\/damage-training-mannequin\.svg/);
