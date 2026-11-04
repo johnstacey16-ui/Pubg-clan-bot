@@ -16,6 +16,10 @@
     {
       "src": "design/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "training/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -78,6 +82,21 @@
     {
       "src": "/api/public-global-leaderboard",
       "dest": "api/public-insights.js"
+    },
+    {
+      "src": "/training",
+      "status": 308,
+      "headers": {
+        "Location": "/training/"
+      }
+    },
+    {
+      "src": "/training/",
+      "dest": "/training/index.html"
+    },
+    {
+      "src": "/training/(.*)",
+      "dest": "/training/$1"
     },
     {
       "src": "/assets/(.*)",

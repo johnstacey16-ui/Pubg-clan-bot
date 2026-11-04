@@ -1,0 +1,46 @@
+name: Import pinned public HELP training toolkit
+
+on:
+  push:
+    branches: [integrate-help-toolkit]
+    paths:
+      - '.github/workflows/vendor-help-toolkit.yml'
+      - 'scripts/vendor-help-toolkit.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-training:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Import pinned public source into the new static training section
+        run: bash scripts/vendor-help-toolkit.sh
+      - name: Check HELP generated scripts against the original fragments
+        run: node training/scripts/build-static.cjs --check
+      - name: Run all original HELP calculator and publisher data tests
+        run: node --test training/tests/*.test.cjs
+      - name: Verify original training tools in real Google Chrome
+        run: node training/tests/browser-smoke.cjs
+      - name: Test original hit-zone and responsive Chrome layouts
+        run: |
+          node training/tests/hit-zone-preview-smoke.cjs
+          node training/tests/visual-layout-smoke.cjs
+      - name: Commit validated snapshot to integration branch only
+        run: |
+          test "$GITHUB_REF_NAME" = "integrate-help-toolkit"
+          git add -A training/
+          if git diff --cached --quiet; then
+            echo "Pinned source already current"
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -m 'Vendor full pinned HELP PUBG training toolkit'
+          git push origin HEAD:integrate-help-toolkit
