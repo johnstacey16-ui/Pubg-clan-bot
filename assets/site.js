@@ -287,6 +287,7 @@
     var request=++matchRequest,name=matchName;
     $('match-note').textContent='Reading saved console match data for '+name+'…';
     $('match-results').innerHTML='';
+    if(window.TelemetryView?.matchesChanged)window.TelemetryView.matchesChanged(name,[]);
     try{
       var response=await fetch('/api/public-matches?name='+encodeURIComponent(name),{
         cache:'no-store',headers:{Accept:'application/json'}
@@ -294,6 +295,7 @@
       if(!response.ok)throw Error('Match API HTTP '+response.status);
       var result=await response.json();
       if(request!==matchRequest || matchName!==name)return;
+      if(window.TelemetryView?.matchesChanged)window.TelemetryView.matchesChanged(name,result.matches||[]);
       $('match-note').textContent=(result.note||'Saved PUBG matches only')+
         ' · '+result.availableCount+' detailed match(es) stored'+
         (result.archivedCount?' · '+result.archivedCount+' archived':'');

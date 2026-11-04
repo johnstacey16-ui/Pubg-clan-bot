@@ -72,6 +72,10 @@
       "dest": "api/public-source.js"
     },
     {
+      "src": "/api/public-telemetry",
+      "dest": "api/public-telemetry.js"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
     },

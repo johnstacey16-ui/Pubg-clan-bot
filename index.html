@@ -11,6 +11,7 @@
 <script defer src="/assets/command-centre.js"></script>
 <script defer src="/assets/pubg-dictionaries.js"></script>
 <script defer src="/assets/source-explorer.js"></script>
+<script defer src="/assets/telemetry-view.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -77,7 +78,7 @@
     <section class="page" id="page-players" hidden><div class="page-head"><p class="eyebrow">THE FULL ROSTER</p><h1>Every <em>clan member.</em></h1><p>See verified accounts alongside names still being imported.</p></div><div class="card panel"><div class="filters"><label>Player search <input id="search" type="search" placeholder="Search gamer tags…" autocomplete="off"></label><label>Console <select id="player-console"><option value="all">Both consoles</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option><option value="unknown">Unconfirmed</option></select></label><label>Import status <select id="player-status"><option value="all">All players</option><option value="verified">Verified</option><option value="pending">Pending</option><option value="ambiguous">Ambiguous</option><option value="not_found">Not found</option></select></label><label>Sort roster <select id="roster-sort"><option value="name">Name A–Z</option><option value="kills">Most kills</option><option value="wins">Most wins</option><option value="favourites">Favourites first</option></select></label><label class="roster-fav-filter">Favourites only <input type="checkbox" id="roster-favs-only"></label><label>Per page <select id="roster-page-size"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select></label></div><div class="scroll-table"><table><thead><tr><th>PLAYER / FAVOURITE</th><th>PLATFORM</th><th>STATUS</th><th>KILLS</th><th>WINS</th><th>MATCHES</th></tr></thead><tbody id="roster-table"></tbody></table></div><div class="roster-pagination"><p id="roster-count" class="small muted" aria-live="polite"></p><div class="roster-page-buttons"><button type="button" id="roster-prev" class="secondary" aria-label="Previous roster page">← Previous</button><span id="roster-page-label" aria-live="polite">Page 1 of 1</span><button type="button" id="roster-next" class="secondary" aria-label="Next roster page">Next →</button></div></div></div></section>
     <section class="page" id="page-modes" hidden><div class="page-head"><p class="eyebrow">PLAYSTYLE BREAKDOWN</p><h1>Every <em>game mode.</em></h1><p>Solo, Duo, Squad and FPP: all actual saved PUBG lifetime numbers.</p></div><div class="card panel"><h3>Clan kills by mode</h3><div id="modes-chart" class="bars"></div><div class="scroll-table"><table><thead><tr><th>MODE</th><th>MATCHES</th><th>KILLS</th><th>WINS</th><th>KILLS/MATCH</th><th>DAMAGE</th><th>ASSISTS</th></tr></thead><tbody id="modes-table"></tbody></table></div></div></section>
     <section class="page" id="page-matches" hidden>
-      <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore archived squad and match results saved for up to 180 days. Reading saved data is free; only Refresh from PUBG requests newer matches. No replays.</p></div>
+      <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore archived squad and match results saved for up to 180 days. Read cached results for free, or open actual recorded PUBG telemetry for 2D coordinate replay and match-local rival analysis.</p></div>
       <div class="card panel">
         <div class="filters">
           <label>Saved console player <select id="match-player"></select></label>
@@ -86,6 +87,36 @@
         </div>
         <p id="match-note" class="small muted" aria-live="polite">Choose a saved console player to explore existing match records.</p>
         <div id="match-results" class="match-results" aria-live="polite"></div>
+      </div>
+
+      <div class="card panel telemetry-panel" id="telemetry-panel">
+        <div class="panel-heading"><div><p class="eyebrow subtle">REAL MATCH EVENTS · NO ESTIMATES</p>
+          <h2>Combat intelligence and 2D telemetry replay</h2></div>
+          <span class="chip">REAL RECORDED COORDINATES</span></div>
+        <p class="small muted">The replay requires a genuine saved match with an official PUBG telemetry asset. The server verifies the selected player actually participated, checks the telemetry host, and reuses saved derived reports. Match CDN requests are separate from rate-limited PUBG statistics, but the shared web cooldown still applies.</p>
+        <div class="filters">
+          <label>Saved match <select id="telemetry-match"></select></label>
+          <button id="telemetry-load" type="button" class="primary" disabled>Analyse selected match</button>
+        </div>
+        <p id="telemetry-status" class="small muted" aria-live="polite">Select a player and load their saved matches above.</p>
+        <div id="telemetry-report" aria-live="polite"></div>
+        <div class="telemetry-controls">
+          <label>Player track <select id="telemetry-track"></select></label>
+          <label>Speed <select id="telemetry-speed"><option value="1">1×</option><option value="5" selected>5×</option><option value="15">15×</option><option value="30">30×</option></select></label>
+          <label>Map zoom <select id="telemetry-zoom"><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+          <button id="telemetry-play" type="button" class="secondary">▶ Play</button>
+          <button id="telemetry-reset" type="button" class="secondary">Reset view</button>
+          <button id="telemetry-center" type="button" class="secondary">Centre selected</button>
+          <button id="telemetry-pan-left" type="button" class="secondary" aria-label="Pan map left">←</button>
+          <button id="telemetry-pan-right" type="button" class="secondary" aria-label="Pan map right">→</button>
+          <button id="telemetry-pan-up" type="button" class="secondary" aria-label="Pan map up">↑</button>
+          <button id="telemetry-pan-down" type="button" class="secondary" aria-label="Pan map down">↓</button>
+        </div>
+        <label class="telemetry-time-label">Replay position <input type="range" id="telemetry-time" min="0" max="0" step=".1" value="0"></label>
+        <p id="telemetry-timer" class="small muted">No replay loaded.</p>
+        <div class="telemetry-map" id="telemetry-map" aria-live="off"></div>
+        <p id="telemetry-position" class="small muted">Coordinates appear when an actual recorded track is available.</p>
+        <p class="small muted">This shows telemetry samples, not video, real-time tracking or interpolated movement. Points more than 30 seconds old are faint. Paths break at gaps over 30 seconds. Without a verified matching terrain image, the grid is the correct map background.</p>
       </div>
     </section>
         <section class="page" id="page-weapons" hidden>

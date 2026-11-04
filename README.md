@@ -113,7 +113,7 @@ If dashboard setup fails, verify that the bot is installed in the server and can
 The permanent dashboard messages use **Discord Components V2** rather than old plain embeds. Coloured containers, grouped typography, separators, ranking sections, roster-completion bars and the same Refresh button make the cards easier to scan on desktop and mobile. Existing eight dashboard message IDs are edited in place on the next /dashboard setup, /dashboard refresh or Refresh button (without creating new posts). The migration explicitly clears old content and embeds while setting the immutable IS_COMPONENTS_V2 flag (32768). A real dashboard web app or Discord Activity would be necessary for fully custom interactive charts; this channel layout does not embed HTML/CSS.
 
 
-## Phase 3 — Cached match intelligence (no 2D replays)
+## Phase 3 — Cached match intelligence and telemetry replay
 
 The website's **Match Intelligence** tab reads detailed match data **only from
 already-saved Supabase cache entries**. It does not make public PUBG API calls,
@@ -367,3 +367,28 @@ separate genuine observations exist.
 The PUBG Data Library at /#sources explores actual saved player, season, ranked, weapon, survival and match responses without another PUBG request. Its read-only /api/public-source endpoint uses verified saved console identities, strips account IDs/asset URLs/private keys, caps response size, checks match participation, and returns the original fetch timestamp. Searchable nested field paths preserve zero, null, false, empty objects and arrays, with an export of sanitized JSON.
 
 Seven pinned KRAFTON publisher dictionaries from pubg/api-assets are included and attributed under design/pubg-dictionary-provenance.md. They are static, may become outdated as PUBG changes and add zero upstream requests.
+
+
+## Telemetry and 2D replay migrated from older dashboard
+
+Match Intelligence now includes bounded match-local combat summaries, verified
+kill/death encounters with individual opponents, observed damage and weapon
+causes, a capped player-event activity list, and a scrub-able 2D coordinate
+replay with circle states, player selection, map pan/zoom and playback.
+
+The server checks an existing saved Xbox/PlayStation player and verifies
+their exact account ID is a participant of the selected saved match before
+reading a telemetry asset. Only HTTPS URLs on the exact PUBG
+telemetry-cdn.pubg.com host are fetched; redirects and user-supplied URLs
+are refused. Payloads are size/event-bounded and transformed into player-
+and match-specific derived reports with account IDs omitted. Derived data
+is cached for 24 hours in the existing private Supabase endpoint cache.
+Fresh queries acquire the existing 90-second atomic web cooldown. There
+is no second Redis gate, no client PUBG API key, and no paid service.
+
+PUBG telemetry itself is outside the normal rate-limited player-statistics
+budget, but downloads use bandwidth; the cache and global web cooldown
+bound repeated work. Replays show recorded positions only, with gaps and
+stale markers visible. Terrain artwork is intentionally omitted until
+the coordinates and artwork version can be shown to align correctly.
+Matches without saved details or official telemetry show a clear error.

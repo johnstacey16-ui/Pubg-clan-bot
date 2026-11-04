@@ -1,0 +1,106 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {publicTelemetry,shapeTelemetry,validTelemetryUrl}=require('../lib/web-telemetry');
+const {buildReplay,latestSample,pathSegments}=require('../lib/pubg-replay');
+const uuid='e7ff11aa-2222-3333-4444-555555555555';
+const id='account.player123456789';
+const other='account.other123456789';
+const date=n=>new Date(Date.parse('2026-11-03T12:00:00Z')+n*1000).toISOString();
+const events=[
+ {_T:'LogPlayerPosition',_D:date(0),character:{accountId:id,name:'Hero',teamId:1,
+  health:100,location:{x:1000,y:2000,z:0}}},
+ {_T:'LogPlayerPosition',_D:date(60),character:{accountId:id,name:'Hero',teamId:1,
+  health:95,location:{x:2000,y:3000,z:0}}},
+ {_T:'LogGameStatePeriodic',_D:date(50),gameState:{
+  safetyZonePosition:{x:3000,y:4000,z:0},safetyZoneRadius:500,
+  numAlivePlayers:20}},
+ {_T:'LogPlayerTakeDamage',_D:date(61),damage:45,
+  damageCauserName:'WeapAK47_C',
+  attacker:{accountId:id,name:'Hero',teamId:1},
+  victim:{accountId:other,name:'Rival',teamId:2}},
+ {_T:'LogPlayerKillV2',_D:date(63),killer:{accountId:id,name:'Hero',teamId:1},
+  victim:{accountId:other,name:'Rival',teamId:2}},
+ {_T:'LogPlayerKillV2',_D:date(65),killer:{accountId:id,name:'Hero',teamId:1},
+  victim:{accountId:'account.friend',name:'Friend',teamId:1}},
+ {_T:'LogPlayerRevive',_D:date(66),reviver:{accountId:id,name:'Hero',teamId:1},
+  victim:{accountId:'account.friend',name:'Friend',teamId:1}}
+];
+function fakeDB(records,allowed=true){
+ const calls={rpc:0,upsert:0};
+ return{calls,
+  from(table){
+   if(table==='players')return{select(){return this;},ilike(){return this;},
+    limit:async()=>({error:null,data:[{gamertag:'Hero',platform:'xbox',pubg_account_id:id}]})};
+   assert.equal(table,'pubg_endpoint_cache');
+   return{key:null,select(){if(this._write)return Promise.resolve({data:[],error:null});return this;},
+    eq(k,v){this.key=v;return this;},
+    maybeSingle:async function(){return{data:records[this.key]||null,error:null};},
+    upsert:function(value){records[value.cache_key]=value;calls.upsert++;this._write=true;return this;}
+   };
+  },
+  rpc:async(name,args)=>{assert.equal(name,'reserve_web_refresh');
+   assert.match(args.p_player_key,/^xbox:telemetry:/);calls.rpc++;return{data:allowed,error:null};}
+ };
+}
+function matchRecord(playerId=id,url='https://telemetry-cdn.pubg.com/blue/test.json'){
+ return{payload:{data:{attributes:{mapName:'Erangel_Main',gameMode:'squad',
+  createdAt:date(0)}},included:[
+  {type:'participant',attributes:{stats:{playerId}}},
+  {type:'asset',attributes:{URL:url}}
+ ]}};
+}
+test('trusted telemetry URLs block localhost, credentials, redirects and subdomains',()=>{
+ assert.equal(validTelemetryUrl('https://telemetry-cdn.pubg.com/test.json'),
+  'https://telemetry-cdn.pubg.com/test.json');
+ for(const url of [
+  'http://telemetry-cdn.pubg.com/a','https://telemetry-cdn.pubg.com.evil.test/a',
+  'https://127.0.0.1/a','https://user:pass@telemetry-cdn.pubg.com/a',
+  'https://telemetry-cdn.pubg.com:8443/a','file:///tmp/x'
+ ])assert.equal(validTelemetryUrl(url),null,url);
+});
+test('reported replay retains real positions and gaps; rivals exclude team kills',()=>{
+ const r=buildReplay(events,'Erangel_Main');
+ assert.equal(r.tracks.length,1);
+ assert.equal(latestSample(r.tracks[0].samples,40).x,1000);
+ assert.equal(pathSegments(r.tracks[0].samples,60,120,30).length,2);
+ const shaped=shapeTelemetry(events,id,uuid,{mapName:'Erangel_Main',mode:'squad'});
+ assert.equal(shaped.combatSummary.kills,1);
+ assert.equal(shaped.combatSummary.revives,1);
+ assert.equal(shaped.combatSummary.damageDealt,45);
+ assert.equal(shaped.rivals[0].name,'Rival');
+ assert.equal(shaped.rivals[0].kills,1);
+ assert.equal(shaped.replay.tracks[0].isSelected,true);
+ assert.doesNotMatch(JSON.stringify(shaped),/account.player|account.other/);
+});
+test('a match without an actual saved participant cannot be queried',async()=>{
+ const db=fakeDB({['pubg:v1:console/matches/'+uuid]:matchRecord('account.other')});
+ const result=await publicTelemetry(db,{name:'Hero',match:uuid});
+ assert.equal(result.status,404);
+ assert.equal(db.calls.rpc,0);
+});
+test('shared web cooldown blocks CDN fetch and does not spend API budget',async()=>{
+ const db=fakeDB({['pubg:v1:console/matches/'+uuid]:matchRecord()},false);
+ let called=0;
+ const r=await publicTelemetry(db,{name:'Hero',match:uuid},
+  {fetcher:async()=>{called++;throw Error('not allowed');}});
+ assert.equal(r.status,429);
+ assert.equal(called,0);
+ assert.equal(db.calls.rpc,1);
+});
+test('first trusted fetch stores bounded report; repeated fetch uses cache',async()=>{
+ const records={['pubg:v1:console/matches/'+uuid]:matchRecord()},db=fakeDB(records);
+ let hits=0;
+ const fetcher=async()=>{hits++;return{ok:true,headers:{get(){return null;}},
+  text:async()=>JSON.stringify(events)};};
+ const first=await publicTelemetry(db,{name:'Hero',match:uuid},{fetcher});
+ assert.equal(first.status,200);
+ assert.equal(first.body.cache,'saved');
+ assert.equal(first.body.combatSummary.kills,1);
+ assert.equal(db.calls.upsert,1);
+ const second=await publicTelemetry(db,{name:'Hero',match:uuid},{fetcher});
+ assert.equal(second.status,200);
+ assert.equal(second.body.cache,'saved');
+ assert.equal(hits,1);
+ assert.equal(db.calls.rpc,1);
+});

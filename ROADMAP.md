@@ -3,7 +3,7 @@
 **Repository:** johnstacey16-ui/Pubg-clan-bot  
 **Production target:** https://pubg-clan-bot.vercel.app  
 **Services:** existing Vercel Hobby, Supabase, official PUBG console API, Discord bot  
-**Rules:** free hosting where possible; never expose credentials; Xbox & PlayStation only; no 2D replays; complete checks only when tests pass.
+**Rules:** free hosting where possible; never expose credentials; Xbox & PlayStation only; real telemetry 2D replays are permitted (no invented paths); complete checks only when tests pass.
 
 ## Completed in the initial web-app foundation (2026-11-03)
 
@@ -68,7 +68,7 @@
 - [ ] Verify progression charts with two different genuine refresh timestamps from PUBG production
 - [ ] End-to-end production browser, Android and Xbox validation
 
-### Phase 3 — Match analysis (no replay features)
+### Phase 3 — Match intelligence and recorded-coordinate replays
 - [x] Read-only cached PUBG match-intelligence API for saved console players (no public upstream calls)
 - [x] Responsive Match Intelligence website tab with optional squad breakdown
 - [x] Verify match-cache shape in Supabase; use existing Discord /recent to populate
@@ -90,7 +90,8 @@
 
 - [x] Import and attribute seven pinned publisher dictionaries without private player data or another API
 - [x] Add public-safe saved PUBG source explorer for profile, seasons, ranked, mastery, survival and match fields, including typed nested paths and safe JSON download
-- [ ] Integrate match-local telemetry rival/combat analysis and 2D replay
+- [x] Integrate bounded real match-local combat, event-level rival analysis and 2D sampled-coordinate replay (secure publisher-only telemetry URL, shared web cooldown, persistent derived Supabase cache, no extra API key)
+- [ ] Verify actual telemetry processing and replay on a newly fetched production match
 - [ ] Official regional/season leaderboards using the existing Supabase atomic budget
 - [ ] Complete telemetry source browsing, player activity, sample and tournament resources
 - [ ] Verify migrated features using production API, Chromium and console browsers

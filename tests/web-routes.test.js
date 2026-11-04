@@ -22,6 +22,7 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(routes['/api/public-matches'],'api/public-matches.js');
  assert.equal(routes['/api/public-insights'],'api/public-insights.js');
  assert.equal(routes['/api/public-source'],'api/public-source.js');
+ assert.equal(routes['/api/public-telemetry'],'api/public-telemetry.js');
  assert.ok(v.builds.some(x=>x.src==='index.html'&&x.use==='@vercel/static'));
  assert.ok(v.builds.some(x=>x.src==='assets/**'&&x.use==='@vercel/static'));
  assert.equal(v.crons[0].path,'/api/sync');
@@ -61,4 +62,15 @@ test('old command centre features are present without shipping fixtures or secre
  assert.match(js,/local-only|local-only|Local-only/i);
  assert.doesNotMatch(html+js+math,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN|window\.storage/);
  assert.doesNotMatch(math,/Big_SnakeAUG|PUBGClans.net|isBotFarmer/);
+});
+
+
+test('telemetry panel and browser runner are bundled without extra public credentials',()=>{
+ const html=read('index.html'),ui=read('assets/telemetry-view.js');
+ for(const id of ['telemetry-panel','telemetry-match','telemetry-load','telemetry-report',
+  'telemetry-time','telemetry-zoom','telemetry-track','telemetry-map','telemetry-play'])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(html,/assets\/telemetry-view\.js/);
+ assert.match(ui,/\/api\/public-telemetry/);
+ assert.doesNotMatch(html+ui,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN/);
 });
