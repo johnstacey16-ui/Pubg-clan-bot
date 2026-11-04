@@ -1,0 +1,457 @@
+{
+  "source": {
+    "url": "https://www.pubgintel.com/pubg-per-shot-analyzer",
+    "accessed": "2026-10-27",
+    "sha256": "a3632210ca93d5871460451aaece2118cd7a2a208f77489cd7b8405a06d0568d",
+    "policy": "Owner-approved fallback reference. Existing HELP values win conflicts; curves are model inputs, not observed bullet impacts."
+  },
+  "policy": "Existing non-null HELP values and compatible attachment choices take precedence. Missing fields use PUBGIntel. MP5K and Vector use approved extracted reference rates; MG3 and attachment stacking remain unresolved.",
+  "coverage": 27,
+  "fieldConflicts": [
+    {
+      "weapon": "SLR",
+      "field": "tendency",
+      "help": -0.05,
+      "reference": -0.1,
+      "used": -0.05
+    },
+    {
+      "weapon": "MG3",
+      "field": "rpm",
+      "help": 700,
+      "reference": 660,
+      "used": 700
+    }
+  ],
+  "attachmentConflicts": [
+    {
+      "weapon": "JS9",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "v",
+      "help": 0.75,
+      "reference": 0.8,
+      "used": 0.75
+    },
+    {
+      "weapon": "JS9",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.75,
+      "used": 0.8
+    },
+    {
+      "weapon": "MP5K",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "v",
+      "help": 0.75,
+      "reference": 0.8,
+      "used": 0.75
+    },
+    {
+      "weapon": "MP5K",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.75,
+      "used": 0.8
+    },
+    {
+      "weapon": "MP5K",
+      "slot": "stock",
+      "item": "Tactical Stock",
+      "axis": "v",
+      "help": 1,
+      "reference": 0.95,
+      "used": 1
+    },
+    {
+      "weapon": "MP9",
+      "slot": "stock",
+      "item": "Folding Stock",
+      "axis": "v",
+      "help": 0.8,
+      "reference": 1,
+      "used": 0.8
+    },
+    {
+      "weapon": "MP9",
+      "slot": "stock",
+      "item": "Folding Stock",
+      "axis": "h",
+      "help": 1,
+      "reference": 0.8,
+      "used": 1
+    },
+    {
+      "weapon": "UMP9",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "v",
+      "help": 0.75,
+      "reference": 0.8,
+      "used": 0.75
+    },
+    {
+      "weapon": "UMP9",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.75,
+      "used": 0.8
+    },
+    {
+      "weapon": "Micro Uzi",
+      "slot": "stock",
+      "item": "Folding Stock",
+      "axis": "v",
+      "help": 0.8,
+      "reference": 1,
+      "used": 0.8
+    },
+    {
+      "weapon": "Micro Uzi",
+      "slot": "stock",
+      "item": "Folding Stock",
+      "axis": "h",
+      "help": 1,
+      "reference": 0.8,
+      "used": 1
+    },
+    {
+      "weapon": "Vector",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "v",
+      "help": 0.75,
+      "reference": 0.8,
+      "used": 0.75
+    },
+    {
+      "weapon": "Vector",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.75,
+      "used": 0.8
+    },
+    {
+      "weapon": "SKS",
+      "slot": "muzzle",
+      "item": "Compensator (AR/DMR)",
+      "axis": "v",
+      "help": 0.85,
+      "reference": 1,
+      "used": 0.85
+    },
+    {
+      "weapon": "SKS",
+      "slot": "muzzle",
+      "item": "Compensator (AR/DMR)",
+      "axis": "h",
+      "help": 0.9,
+      "reference": 0.8,
+      "used": 0.9
+    },
+    {
+      "weapon": "SKS",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "v",
+      "help": 0.8,
+      "reference": 1,
+      "used": 0.8
+    },
+    {
+      "weapon": "SKS",
+      "slot": "stock",
+      "item": "Cheek Pad",
+      "axis": "v",
+      "help": 0.8,
+      "reference": 0.9,
+      "used": 0.8
+    },
+    {
+      "weapon": "SKS",
+      "slot": "stock",
+      "item": "Cheek Pad",
+      "axis": "h",
+      "help": 1,
+      "reference": 0.9,
+      "used": 1
+    },
+    {
+      "weapon": "SVD Dragunov",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.9,
+      "used": 0.8
+    },
+    {
+      "weapon": "SVD Dragunov",
+      "slot": "stock",
+      "item": "Cheek Pad",
+      "axis": "v",
+      "help": 0.8,
+      "reference": 0.9,
+      "used": 0.8
+    },
+    {
+      "weapon": "SVD Dragunov",
+      "slot": "stock",
+      "item": "Cheek Pad",
+      "axis": "h",
+      "help": 1,
+      "reference": 0.8,
+      "used": 1
+    },
+    {
+      "weapon": "SLR",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.9,
+      "used": 0.8
+    },
+    {
+      "weapon": "SLR",
+      "slot": "stock",
+      "item": "Cheek Pad",
+      "axis": "v",
+      "help": 0.8,
+      "reference": 0.9,
+      "used": 0.8
+    },
+    {
+      "weapon": "SLR",
+      "slot": "stock",
+      "item": "Cheek Pad",
+      "axis": "h",
+      "help": 1,
+      "reference": 0.8,
+      "used": 1
+    },
+    {
+      "weapon": "Mini 14",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.9,
+      "used": 0.8
+    },
+    {
+      "weapon": "Mk12",
+      "slot": "muzzle",
+      "item": "Compensator",
+      "axis": "h",
+      "help": 0.8,
+      "reference": 0.9,
+      "used": 0.8
+    },
+    {
+      "weapon": "M249",
+      "slot": "stock",
+      "item": "Tactical Stock",
+      "axis": "v",
+      "help": 1,
+      "reference": 0.95,
+      "used": 1
+    },
+    {
+      "weapon": "RPD",
+      "slot": "stock",
+      "item": "Tactical Stock",
+      "axis": "v",
+      "help": 1,
+      "reference": 0.95,
+      "used": 1
+    }
+  ],
+  "compatibility": [
+    {
+      "weapon": "ACE 32",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "ACE 32",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "AKM",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "AUG A3",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "AUG A3",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "Beryl M762",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "Beryl M762",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "FAMAS",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "G36C",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "G36C",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "M416",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "M416",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "K2",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "M16A4",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "MK47 Mutant",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "MK47 Mutant",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "QBZ95",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "QBZ95",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "SCAR-L",
+      "slot": "muzzle",
+      "helpOnly": "suppressor"
+    },
+    {
+      "weapon": "SCAR-L",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "MP5K",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "MP9",
+      "slot": "stock",
+      "helpOnly": "tactical"
+    },
+    {
+      "weapon": "Tommy Gun",
+      "slot": "muzzle",
+      "helpOnly": "compensator"
+    },
+    {
+      "weapon": "Tommy Gun",
+      "slot": "muzzle",
+      "helpOnly": "flash"
+    },
+    {
+      "weapon": "Tommy Gun",
+      "slot": "grip",
+      "helpOnly": "half"
+    },
+    {
+      "weapon": "Tommy Gun",
+      "slot": "grip",
+      "helpOnly": "light"
+    },
+    {
+      "weapon": "Tommy Gun",
+      "slot": "grip",
+      "helpOnly": "thumb"
+    },
+    {
+      "weapon": "Tommy Gun",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "Tommy Gun",
+      "slot": "grip",
+      "helpOnly": "tilted"
+    },
+    {
+      "weapon": "UMP9",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "Vector",
+      "slot": "grip",
+      "helpOnly": "thumb"
+    },
+    {
+      "weapon": "Vector",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "Vector",
+      "slot": "grip",
+      "helpOnly": "tilted"
+    },
+    {
+      "weapon": "SKS",
+      "slot": "grip",
+      "helpOnly": "laser"
+    },
+    {
+      "weapon": "Mk12",
+      "slot": "grip",
+      "helpOnly": "laser"
+    }
+  ]
+}

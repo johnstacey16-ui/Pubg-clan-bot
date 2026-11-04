@@ -1,0 +1,53 @@
+// Exact-name map of 45 publisher-sourced PUBG weapon images.
+// Stable local SVG viewports embed the original publisher raster bytes. No combat data lives here.
+// This file is static and loads before the unchanged gameplay calculators.
+(function(global){
+  'use strict';
+  global.HELP_VISUAL_WEAPONS=Object.freeze({
+  "Lynx AMR": "weapon-lynx-amr-field.svg",
+  "AWM": "weapon-awm-field.svg",
+  "O12": "weapon-o12-field.svg",
+  "Kar98k": "weapon-kar98k-field.svg",
+  "M24": "weapon-m24-field.svg",
+  "R1895": "weapon-r1895-field.svg",
+  "Desert Eagle": "weapon-desert-eagle-field.svg",
+  "MK14 EBR": "weapon-mk14-ebr-field.svg",
+  "SVD Dragunov": "weapon-svd-dragunov-field.svg",
+  "MK47 Mutant": "weapon-mk47-mutant-field.svg",
+  "SLR": "weapon-slr-field.svg",
+  "AKM": "weapon-akm-field.svg",
+  "Groza": "weapon-groza-field.svg",
+  "SKS": "weapon-sks-field.svg",
+  "VSS Vintorez": "weapon-vss-vintorez-field.svg",
+  "Beryl M762": "weapon-beryl-m762-field.svg",
+  "M16A4": "weapon-m16a4-field.svg",
+  "ACE 32": "weapon-ace-32-field.svg",
+  "Mk12": "weapon-mk12-field.svg",
+  "SCAR-L": "weapon-scar-l-field.svg",
+  "QBZ95": "weapon-qbz95-field.svg",
+  "Mini 14": "weapon-mini-14-field.svg",
+  "UMP9": "weapon-ump9-field.svg",
+  "MG3": "weapon-mg3-field.svg",
+  "K2": "weapon-k2-field.svg",
+  "G36C": "weapon-g36c-field.svg",
+  "M249": "weapon-m249-field.svg",
+  "M416": "weapon-m416-field.svg",
+  "AUG A3": "weapon-aug-a3-field.svg",
+  "Tommy Gun": "weapon-tommy-gun-field.svg",
+  "FAMAS": "weapon-famas-field.svg",
+  "P90": "weapon-p90-field.svg",
+  "P92": "weapon-p92-field.svg",
+  "MP5K": "weapon-mp5k-field.svg",
+  "JS9": "weapon-js9-field.svg",
+  "Vector": "weapon-vector-field.svg",
+  "MP9": "weapon-mp9-field.svg",
+  "DBS": "weapon-dbs-field.svg",
+  "Micro Uzi": "weapon-micro-uzi-field.svg",
+  "S686": "weapon-s686-field.svg",
+  "S12K": "weapon-s12k-field.svg",
+  "G18C": "weapon-g18c-field.svg",
+  "Skorpion": "weapon-skorpion-field.svg",
+  "Sawn-off": "weapon-sawn-off-field.svg",
+  "RPD": "weapon-rpd-field.svg"
+});
+})(window);

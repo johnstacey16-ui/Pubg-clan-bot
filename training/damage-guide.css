@@ -1,0 +1,33 @@
+#damage-guide{margin-top:28px;min-width:0;scroll-margin-top:24px}
+#damage-guide *{box-sizing:border-box}
+.dg-intro{display:flex;align-items:flex-end;gap:24px;justify-content:space-between;margin-bottom:20px}
+.dg-kicker{font:700 11px var(--mono,monospace);letter-spacing:.12em;color:#efbe65;margin:0 0 8px}
+#damage-guide h2{font:700 clamp(24px,3vw,34px) var(--disp,system-ui);margin:0 0 12px;color:#eff7fa}
+#damage-guide h3{font-size:21px;margin:0 0 14px;color:#eef7fb}
+#damage-guide p{line-height:1.65;max-width:80ch}
+.dg-jumps{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}
+.dg-jumps a{display:inline-flex;align-items:center;min-height:44px;padding:10px 14px;border:1px solid #9e772f;border-radius:7px;background:#30291a;color:#ffd176;text-decoration:none;font-weight:700}
+.dg-section{padding:24px 0;border-top:1px solid #2d4451;scroll-margin-top:24px}
+.dg-formula{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:16px;align-items:stretch}
+.dg-factors{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.dg-factors>div,.dg-total{padding:18px 12px;background:#102733;border:1px solid #315364;border-radius:10px;position:relative;min-width:0}
+.dg-factors>div+div:before{content:'×';position:absolute;left:-10px;top:38%;background:#102733;color:#ffd176;font-size:18px;z-index:1}
+.dg-factors span,.dg-total span{display:block;color:#b6cad3;font-size:12px;margin-bottom:12px}
+.dg-factors strong,.dg-total strong{font:700 23px var(--mono,monospace);color:#fff0cb;overflow-wrap:anywhere}
+.dg-total{border-color:#b9944c;background:#30291a}
+.dg-area-layout{display:grid;grid-template-columns:minmax(280px,420px) minmax(0,1fr);gap:26px;align-items:start}
+.dg-model-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px;margin-top:20px}
+.dg-model-card{padding:18px;border:1px solid #2f4a59;border-radius:14px;background:linear-gradient(155deg,#142b38,#0b1923);min-width:0}
+.dg-model{width:100%;height:auto;display:block;max-height:760px}
+#damage-guide .dg-value-table{width:100%;min-width:0;border-collapse:collapse;margin:12px 0}
+#damage-guide .dg-value-table th,#damage-guide .dg-value-table td{padding:9px;text-align:left;border-bottom:1px solid #2b4350;white-space:normal;font-size:14px}
+#damage-guide .dg-value-table td:last-child{color:#ffd176;font-family:var(--mono,monospace)}
+#damage-guide caption{text-align:left;color:#a9c2cf;font-size:12px;padding-bottom:9px}
+#damage-guide summary{cursor:pointer;min-height:44px;padding:14px 0;color:#bdd4df}
+.dg-gear-controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.dg-gear-controls .field{flex:1 1 150px;min-width:0;max-width:220px}
+.dg-gear-controls select,.dg-gear-controls button{min-height:44px;max-width:100%}
+.dg-source-note{padding:16px;border-left:3px solid #e6b04d;background:#102430;color:#afc7d2;font-size:13px}
+.dg-source-note a{color:#e8c781}
+@media(max-width:800px){.dg-formula{grid-template-columns:1fr}.dg-factors{grid-template-columns:repeat(3,minmax(0,1fr))}.dg-area-layout{grid-template-columns:minmax(0,1fr)}.dg-area-layout>div:first-child{max-width:420px;margin:auto;width:100%}.dg-intro{display:block}}
+@media(max-width:440px){.dg-model-card{padding:10px}.dg-section{padding:20px 0}.dg-factors{grid-template-columns:repeat(2,minmax(0,1fr))}.dg-factors strong{font-size:20px}.dg-model-grid{gap:14px}}

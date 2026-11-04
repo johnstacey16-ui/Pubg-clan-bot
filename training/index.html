@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="command-centre-bridge.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090f18">
+<!-- Vercel Web Analytics for this plain HTML site (no React package needed). -->
+<script defer src="/_vercel/insights/script.js"></script>
+<title>HELP — PUBG Field Toolkit</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
+:root{ --hub-bg:#07080a; --hub-panel:#0e1013; --hub-line:#2a2e33; --hub-ink:#e9ecef; --hub-dim:#8b929b; --hub-accent:#ffb545; --hub-nav-h:48px; --grouprow-h:26px; --mono: ui-monospace, "SFMono-Regular", Consolas, monospace; --disp: "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--hub-bg);}
+body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hub-ink);}
+#hub-nav{position:sticky;top:0;z-index:50;display:flex;gap:0;background:var(--hub-panel);border-bottom:2px solid var(--hub-accent);}
+#hub-nav button{flex:1;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:transparent;border:none;
+  border-right:1px solid var(--hub-line);color:var(--hub-dim);padding:14px 10px;cursor:pointer;transition:background .12s,color .12s;}
+#hub-nav button:last-child{border-right:none}
+#hub-nav button:hover{color:var(--hub-ink);background:rgba(255,181,69,.06);}
+#hub-nav button.active{color:var(--hub-accent);background:rgba(255,181,69,.1);box-shadow:inset 0 -3px 0 var(--hub-accent);font-weight:700;}
+.hub-main{display:none;}
+.hub-main.active{display:block;}
+@media(max-width:560px){#hub-nav button{font-size:10.5px;padding:14px 6px;min-height:48px;}}
+#engine-subnav{position:sticky;top:var(--hub-nav-h);z-index:49;display:flex;gap:0;background:#0c1016;border-bottom:1px solid rgba(34,224,255,.28);overflow-x:auto;}
+#engine-subnav button{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:transparent;border:none;
+  border-right:1px solid var(--hub-line);color:var(--hub-dim);padding:10px 14px;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;min-height:44px;}
+#engine-subnav button:last-child{border-right:none}
+#engine-subnav button:hover{color:var(--hub-ink);background:rgba(34,224,255,.06);}
+#engine-subnav button.active{color:#22e0ff;background:rgba(34,224,255,.1);box-shadow:inset 0 -2px 0 #22e0ff;font-weight:700;}
+#engine-subnav.hidden{display:none;}
+
+#panel-combat {
+  --bg:#07090e; --bg2:#0f161d; --panel:#121a22; --line:#223140; --line-soft:#161f27;
+  --ink:#eef4f8; --dim:#71899b; --zone:#22e0ff; --zone-soft:rgba(34,224,255,.10);
+  --keep:#3ecf7e; --swap:#ff5a45; --amber:#ffb545; --orange:#ff8c42; --olive:#22e0ff; --border-warn:#ffb545;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --disp: "Rajdhani", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
+  --body: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+#panel-combat * {box-sizing:border-box}
+#panel-combat {background:var(--bg);color:var(--ink);font-family:var(--body);margin:0;
+  background-image:
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size:56px 56px; background-position:-1px -1px; background-attachment:fixed;
+}
+#panel-combat::before {content:"";position:fixed;top:-260px;right:-260px;width:900px;height:900px;z-index:0;pointer-events:none;
+  background:radial-gradient(circle,
+    transparent 0 118px, rgba(46,166,255,.14) 119px 121px,
+    transparent 122px 236px, rgba(46,166,255,.10) 237px 239px,
+    transparent 240px 354px, rgba(46,166,255,.07) 355px 357px,
+    transparent 358px 440px);
+}
+#panel-combat .wrap {max-width:1180px;margin:0 auto;padding:0 20px 80px;position:relative;z-index:1}
+#panel-combat::after {content:"";position:fixed;inset:0;pointer-events:none;z-index:3;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.32) 100%);
+}
+#panel-combat header.hero {padding:28px 0 18px;border-bottom:2px solid var(--zone);position:relative}
+#panel-combat .eyebrow {font-family:var(--mono);letter-spacing:.2em;color:var(--zone);font-size:11px;text-transform:uppercase}
+#panel-combat h1 {font-family:var(--disp);font-weight:800;letter-spacing:.02em;font-size:44px;margin:6px 0 4px;text-transform:uppercase;
+  background:linear-gradient(90deg,#eef4f8,var(--zone));-webkit-background-clip:text;background-clip:text;color:transparent}
+#panel-combat .sub {color:var(--dim);font-size:14px;max-width:640px;line-height:1.5}
+#panel-combat .datasource {font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:10px}
+#panel-combat .hero-stats {display:flex;gap:0;margin-top:16px;border:1px solid var(--line);width:fit-content}
+#panel-combat .hero-stats div {padding:8px 18px;border-right:1px solid var(--line)}
+#panel-combat .hero-stats div:last-child {border-right:none}
+#panel-combat .hero-stats b {display:block;font-family:var(--disp);font-size:24px;color:var(--zone);letter-spacing:.02em}
+#panel-combat .hero-stats span {display:block;font-family:var(--mono);font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+#panel-combat .card {background:rgba(18,26,34,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(34,224,255,.28);border-radius:3px;padding:18px;position:relative;box-shadow:0 0 24px rgba(34,224,255,.06), inset 0 1px 0 rgba(255,255,255,.03)}
+#panel-combat .card::before, #panel-combat .card::after {content:"";position:absolute;width:12px;height:12px;border:1px solid var(--zone);opacity:.55}
+#panel-combat .card::before {top:-1px;left:-1px;border-right:none;border-bottom:none}
+#panel-combat .card::after {bottom:-1px;right:-1px;border-left:none;border-top:none}
+#panel-combat .toolbar {display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+#panel-combat .toolbar input[type=text] {background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:9px 12px;
+  font-family:var(--mono);font-size:13px;flex:1;min-width:180px}
+#panel-combat .toolbar select {background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:9px 10px;font-family:var(--mono);font-size:12px}
+#panel-combat .chip {background:var(--bg2);border:1px solid var(--line);color:var(--dim);font-family:var(--mono);font-size:11px;
+  padding:6px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em}
+#panel-combat .chip.on {color:var(--zone);border-color:var(--zone)}
+#panel-combat table {width:100%;border-collapse:collapse;font-size:12.5px}
+#panel-combat th {text-align:left;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;color:var(--olive);
+  border-bottom:1px solid var(--olive);padding:8px 6px;cursor:pointer;white-space:nowrap}
+#panel-combat th:hover {color:var(--amber)}
+#panel-combat td {padding:8px 6px;border-bottom:1px solid var(--line);font-family:var(--mono);white-space:nowrap}
+#panel-combat tr.rowclick {cursor:pointer}
+#panel-combat tr.rowclick:hover td {background:rgba(46,166,255,.06)}
+#panel-combat :focus-visible {outline:2px solid var(--zone);outline-offset:2px}
+#panel-combat th[data-key] {cursor:pointer;user-select:none}
+#panel-combat th[data-key]:hover {color:var(--amber)}
+#panel-combat th .arrow {color:var(--amber);margin-left:3px;font-size:9px}
+#panel-combat .tag {display:inline-block;font-size:10px;padding:1px 6px;border:1px solid var(--line);border-radius:2px;color:var(--dim)}
+#panel-combat .tag.crate {border-color:var(--amber);color:var(--amber);box-shadow:0 0 6px rgba(255,181,69,.35);text-shadow:0 0 6px rgba(255,181,69,.5)}
+#panel-combat #wTable tr:has(.tag.crate) td:first-child {box-shadow:inset 3px 0 0 var(--amber), 2px 0 4px rgba(0,0,0,.4)}
+#panel-combat .result-keep {color:var(--keep);font-weight:700}
+#panel-combat .result-swap {color:var(--swap);font-weight:700}
+#panel-combat .result-always {color:var(--olive);font-weight:700}
+#panel-combat .thresh-always {color:var(--keep);font-weight:700}
+#panel-combat .thresh-yellow {color:var(--amber);font-weight:700}
+#panel-combat .thresh-orange {color:var(--orange);font-weight:700}
+#panel-combat .thresh-red {color:var(--swap);font-weight:700}
+#panel-combat #wTable th:first-child, #panel-combat #wTable td:first-child {position:sticky;left:0;z-index:2;background:var(--panel);box-shadow:2px 0 4px rgba(0,0,0,.4)}
+#panel-combat #wTable th:first-child {background:var(--bg2);z-index:3}
+#panel-combat #wTable tr.rowclick:hover td:first-child {background:rgba(15,22,29,.98)}
+#panel-combat #wTable tr.grouprow th {position:sticky;top:var(--hub-nav-h);z-index:6;background:var(--bg2);color:var(--zone);text-align:center;font-size:9.5px;letter-spacing:.08em;border-bottom:none;box-shadow:0 1px 0 var(--line);cursor:default;padding:5px 6px}
+#panel-combat #wTable tr.grouprow th:hover {color:var(--zone)}
+#panel-combat #wTable tr.colheader th {position:sticky;top:calc(var(--hub-nav-h) + var(--grouprow-h));z-index:5;background:var(--bg2);border-bottom:none;box-shadow:0 1px 0 var(--olive), 0 3px 6px rgba(0,0,0,.35)}
+#panel-combat #wTable tr.colheader th:first-child {box-shadow:2px 0 4px rgba(0,0,0,.4), 0 1px 0 var(--olive), 0 3px 6px rgba(0,0,0,.35)}
+#panel-combat #cmpTable tr.grouplabel td {background:var(--bg2);color:var(--zone);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--zone);white-space:nowrap}
+#panel-combat .grid2 {display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){
+  #panel-combat .grid2 {grid-template-columns:1fr}
+}
+#panel-combat .grid3 {display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){
+  #panel-combat .grid3 {grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  #panel-combat .grid3 {grid-template-columns:1fr}
+}
+#panel-combat .stat {background:var(--bg2);border:1px solid var(--line);padding:14px}
+#panel-combat .stat .n {font-family:var(--disp);font-size:34px;color:var(--zone)}
+#panel-combat .stat .l {font-family:var(--mono);font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+#panel-combat .overlay {position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;
+  padding:40px 16px;z-index:20;overflow-y:auto}
+#panel-combat .overlay.show {display:flex}
+#panel-combat .modal {background:var(--panel);border:1px solid var(--zone);max-width:520px;width:100%;padding:22px;position:relative}
+#panel-combat .modal::before, #panel-combat .modal::after {content:"";position:absolute;width:14px;height:14px;border:1px solid var(--zone);opacity:.7}
+#panel-combat .modal::before {top:-1px;left:-1px;border-right:none;border-bottom:none}
+#panel-combat .modal::after {bottom:-1px;right:-1px;border-left:none;border-top:none}
+#panel-combat .modal .close {position:absolute;top:10px;right:14px;background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer}
+#panel-combat .modal h3 {font-family:var(--disp);text-transform:uppercase;font-size:26px;margin:0 0 2px}
+#panel-combat .modal .kv {display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:14px 0;font-family:var(--mono);font-size:12.5px}
+#panel-combat .modal .kv div span {color:var(--dim)}
+#panel-combat .modal .note {font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+#panel-combat .section-h {font-family:var(--disp);text-transform:uppercase;font-size:19px;letter-spacing:.03em;margin:28px 0 14px;
+  color:var(--ink);border-left:3px solid var(--zone);padding-left:12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+#panel-combat .section-h .coord {font-family:var(--mono);font-size:10.5px;color:var(--zone);letter-spacing:.14em;opacity:.8}
+#panel-combat .helptext {color:var(--dim);font-size:12.5px;line-height:1.6;max-width:760px;margin-bottom:14px}
+#panel-combat .rank-list {list-style:none;margin:0;padding:0}
+#panel-combat .rank-list li {display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+#panel-combat .rank-list li span:last-child {color:var(--zone)}
+#panel-combat .rank-list li span.pct {color:var(--amber)}
+#panel-combat .compare-picker {display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+#panel-combat .compare-picker select {flex:1;min-width:160px}
+#panel-combat .assumptions {font-size:12px;color:var(--dim);line-height:1.7}
+#panel-combat .assumptions li {margin-bottom:4px}
+#panel-combat .legend {display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 20px;margin-top:14px}
+#panel-combat .legend dt {font-family:var(--mono);font-size:11px;color:var(--zone);letter-spacing:.05em;text-transform:uppercase}
+#panel-combat .legend dd {margin:2px 0 0;font-size:12px;color:var(--dim);line-height:1.5}
+#panel-combat footer {margin-top:40px;font-family:var(--mono);font-size:11px;color:var(--dim);text-align:center;border-top:1px solid var(--line);padding-top:16px}
+#panel-combat .missing-note {font-size:11.5px;color:var(--amber);font-family:var(--mono);margin-top:6px}
+#panel-combat .panel-coord {font-family:var(--mono);font-size:10.5px;color:var(--zone);letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px;opacity:.85}
+#panel-combat [id] {scroll-margin-top:64px}
+#panel-combat .hero-hint {font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;letter-spacing:.03em}
+#panel-combat .quicknav {display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-family:var(--mono);font-size:11.5px}
+#panel-combat .quicknav a {color:var(--zone);text-decoration:none;border-bottom:1px dotted var(--zone);padding-bottom:1px}
+#panel-combat .quicknav a:hover {color:var(--amber);border-color:var(--amber)}
+#panel-combat .sort-hint {font-size:11px;color:var(--dim);font-family:var(--mono);margin:-4px 0 12px}
+#panel-combat .color-legend {display:flex;flex-wrap:wrap;gap:8px 18px;margin:2px 0 18px}
+#panel-combat .clegend-item {display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+#panel-combat .dot {width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+
+#panel-sensitivity {
+  --bg-deep:#07090e;
+  --bg-panel:#0f161d;
+  --bg-panel-2:#121a22;
+  --line:#223140;
+  --line-bright:#2c3f52;
+  --amber:#22e0ff;
+  --amber-dim:#1a6b7a;
+  --olive:#3ecf7e;
+  --bone:#eef4f8;
+  --dim:#71899b;
+  --rust:#ff5a45;
+  --mono: "JetBrains Mono", monospace;
+  --disp: "Rajdhani", sans-serif;
+}
+#panel-sensitivity * {box-sizing:border-box;}
+#panel-sensitivity, #panel-sensitivity {margin:0;padding:0;}
+#panel-sensitivity {
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(34,224,255,0.08), transparent 45%),
+    radial-gradient(ellipse at 90% 110%, rgba(34,224,255,0.06), transparent 50%),
+    var(--bg-deep);
+  color:var(--bone);
+  font-family:var(--disp);
+  min-height:100vh;
+  padding:18px 14px 60px;
+}
+#panel-sensitivity .wrap {max-width:960px;margin:0 auto;}
+#panel-sensitivity .hdr {
+  border:1px solid var(--line-bright);
+  background:linear-gradient(180deg, rgba(34,224,255,0.08), transparent 60%), var(--bg-panel);
+  padding:18px 20px;
+  position:relative;
+  margin-bottom:14px;
+}
+#panel-sensitivity .hdr:before, #panel-sensitivity .hdr:after, #panel-sensitivity .hdr b.br1, #panel-sensitivity .hdr b.br2 {content:"";position:absolute;width:14px;height:14px;border-color:var(--amber);}
+#panel-sensitivity .hdr:before {top:-1px;left:-1px;border-top:2px solid var(--amber);border-left:2px solid var(--amber);}
+#panel-sensitivity .hdr:after {top:-1px;right:-1px;border-top:2px solid var(--amber);border-right:2px solid var(--amber);}
+#panel-sensitivity .hdr b.br1 {bottom:-1px;left:-1px;border-bottom:2px solid var(--amber);border-left:2px solid var(--amber);}
+#panel-sensitivity .hdr b.br2 {bottom:-1px;right:-1px;border-bottom:2px solid var(--amber);border-right:2px solid var(--amber);}
+#panel-sensitivity .eyebrow {font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--olive);text-transform:uppercase;}
+#panel-sensitivity .title {font-size:30px;font-weight:700;letter-spacing:.02em;margin:2px 0 4px;text-transform:uppercase;}
+#panel-sensitivity .title span {color:var(--amber);}
+#panel-sensitivity .credit {font-family:var(--mono);font-size:11px;color:var(--dim);}
+#panel-sensitivity .tabs {display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 14px;}
+#panel-sensitivity .tab {
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  padding:9px 12px;border:1px solid var(--line-bright);background:var(--bg-panel);
+  color:var(--dim);cursor:pointer;user-select:none;transition:all .12s;
+}
+#panel-sensitivity .tab:hover {color:var(--bone);border-color:var(--olive);}
+#panel-sensitivity .tab.active {background:var(--amber);color:#04141a;border-color:var(--amber);font-weight:700;}
+#panel-sensitivity .panel {display:none;}
+#panel-sensitivity .panel.active {display:block;animation:panel_sensitivity_fade .18s ease;}
+@keyframes panel_sensitivity_fade{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:translateY(0);}}
+#panel-sensitivity .card {
+  border:1px solid rgba(34,224,255,.28);
+  background:rgba(15,22,29,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 0 24px rgba(34,224,255,.06), inset 0 1px 0 rgba(255,255,255,.03);
+  padding:16px 18px 18px;
+  margin-bottom:14px;
+  position:relative;
+}
+#panel-sensitivity .card:before, #panel-sensitivity .card:after {content:"";position:absolute;width:9px;height:9px;top:-1px;border-top:2px solid var(--line-bright);}
+#panel-sensitivity .card:before {left:-1px;border-left:2px solid var(--line-bright);}
+#panel-sensitivity .card:after {right:-1px;border-right:2px solid var(--line-bright);}
+#panel-sensitivity .card-title {
+  font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--amber);margin:0 0 3px;display:flex;align-items:center;gap:8px;
+}
+#panel-sensitivity .card-title .n {font-family:var(--mono);font-size:11px;color:var(--dim);border:1px solid var(--line-bright);padding:1px 6px;}
+#panel-sensitivity .card-sub {font-size:12.5px;color:var(--dim);margin:0 0 14px;line-height:1.5;max-width:70ch;}
+#panel-sensitivity .grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:4px;}
+#panel-sensitivity .field label {
+  display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--olive);margin-bottom:5px;
+}
+#panel-sensitivity .field select, #panel-sensitivity .field input[type=number] {
+  width:100%;background:var(--bg-panel-2);border:1px solid var(--line-bright);color:var(--bone);
+  font-family:var(--mono);font-size:14px;padding:8px 9px;outline:none;
+}
+#panel-sensitivity .field select:focus, #panel-sensitivity .field input:focus {border-color:var(--amber);}
+#panel-sensitivity .field input::-webkit-outer-spin-button, #panel-sensitivity .field input::-webkit-inner-spin-button {opacity:0.4;}
+#panel-sensitivity .outbar {
+  margin-top:14px;border-top:1px dashed var(--line-bright);padding-top:12px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;
+}
+#panel-sensitivity .out {background:var(--bg-panel-2);border:1px solid var(--line);padding:9px 11px;}
+#panel-sensitivity .out .k {font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px;}
+#panel-sensitivity .out .v {font-family:var(--mono);font-size:19px;font-weight:700;color:var(--bone);}
+#panel-sensitivity .out.hi .v {color:var(--olive);}
+#panel-sensitivity .out.warn .v {color:var(--rust);}
+#panel-sensitivity .out .u {font-size:11px;color:var(--dim);margin-left:3px;font-weight:400;}
+#panel-sensitivity .note {
+  margin-top:12px;font-size:12px;color:var(--dim);line-height:1.55;
+  border-left:2px solid var(--amber-dim);padding:6px 0 6px 10px;
+}
+#panel-sensitivity .note b {color:var(--amber);}
+#panel-sensitivity table.ref {width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin-top:6px;}
+#panel-sensitivity table.ref th {text-align:left;color:var(--olive);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line-bright);}
+#panel-sensitivity table.ref td {padding:7px 8px;border-bottom:1px solid var(--line);color:var(--bone);}
+#panel-sensitivity table.ref tr:hover td {background:rgba(232,163,61,0.04);}
+#panel-sensitivity .badge {display:inline-block;font-family:var(--mono);font-size:10px;padding:1px 6px;border:1px solid var(--line-bright);color:var(--dim);}
+#panel-sensitivity .gauge-row {display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:6px;}
+#panel-sensitivity .gauge {position:relative;width:118px;height:118px;flex:none;}
+#panel-sensitivity .gauge svg {width:100%;height:100%;}
+#panel-sensitivity .gauge .lbl {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#panel-sensitivity .gauge .lbl .num {font-family:var(--mono);font-weight:700;font-size:16px;color:var(--amber);}
+#panel-sensitivity .gauge .lbl .unit {font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.05em;}
+#panel-sensitivity footer {text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:26px;letter-spacing:.04em;}
+#panel-sensitivity footer .v {color:var(--amber);}
+#panel-sensitivity .divider {display:flex;align-items:center;gap:10px;margin:18px 0 12px;}
+#panel-sensitivity .divider span {font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--dim);text-transform:uppercase;white-space:nowrap;}
+#panel-sensitivity .divider i {flex:1;height:1px;background:var(--line-bright);}
+@media(max-width:520px){
+  #panel-sensitivity .title {font-size:23px;}
+  #panel-sensitivity .tab {flex:1 1 30%;text-align:center;}
+}
+
+/* ================= EXTENSION PANELS (Range/TTK/Recoil/Attachments/Backpack/Data) ================= */
+#panel-range, #panel-ttk, #panel-recoil2, #panel-attach, #panel-backpack, #panel-data {
+  --bg:#07090e; --bg2:#0f161d; --panel:#121a22; --line:#223140; --ink:#eef4f8; --dim:#71899b;
+  --zone:#22e0ff; --zone-soft:rgba(34,224,255,.10); --amber:#ffb545; --keep:#3ecf7e; --swap:#ff5a45;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --disp: "Rajdhani", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
+  --body: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background:var(--bg); color:var(--ink); font-family:var(--body); margin:0;
+}
+#panel-range *, #panel-ttk *, #panel-recoil2 *, #panel-attach *, #panel-backpack *, #panel-data * {box-sizing:border-box}
+#panel-range .wrap, #panel-ttk .wrap, #panel-recoil2 .wrap, #panel-attach .wrap, #panel-backpack .wrap, #panel-data .wrap {
+  max-width:1180px;margin:0 auto;padding:24px 20px 80px;
+}
+#panel-range h1, #panel-ttk h1, #panel-recoil2 h1, #panel-attach h1, #panel-backpack h1, #panel-data h1 {
+  font-family:var(--disp);font-weight:800;letter-spacing:.02em;font-size:34px;margin:0 0 4px;text-transform:uppercase;color:var(--ink);
+}
+#panel-range .eyebrow, #panel-ttk .eyebrow, #panel-recoil2 .eyebrow, #panel-attach .eyebrow, #panel-backpack .eyebrow, #panel-data .eyebrow {
+  font-family:var(--mono);letter-spacing:.2em;color:var(--zone);font-size:11px;text-transform:uppercase;
+}
+#panel-range .sub, #panel-ttk .sub, #panel-recoil2 .sub, #panel-attach .sub, #panel-backpack .sub, #panel-data .sub {
+  color:var(--dim);font-size:13.5px;max-width:720px;line-height:1.55;margin:0 0 20px;
+}
+#panel-range .card, #panel-ttk .card, #panel-recoil2 .card, #panel-attach .card, #panel-backpack .card, #panel-data .card {
+  background:rgba(18,26,34,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(34,224,255,.28);border-radius:3px;padding:18px;margin-bottom:16px;position:relative;box-shadow:0 0 24px rgba(34,224,255,.06), inset 0 1px 0 rgba(255,255,255,.03);
+}
+#panel-range .card::before, #panel-ttk .card::before, #panel-recoil2 .card::before, #panel-attach .card::before, #panel-backpack .card::before, #panel-data .card::before,
+#panel-range .card::after, #panel-ttk .card::after, #panel-recoil2 .card::after, #panel-attach .card::after, #panel-backpack .card::after, #panel-data .card::after {
+  content:"";position:absolute;width:12px;height:12px;border:1px solid var(--zone);opacity:.55;
+}
+#panel-range .card::before, #panel-ttk .card::before, #panel-recoil2 .card::before, #panel-attach .card::before, #panel-backpack .card::before, #panel-data .card::before {top:-1px;left:-1px;border-right:none;border-bottom:none}
+#panel-range .card::after, #panel-ttk .card::after, #panel-recoil2 .card::after, #panel-attach .card::after, #panel-backpack .card::after, #panel-data .card::after {bottom:-1px;right:-1px;border-left:none;border-top:none}
+#panel-range .section-h, #panel-ttk .section-h, #panel-recoil2 .section-h, #panel-attach .section-h, #panel-backpack .section-h, #panel-data .section-h {
+  font-family:var(--disp);text-transform:uppercase;font-size:17px;letter-spacing:.03em;margin:0 0 12px;color:var(--ink);
+  border-left:3px solid var(--zone);padding-left:12px;
+}
+#panel-range .toolbar, #panel-ttk .toolbar, #panel-recoil2 .toolbar, #panel-attach .toolbar, #panel-backpack .toolbar {
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end;
+}
+#panel-range .field, #panel-ttk .field, #panel-recoil2 .field, #panel-attach .field, #panel-backpack .field {display:flex;flex-direction:column;gap:5px;min-width:140px;flex:1}
+#panel-range .field label, #panel-ttk .field label, #panel-recoil2 .field label, #panel-attach .field label, #panel-backpack .field label {
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--zone);
+}
+#panel-range select, #panel-ttk select, #panel-recoil2 select, #panel-attach select, #panel-backpack select,
+#panel-range input, #panel-ttk input, #panel-recoil2 input, #panel-attach input, #panel-backpack input {
+  background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;font-family:var(--mono);font-size:12.5px;width:100%;
+}
+#panel-range select:disabled, #panel-attach select:disabled { opacity:.35; cursor:not-allowed; }
+#panel-range .grid3, #panel-ttk .grid3, #panel-recoil2 .grid3, #panel-attach .grid3, #panel-backpack .grid3 {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;
+}
+#panel-range .grid4, #panel-ttk .grid4, #panel-recoil2 .grid4, #panel-attach .grid4, #panel-backpack .grid4 {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;
+}
+#panel-range .stat, #panel-ttk .stat, #panel-recoil2 .stat, #panel-attach .stat, #panel-backpack .stat {
+  background:rgba(15,22,29,.65);border:1px solid var(--line);padding:12px 14px;position:relative;overflow:hidden;
+}
+#panel-range .stat .n, #panel-ttk .stat .n, #panel-recoil2 .stat .n, #panel-attach .stat .n, #panel-backpack .stat .n {
+  font-family:var(--disp);font-weight:700;font-size:28px;color:var(--zone);text-shadow:0 0 12px rgba(34,224,255,.35);
+}
+#panel-range .stat .l, #panel-ttk .stat .l, #panel-recoil2 .stat .l, #panel-attach .stat .l, #panel-backpack .stat .l {
+  font-family:var(--mono);font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;
+}
+#panel-range .stat .bar, #panel-ttk .stat .bar, #panel-attach .stat .bar, #panel-backpack .stat .bar {
+  height:3px;background:rgba(255,255,255,.06);margin-top:10px;border-radius:2px;overflow:hidden;
+}
+#panel-range .stat .bar-fill, #panel-ttk .stat .bar-fill, #panel-attach .stat .bar-fill, #panel-backpack .stat .bar-fill {
+  height:100%;width:0%;background:linear-gradient(90deg, rgba(34,224,255,.5), var(--zone));box-shadow:0 0 8px rgba(34,224,255,.6);transition:width .25s ease;
+}
+#panel-range .stat.warn .n, #panel-backpack .stat.warn .n { color:var(--swap); }
+#panel-backpack .stat.warn .bar-fill { background:linear-gradient(90deg, rgba(255,90,69,.5), var(--swap)); box-shadow:0 0 8px rgba(255,90,69,.6); }
+#panel-range table, #panel-ttk table, #panel-recoil2 table, #panel-attach table, #panel-backpack table {
+  width:100%;border-collapse:collapse;font-size:12px;
+}
+#panel-range th, #panel-ttk th, #panel-recoil2 th, #panel-attach th, #panel-backpack th {
+  text-align:left;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;font-size:10px;color:var(--zone);
+  border-bottom:1px solid var(--zone);padding:7px 6px;
+}
+#panel-range td, #panel-ttk td, #panel-recoil2 td, #panel-attach td, #panel-backpack td {
+  padding:7px 6px;border-bottom:1px solid var(--line);font-family:var(--mono);
+}
+#panel-range .note, #panel-ttk .note, #panel-recoil2 .note, #panel-attach .note, #panel-backpack .note, #panel-data .note {
+  font-size:12px;color:var(--dim);line-height:1.6;margin-top:10px;border-left:2px solid var(--amber);padding:6px 0 6px 10px;
+}
+#panel-range .note b, #panel-ttk .note b, #panel-recoil2 .note b, #panel-attach .note b, #panel-backpack .note b, #panel-data .note b { color:var(--amber); }
+#panel-range .helptext, #panel-ttk .helptext, #panel-recoil2 .helptext, #panel-attach .helptext, #panel-backpack .helptext, #panel-data .helptext {
+  color:var(--dim);font-size:12.5px;line-height:1.6;max-width:760px;margin-bottom:14px;
+}
+#panel-range canvas, #panel-ttk canvas, #panel-recoil2 canvas { width:100%; height:220px; display:block; }
+#panel-attach .slot-off { color:var(--dim); font-family:var(--mono); font-size:11.5px; padding:8px 0; }
+#panel-attach .preset-btns, #panel-backpack .preset-btns { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+#panel-attach .chip, #panel-backpack .chip {
+  background:var(--bg2);border:1px solid var(--line);color:var(--dim);font-family:var(--mono);font-size:11px;
+  padding:6px 10px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;
+}
+#panel-attach .chip:hover, #panel-backpack .chip:hover { color:var(--zone); border-color:var(--zone); }
+#panel-data dl.datalist { font-size:13px; color:var(--dim); line-height:1.7; }
+#panel-data dl.datalist dt { color:var(--ink); font-weight:700; margin-top:10px; }
+#panel-data ul.gaps { font-size:12.5px; color:var(--dim); line-height:1.7; }
+#panel-backpack .catrow { display:flex; justify-content:space-between; font-family:var(--mono); font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--line); }
+#panel-backpack .catrow b { color:var(--zone); }
+#panel-backpack .bp-list { display:flex; flex-direction:column; }
+#panel-backpack .bp-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); }
+#panel-backpack .bp-row:last-child { border-bottom:none; }
+#panel-backpack .bp-row .bp-name { flex:1; font-size:13px; color:var(--ink); }
+#panel-backpack .bp-row .bp-wt { font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto; white-space:nowrap; }
+#panel-backpack .bp-row .bp-sub { font-family:var(--mono); font-size:11px; color:var(--zone); flex:0 0 52px; text-align:right; white-space:nowrap; }
+#panel-backpack .bp-row .bp-stepper { display:flex; align-items:center; gap:4px; flex:0 0 auto; }
+#panel-backpack .bp-row .bp-stepper button { width:26px; height:26px; background:var(--bg2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:14px; cursor:pointer; padding:0; line-height:1; }
+#panel-backpack .bp-row .bp-stepper button:hover { border-color:var(--zone); color:var(--zone); }
+#panel-backpack .bp-row .bp-stepper input { width:44px; text-align:center; padding:5px 2px; font-size:13px; }
+@media(max-width:520px){
+  #panel-backpack .bp-row .bp-wt { display:none; }
+}
+@media(max-width:700px){
+  #panel-range h1, #panel-ttk h1, #panel-recoil2 h1, #panel-attach h1, #panel-backpack h1, #panel-data h1 { font-size:26px; }
+}
+</style>
+<link rel="stylesheet" href="design-refresh.css">
+<link rel="stylesheet" href="app-shell.css">
+<link rel="stylesheet" href="visual-assets.css">
+<link rel="stylesheet" href="src/explorer/hit-zone-explorer.scaffold.css">
+<link rel="stylesheet" href="combat-workspace.css">
+<link rel="stylesheet" href="toolkit-layout.css">
+<link rel="stylesheet" href="unified-workspace.css">
+<link rel="stylesheet" href="recoil-analyzer.css">
+<link rel="stylesheet" href="damage-guide.css">
+</head>
+<body>
+<nav class="command-centre-bridge" aria-label="PUBG Command Centre cross navigation">
+  <a href="/" aria-label="Return to PUBG player statistics">← Player statistics</a>
+  <strong>PUBG COMMAND CENTRE <span>/ TRAINING</span></strong>
+  <a href="/#matches">Matches &amp; replays →</a>
+</nav>
+<div id="app-shell">
+  <aside id="app-sidebar" aria-label="Toolkit navigation">
+    <header id="site-masthead" aria-label="HELP Clan PUBG Toolkit">
+      <div class="site-brand">
+        <div class="site-mark" aria-hidden="true">H<span class="site-mark-spark"></span></div>
+        <div class="site-brand-copy">
+          <span class="site-brand-name">HELP CLAN</span>
+          <span class="site-brand-sub">PUBG FIELD TOOLKIT</span>
+        </div>
+      </div>
+    </header>
+    <div class="sidebar-scroll">
+      <p class="sidebar-kicker"><span class="kicker-rule"></span> THE TOOLKIT</p>
+      <nav id="app-toolnav" aria-label="Toolkit tools">
+        <div class="nav-tool-group">
+  <div class="nav-group-label"><span>01</span>ALL TOOLS</div>
+  <button class="nav-tool active" type="button" data-open-panel="panel-sensitivity" aria-controls="panel-sensitivity" aria-current="page">
+    <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5" fill="#111f2c"/><circle cx="16" cy="17" r="2.5" fill="#111f2c"/></svg></span>
+    <span class="nav-tool-name">Sensitivity Studio</span>
+    <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+  <button class="nav-tool" type="button" data-open-panel="panel-combat" aria-controls="panel-combat">
+    <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></span>
+    <span class="nav-tool-name">Combat DB</span>
+    <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+<button class="nav-tool" type="button" data-open-panel="panel-hit-zone" aria-controls="panel-hit-zone">
+    <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4" r="2.3"/><path d="M10 7h4l2 6-2 7M10 7l-2 6 2 7M12 9v9M6 11l3-2m9 2-3-2"/></svg></span>
+    <span class="nav-tool-name">Combat Lab</span>
+    <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+  <button class="nav-tool" type="button" data-open-panel="panel-recoil2" aria-controls="panel-recoil2">
+    <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13h3l3-7 4 12 3-7h5"/></svg></span>
+    <span class="nav-tool-name">Recoil Analyzer</span>
+    <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+  <button class="nav-tool" type="button" data-open-panel="panel-attach" aria-controls="panel-attach">
+    <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v4M17 3v4M4 7h16v13H4z"/><path d="M8 13h8m-4-4v8"/></svg></span>
+    <span class="nav-tool-name">Attachments</span>
+    <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+  <button class="nav-tool" type="button" data-open-panel="panel-backpack" aria-controls="panel-backpack">
+    <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="6" width="14" height="15" rx="3"/><path d="M9 6V4a3 3 0 0 1 6 0v2M9 11h6M5 15h14"/></svg></span>
+    <span class="nav-tool-name">Tactical Loadout &amp; Gear</span>
+    <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+</div>
+
+      </nav>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-mark"><span class="sidebar-live-dot"></span> FIELD SYSTEM ONLINE</div>
+      <div class="site-edition">PUBG: BATTLEGROUNDS · FIELD REFERENCE</div>
+    </div>
+  </aside>
+  <div id="sidebar-scrim" aria-hidden="true"></div>
+  <div id="app-main">
+    <header id="app-topbar">
+      <div class="topbar-main">
+        <button type="button" id="mobile-nav-toggle" aria-controls="app-sidebar" aria-expanded="false" aria-label="Open toolkit navigation">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-heading">
+          <div class="topbar-breadcrumb">HELP CLAN <span>/</span> FIELD TOOLKIT</div>
+          <div class="topbar-title" id="active-tool-heading" tabindex="-1">Sensitivity Studio</div>
+        </div>
+      </div>
+      <div class="topbar-brand" aria-label="HELP CLAN">
+        <span class="topbar-brand-name"><span class="brand-help">HELP</span> <span class="brand-clan">CLAN</span></span>
+        <span class="topbar-brand-tagline">PUBG FIELD TOOLKIT</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="topbar-online"><span></span> TOOLS ONLINE</span>
+        <span class="topbar-index" id="active-tool-index" aria-label="Tool 1 of 6">01 <i>/</i> 06</span>
+      </div>
+    </header>
+    <main id="app-workspace" aria-label="Toolkit workspace">
+<div id="panel-combat" class="hub-main">
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Combat · Weapon Database</div>
+  <h1>Weapon Database</h1>
+  <details class="combat-overview-disclosure" id="combat-overview-disclosure" open>
+    <summary>Combat overview &amp; quick links</summary>
+    <div class="combat-overview-content">
+  <p class="sub">Compare weapon statistics and armour crossover thresholds. Select a weapon for its full details.</p>
+  <div class="hero-stats">
+    <div id="statAll"><b>44</b><span>Weapons</span></div>
+    <div id="statVest"><b>39</b><span>Vest X-over</span></div>
+    <div id="statHelm"><b>39</b><span>Helmet X-over</span></div>
+  </div>
+  <div class="hero-hint">Every weapon is shown below — search or filter by class to narrow it down</div>
+  <nav class="quicknav">
+    <a href="#compare-weapons">↓ Compare weapons</a>
+    <a href="#armor-guide">↓ Armour &amp; durability guide</a>
+  </nav>
+    </div>
+  </details>
+<section class="visual-art-panel combat-armour-disclosure" id="combat-armour-disclosure">
+  <h2 class="section-h">Helmet &amp; vest visual guide </h2>
+  <div class="visual-armour-key" aria-label="Illustrated protective equipment reference">
+  <div><img data-visual-src="assets/gear-helmet.svg" width="320" height="200" alt="PUBG protective helmet illustration" loading="lazy" decoding="async"><span><strong>Helmet</strong><small>Head protection. See thresholds and damage numbers below.</small></span></div>
+  <div><img data-visual-src="assets/gear-vest.svg" width="320" height="200" alt="PUBG protective vest illustration" loading="lazy" decoding="async"><span><strong>Vest</strong><small>PUBG body armour reference. Select armour levels in the calculator.</small></span></div>
+</div>
+</section>
+</header>
+
+<div id="panels"></div>
+
+
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modalBody" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div></div>
+
+
+
+</div>
+
+<div id="panel-sensitivity" class="hub-main active">
+
+<div class="wrap">
+
+  <div class="hdr"><b class="br1"></b><b class="br2"></b>
+    <div class="eyebrow">// UNOFFICIAL FIELD REFERENCE TOOL</div>
+    <div class="title">PUBG <span>SCOPE SENSITIVITY</span> MATCHER</div>
+
+  </div>
+
+  <div class="sensitivity-top-tools"><nav class="tabs quicknav" id="tabs" aria-label="Sensitivity sections"></nav>
+  <aside class="card sensitivity-tool-guide" aria-label="Choose a sensitivity tool">
+    <div class="card-title" style="color:var(--olive);"><span class="n">i</span> Choose a sensitivity tool</div>
+    <table class="ref">
+      <thead><tr><th>You want to&hellip;</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>Make every scope (1x&ndash;15x) turn at the same actual speed</td><td>Scope Sensitivity Matcher</td></tr>
+        <tr><td>Nudge ADS/scope sensitivity up or down without losing your recoil-control feel</td><td>Vertical Mult.</td></tr>
+        <tr><td>Change monitor aspect ratio and correct sensitivity accordingly</td><td>Resolution</td></tr>
+      </tbody>
+    </table>
+  </aside>
+</div>
+
+  <!-- ================= SCOPE ================= -->
+  <div class="panel" data-panel="scope">
+    <div class="card">
+      <div class="card-title"><span class="n">01</span> Scope Sensitivity Matcher</div>
+      <p class="card-sub">Matches actual screen turn-rate (pixel speed) across scopes, since equal menu sensitivity values do <b>not</b> produce equal turn speed &mdash; each scope has its own A/B constants. Set the scope you like, and get matched values for every other scope.</p>
+      <div class="visual-inline-preview" id="visual-scope-preview" aria-label="Reference optic appearance"><img id="visual-scope-image" src="assets/optic-red-dot.svg" width="320" height="200" loading="eager" fetchpriority="low" decoding="async" alt="PUBG Red Dot sight"><div><span class="visual-media-kicker">OPTIC · PUBG ARTWORK</span><strong id="visual-scope-label" aria-live="polite">1x Red Dot</strong><small>PUBG / KRAFTON artwork. Scope conversion uses the existing sensitivity maths.</small></div></div><fieldset class="visual-one-x-variants" id="visual-one-x-variants" hidden aria-label="Illustrative 1x sight style; sensitivity values are unchanged"><legend>1x sight appearance only — same sensitivity calculation</legend><button type="button" class="visual-optic-variant" data-visual-optic="reddot" aria-pressed="true">Red Dot</button><button type="button" class="visual-optic-variant" data-visual-optic="holo" aria-pressed="false">Holographic</button><button type="button" class="visual-optic-variant" data-visual-optic="iron" aria-pressed="false">Iron sights</button></fieldset>
+      <section class="sensitivity-howto" aria-label="How to use the sensitivity matcher">
+        <h2>Find a setting you like, then match the others</h2>
+        <ol><li>In PUBG, choose an aiming mode or scope that feels comfortable. Enter that mode and its current sensitivity below.</li><li>The reference speed is calculated in px/s. Copy the matched sensitivities into your game settings to give the other scopes the same calculated speed.</li><li>Or enter all your current settings in the speed checker below. See which aiming modes are fastest and slowest, and how large the mismatch is.</li><li>Test your changes in Training Mode. Use the vertical multiplier section below if you also change your preferred ADS sensitivity; use the resolution section when changing aspect ratio.</li></ol>
+      </section>
+      <div class="grid">
+        <div class="field"><label for="px_scope">Reference scope</label>
+          <select id="px_scope">
+            <option value="aim">Aim (over the shoulder)</option>
+            <option value="1x" selected>1x (Red Dot / Holo / Iron)</option>
+            <option value="2x">2x</option>
+            <option value="3x">3x</option>
+            <option value="4x">4x</option>
+            <option value="6x">6x</option>
+            <option value="8x">8x</option>
+            <option value="15x">15x</option>
+          </select>
+        </div>
+        <div class="field"><label for="px_sens">Sensitivity on that scope</label><input type="number" id="px_sens" value="10" step="0.1"></div>
+      </div>
+      <div class="outbar">
+        <div class="out hi"><div class="k">Pixel speed</div><div class="v" id="px_speed">–</div><div class="u" style="margin-left:0;">px/s</div></div>
+      </div>
+
+      <div class="divider"><span>Matched sensitivity per scope</span><i></i></div>
+      <div class="scope-results-scroll" role="region" aria-label="Matched scope sensitivities" tabindex="0">
+      <table class="ref" id="px_table">
+        <thead><tr><th>Scope</th><th>A</th><th>B</th><th>Matched sensitivity</th><th>In range?</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      </div>
+      <div class="note">Confirm calculated sensitivity values in-game. Out of range means the scope cannot reach the exact match within the supplied calibration range.</div>
+      <section id="current-sensitivities" class="current-sensitivity-checker" aria-labelledby="current-sensitivity-title">
+        <h2 id="current-sensitivity-title">Check all your current sensitivities</h2>
+        <p>Enter your current in-game sensitivities (0–20). Compare the speeds below to see how mismatched your settings are. The largest difference is the gap between your fastest and slowest entered aiming modes. Blank or invalid entries are excluded.</p>
+        <div class="scope-results-scroll" role="region" aria-label="Current sensitivity pixel speeds" tabindex="0"><table class="ref" id="current_sensitivity_table"><thead><tr><th>Aiming mode</th><th>Your sensitivity</th><th>Current px/s</th><th>Above your slowest setting</th></tr></thead><tbody></tbody></table></div>
+        <p id="current_speed_spread" class="current-speed-spread" role="status" aria-live="polite">Enter at least two current sensitivities to compare their speeds.</p>
+      </section>
+    </div>
+  </div>
+
+  <!-- ================= VERTICAL MULTIPLIER ================= -->
+  <div class="panel" data-panel="vert">
+    <div class="card">
+      <div class="card-title"><span class="n">02</span> Vertical Multiplier Calculator</div>
+      <p class="card-sub">Change ADS or scope sensitivity by a small amount (~1&ndash;3 points) while keeping your existing vertical recoil-control feel. Works because PUBG sensitivity scales logarithmically: +15 sensitivity &asymp; 2&times;. Vertical multiplier runs 50&ndash;150 in-game.</p>
+      <div class="grid">
+        <div class="field"><label>Current ADS sensitivity <span style="color:var(--dim);">(0&ndash;20)</span></label><input type="number" id="v_cur_ads" value="10" step="1" min="0" max="20"></div>
+        <div class="field"><label>Current vertical multiplier <span style="color:var(--dim);">(50&ndash;150)</span></label><input type="number" id="v_cur_vm" value="100" step="1" min="50" max="150"></div>
+        <div class="field"><label>Target ADS sensitivity <span style="color:var(--dim);">(0&ndash;20)</span></label><input type="number" id="v_tgt_ads" value="12" step="1" min="0" max="20"></div>
+      </div>
+      <div class="outbar">
+        <div class="out"><div class="k">Sensitivity difference</div><div class="v" id="v_diff">–</div></div>
+        <div class="out"><div class="k">Sensitivity ratio</div><div class="v" id="v_ratio">–</div></div>
+        <div class="out hi"><div class="k">Target vertical multiplier</div><div class="v" id="v_tvm">–</div></div>
+        <div class="out"><div class="k">Rounded (nearest)</div><div class="v" id="v_round">–</div></div>
+        <div class="out"><div class="k">Rounded down (safer)</div><div class="v" id="v_floor">–</div></div>
+      </div>
+      <p class="card-sub" style="margin:10px 0 0">In-game the vertical multiplier field only accepts whole numbers — use <b>Rounded (nearest)</b> for the closest match to your original feel, or <b>Rounded down (safer)</b> if you'd rather slightly undershoot than overshoot it.</p>
+      <div class="note" id="v_advice"></div>
+    </div>
+  </div>
+
+  <!-- ================= RESOLUTION ================= -->
+  <div class="panel" data-panel="res">
+    <div class="card">
+      <div class="card-title"><span class="n">03</span> Resolution / Aspect Ratio Converter</div>
+      <p class="card-sub">Correction values when switching aspect ratio. Sensitivity and vertical multiplier are corrected together for 4:3; only the vertical multiplier is corrected for 16:10 and 21:9.</p>
+      <div class="grid">
+        <div class="field"><label>Current ADS sensitivity <span style="color:var(--dim);">(0&ndash;20)</span></label><input type="number" id="r_sens" value="10" step="1" min="0" max="20"></div>
+        <div class="field"><label>Current vertical multiplier <span style="color:var(--dim);">(50&ndash;150)</span></label><input type="number" id="r_vm" value="100" step="1" min="50" max="150"></div>
+        <div class="field"><label for="r_conv">Conversion</label>
+          <select id="r_conv">
+            <option value="169to1610">16:9 &rarr; 16:10</option>
+            <option value="1610to169">16:10 &rarr; 16:9</option>
+            <option value="169to219">16:9 &rarr; 21:9</option>
+            <option value="219to169">21:9 &rarr; 16:9</option>
+            <option value="169to43">16:9 &rarr; 4:3</option>
+            <option value="43to169">4:3 &rarr; 16:9</option>
+          </select>
+        </div>
+      </div>
+      <div class="outbar">
+        <div class="out"><div class="k">Sensitivity change</div><div class="v" id="r_sensout">–</div></div>
+        <div class="out hi"><div class="k">New vertical multiplier</div><div class="v" id="r_vmout">–</div></div>
+      </div>
+
+      <div class="divider"><span>Reference table</span><i></i></div>
+      <table class="ref">
+        <thead><tr><th>Conversion</th><th>Sensitivity</th><th>Vertical multiplier</th></tr></thead>
+        <tbody>
+          <tr><td>16:9 &rarr; 16:10</td><td>No change</td><td>&times; 1.11</td></tr>
+          <tr><td>16:10 &rarr; 16:9</td><td>No change</td><td>&divide; 1.11</td></tr>
+          <tr><td>16:9 &rarr; 21:9</td><td>No change</td><td>&times; 0.85</td></tr>
+          <tr><td>21:9 &rarr; 16:9</td><td>No change</td><td>&divide; 0.85</td></tr>
+          <tr><td>16:9 &rarr; 4:3</td><td>+3</td><td>&times; 1.166</td></tr>
+          <tr><td>4:3 &rarr; 16:9</td><td>&minus;3</td><td>&divide; 1.166</td></tr>
+        </tbody>
+      </table>
+
+      <div class="divider"><span>Common resolutions</span><i></i></div>
+      <table class="ref">
+        <thead><tr><th>Resolution</th><th>Aspect</th></tr></thead>
+        <tbody>
+          <tr><td>1280&times;720</td><td>16:9</td></tr>
+          <tr><td>1920&times;1080</td><td>16:9</td></tr>
+          <tr><td>2560&times;1440</td><td>16:9</td></tr>
+          <tr><td>3840&times;2160</td><td>16:9</td></tr>
+          <tr><td>2560&times;1080</td><td>21:9</td></tr>
+          <tr><td>3440&times;1440</td><td>21:9</td></tr>
+          <tr><td>1920&times;1200</td><td>16:10</td></tr>
+          <tr><td>2560&times;1600</td><td>16:10</td></tr>
+          <tr><td>1440&times;1080</td><td>4:3</td></tr>
+          <tr><td>1920&times;1440</td><td>4:3</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+
+  <footer>HELP Clan Scope Sensitivity Matcher <span class="v">v1.0</span> &middot; logic by HELP clan manual v1.0 &middot; unofficial, not affiliated with PUBG or KRAFTON</footer>
+</div>
+
+
+
+</div>
+
+<!-- ================= EFFECTIVE RANGE & DAMAGE ================= -->
+
+
+<!-- ================= TTK CALCULATOR ================= -->
+
+
+<!-- ================= PER-SHOT RECOIL ANALYZER ================= -->
+<div id="panel-recoil2" class="hub-main">
+<div class="wrap">
+  <div class="eyebrow">Combat · Recoil</div>
+  <h1>Per-Shot Recoil Analyzer</h1>
+  <p class="sub">Explore recoil build-up, compare stance and attachment effects, and fire independent simulated sprays using weapon-specific reference curves.</p>
+  <p class="recoil-coverage">27 weapons with reference curves · Existing HELP values take precedence where sources differ. <a href="https://www.pubgintel.com/pubg-per-shot-analyzer" target="_blank" rel="noopener noreferrer">PUBGIntel reference</a></p>
+  <div class="card">
+    <div class="section-h">Weapon &amp; firing setup</div>
+    <div class="toolbar">
+      <div class="field"><label for="rc_class">Weapon class</label><select id="rc_class"><option value="all">All classes</option><option value="AR">Assault rifles</option><option value="SMG">Submachine guns</option><option value="DMR">Marksman rifles</option><option value="MG">Machine guns</option><option value="SR">Sniper rifles</option><option value="SG">Shotguns</option><option value="Pistol">Pistols</option></select></div>
+      <div class="field"><label for="rc_weapon">Weapon</label><select id="rc_weapon"></select></div>
+      <div class="field"><label for="rc_stance">Stance</label>
+        <select id="rc_stance"><option value="standing">Standing</option><option value="crouched">Crouched</option><option value="prone">Prone</option></select>
+      </div>
+      <div class="field"><label for="rc_shots">Simulated spray length</label>
+        <select id="rc_shots"><option value="10">10 shots</option><option value="20">20 shots</option><option value="30" selected>30 shots</option></select>
+      </div>
+    </div>
+    <div id="rc_missing" class="recoil-evidence-note" role="status" aria-live="polite"></div>
+  </div>
+
+  <section id="rc_analyzer" aria-label="Per-shot analysis">
+    <div class="card">
+      <h2 class="section-h">Weapon curve data</h2>
+      <div class="field" id="rc_rate_field" hidden><label for="rc_rate">Fire rate</label><select id="rc_rate"></select></div>
+      <div id="rc_metadata" class="recoil-metadata"></div>
+      <p id="rc_rate_note" class="helptext" hidden></p>
+      <div id="rc_patch"></div>
+    </div>
+    <div class="card">
+      <h2 class="section-h">Stance &amp; attachments</h2>
+      <p id="rc_stance_summary" class="helptext"></p>
+      <div id="rc_stance_buttons" class="workspace-segments" role="group" aria-label="Recoil stance"></div>
+      <div id="rc_attachment_choices" class="recoil-attachment-choices"></div>
+      <p id="rc_build_summary" class="note"></p>
+      <p class="helptext">Attachment stacking is additive in this model. Whether PUBG adds or multiplies combined attachment effects remains unresolved; the combined reduction is a model estimate.</p>
+    </div>
+    <div class="card" id="rc_chart" data-evidence="reference-model">
+      <h2 class="section-h">Recoil build-up · first 30 shots</h2>
+      <p class="helptext">Average vertical climb and horizontal kick in 10-shot windows, shown as a percentage of this weapon’s first-30-shot peak. Lower means less kick. Saved values are percentage points of that peak.</p>
+      <div class="recoil-legend"><span>Baseline vertical</span><span>Build vertical</span><span>Baseline horizontal</span><span>Build horizontal</span></div>
+      <canvas id="rc_curve_canvas" width="960" height="320" role="img" aria-label="Per-shot vertical and horizontal recoil build-up; equivalent values are in the tables below"></canvas>
+      <div class="recoil-table-scroll" tabindex="0" role="region" aria-label="Ten-shot recoil stages"><table id="rc_stage_table"></table></div>
+      <p id="rc_estimate_note" class="helptext">EST means one or both curves have ended; their final values are held.</p>
+    </div>
+    <div class="card">
+      <h2 class="section-h">Visual spray simulator</h2>
+      <div id="rc_sim_metadata" class="recoil-metadata"></div>
+      <p class="helptext">Each Fire rolls a new random spray with the selected stance and attachments. The first bullet starts at the crosshair; recoil moves the following bullet. These are simulated positions in curve units, not measured screen pixels or guaranteed impacts. Five colours let you compare independent sprays.</p>
+      <div class="recoil-sim-controls"><button type="button" id="rc_fire">Fire a simulated spray</button><button type="button" id="rc_reset">Reset sprays</button><label><input type="checkbox" id="rc_animate" checked> Animate at weapon firing rate</label></div>
+      <p id="rc_sim_count" role="status" aria-live="polite">0 / 5 sprays</p>
+      <canvas id="rc_sim_canvas" width="960" height="600" role="img" aria-label="Randomized spray paths, overlaid in up to five colours"></canvas>
+      <p class="helptext">The view keeps the same scale when attachments or stance change. After five sprays, Fire starts a new set. Changing the setup clears the previous set.</p>
+    </div>
+    <div class="card">
+      <h2 class="section-h">Every shot’s curve values</h2>
+      <button type="button" id="rc_export">Download per-shot CSV</button>
+      <div class="recoil-table-scroll" tabindex="0" role="region" aria-label="Numeric per-shot recoil values"><table id="rc_shot_table"></table></div>
+      <p class="helptext">Curves are sampled at the selected firing interval with their recorded linear, constant or cubic interpolation. The 10-shot windows are a display choice, not a claim that PUBG changes mechanics at shot 10 or 20.</p>
+    </div>
+  </section>
+
+  <div class="card">
+    <div class="section-h">Weapon recoil parameters</div>
+
+    <div style="overflow-x:auto;max-width:100%">
+      <table id="rc_table"></table>
+    </div>
+  </div>
+
+  <section class="visual-art-panel" id="visual-recoil-artwork">
+    <h2 class="section-h">Weapon & recoil reference </h2>
+    <div class="visual-art-content">
+<figure class="visual-reference-banner" id="visual-recoil"><img data-visual-src="assets/recoil-parameters.svg" width="320" height="200" loading="lazy" decoding="async" alt="Recoil parameter reference"><figcaption><strong>Recoil parameter reference</strong><span>Weapon reference artwork; the analyzer above uses imported recoil curves.</span></figcaption></figure>
+<div class="visual-selected-weapon" id="visual-recoil-weapon" aria-live="polite"><img id="visual-recoil-weapon-image" width="960" height="320" alt="" decoding="async" loading="lazy" hidden><div><span class="visual-media-kicker">PUBG WEAPON ART</span><strong id="visual-recoil-weapon-title">Artwork not available</strong><small id="visual-recoil-weapon-note">Weapon stats are shown below. Reference artwork is not game data.</small></div></div>
+    </div>
+  </section>
+
+
+</div>
+</div>
+
+<!-- ================= ATTACHMENTS & RECOIL ================= -->
+<div id="panel-attach" class="hub-main">
+<div class="wrap">
+  <div class="eyebrow">Loadout · Attachments</div>
+  <h1>Attachments &amp; Recoil</h1>
+  <p class="sub">Check compatible optics and attachments for each weapon, then compare the recoil and magazine effects.</p>
+
+  <div class="card">
+    <div class="section-h">Loadout</div>
+    <div class="toolbar">
+      <div class="field"><label for="at_weapon">Weapon</label><select id="at_weapon"></select></div>
+    </div>
+    <div class="preset-btns">
+      <button type="button" class="chip" id="at_presetVert">Best vertical control</button>
+      <button type="button" class="chip" id="at_presetHoriz">Best horizontal</button>
+      <button type="button" class="chip" id="at_presetBal">Balanced</button>
+      <button type="button" class="chip" id="at_presetClear">Clear</button>
+    </div>
+    <div class="toolbar">
+      <div class="field"><label for="at_muzzle">Muzzle</label><select id="at_muzzle"></select></div>
+      <div class="field"><label for="at_grip">Grip</label><select id="at_grip"></select></div>
+      <div class="field"><label for="at_stock">Stock</label><select id="at_stock"></select></div>
+      <div class="field"><label for="at_mag">Magazine</label><select id="at_mag"></select></div>
+      <div class="field"><label for="at_sight">Optic</label><select id="at_sight"></select></div>
+    </div>
+    <div class="note" id="at_opticNote"></div>
+    <div class="visual-gear-grid" id="visual-attachment-grid" aria-label="Attachment category illustrations"><div class="visual-gear-tile"><img id="visual-at-muzzle-image" data-visual-src="assets/gear-muzzle.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG muzzle attachment"><strong>Muzzle</strong><small id="visual-at-muzzle">Not selected</small></div><div class="visual-gear-tile"><img id="visual-at-grip-image" data-visual-src="assets/gear-grip.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG grip attachment"><strong>Grip</strong><small id="visual-at-grip">Not selected</small></div><div class="visual-gear-tile"><img id="visual-at-mag-image" data-visual-src="assets/gear-magazine.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG magazine attachment"><strong>Magazine</strong><small id="visual-at-mag">Not selected</small></div><div class="visual-gear-tile"><img id="visual-at-sight-image" data-visual-src="assets/optic-3x.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG optic"><strong>Optic</strong><small id="visual-at-sight">Not selected</small></div><div class="visual-gear-tile"><img id="visual-at-stock-image" data-visual-src="assets/gear-stock.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG stock illustration"><strong>Stock</strong><small id="visual-at-stock">Not selected</small></div></div>
+<div class="visual-selected-weapon" id="visual-attach-weapon" aria-live="polite"><img id="visual-attach-weapon-image" width="960" height="320" alt="" decoding="async" loading="lazy" hidden><div><span class="visual-media-kicker">PUBG WEAPON ART</span><strong id="visual-attach-weapon-title">Artwork not available</strong><small id="visual-attach-weapon-note">Weapon stats are shown below. Reference artwork is not game data.</small></div></div><p class="visual-art-disclaimer">PUBG item artwork © KRAFTON. Calculated effects use the selected equipment.</p>
+
+  </div>
+
+  <div class="card">
+    <div class="section-h">Effect on this weapon</div>
+    <div class="grid4">
+      <div class="stat"><div class="n" id="at_vrecoil">–</div><div class="l">Vertical recoil change</div></div>
+      <div class="stat"><div class="n" id="at_hrecoil">–</div><div class="l">Horizontal recoil change</div></div>
+      <div class="stat"><div class="n" id="at_recovery">–</div><div class="l">Recoil recovery change</div></div>
+      <div class="stat"><div class="n" id="at_reload">–</div><div class="l">Reload time change</div></div>
+    </div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="stat"><div class="n" id="at_capBase">–</div><div class="l">Base capacity</div></div>
+      <div class="stat"><div class="n" id="at_capNew">–</div><div class="l">Capacity with magazine</div></div>
+    </div>
+    <div class="note" id="at_note"></div>
+  </div>
+</div>
+</div>
+
+<!-- ================= BACKPACK CALCULATOR ================= -->
+<div id="panel-backpack" class="hub-main">
+<div class="wrap">
+  <div class="eyebrow">Loadout · Backpack</div>
+  <h1>Backpack Calculator</h1>
+  <p class="sub">Plan ammo, healing, boosts and throwables within your carrying capacity, including your vest.</p><div class="visual-backpack-row"><div class="visual-pack-lead"><img id="visual-pack-image" data-visual-src="assets/gear-backpack.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG backpack"><div><strong id="visual-pack-label">Standard Backpack · Level 3</strong><small id="visual-pack-note">PUBG item artwork © KRAFTON. Capacity is calculated separately.</small></div></div><div class="visual-pack-items">
+<span><img data-visual-src="assets/gear-ammo.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG Ammo illustration"><small>Ammo</small></span>
+<span><img data-visual-src="assets/gear-medical.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG Healing illustration"><small>Healing</small></span>
+<span><img data-visual-src="assets/gear-booster.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG Boosters illustration"><small>Boosters</small></span>
+<span><img data-visual-src="assets/gear-grenade.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG Throwables illustration"><small>Throwables</small></span>
+<span><img data-visual-src="assets/gear-helmet.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG Helmet reference illustration"><small>Helmet reference</small></span>
+<span><img data-visual-src="assets/gear-vest.svg" width="320" height="200" loading="lazy" decoding="async" alt="PUBG Vest: worn illustration"><small id="visual-pack-vest-label">Vest: worn</small></span>
+</div></div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div class="field"><label for="bp_type">Backpack type</label>
+        <select id="bp_type"><option value="standard">Standard Backpack</option><option value="jammer">Jammer Pack</option></select>
+      </div>
+      <div class="field"><label for="bp_level">Level</label>
+        <select id="bp_level"><option value="1">Level 1</option><option value="2">Level 2</option><option value="3" selected>Level 3</option></select>
+      </div>
+      <div class="field"><label for="bp_vest">Equipped vest (+50 space)</label>
+        <select id="bp_vest"><option value="yes" selected>Wearing a vest</option><option value="no">No vest</option></select>
+      </div>
+    </div>
+    <div id="bp_jammerNote"></div>
+    <div class="preset-btns">
+      <button type="button" class="chip" id="bp_clear">Clear all</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-h" style="margin-top:0">Result</div>
+    <div class="grid3">
+      <div class="stat"><div class="n" id="bp_cap">–</div><div class="l">Capacity</div></div>
+      <div class="stat"><div class="n" id="bp_used">–</div><div class="l">Used</div><div class="bar"><div class="bar-fill" id="bp_used_bar"></div></div></div>
+      <div class="stat" id="bp_remStat"><div class="n" id="bp_rem">–</div><div class="l">Remaining</div><div class="bar"><div class="bar-fill" id="bp_rem_bar"></div></div></div>
+    </div>
+    <div id="bp_breakdown" style="margin-top:12px"></div>
+    <div class="note" id="bp_warn"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-h">Ammo</div>
+    <div id="bp_ammoGrid" class="bp-list"></div>
+  </div>
+  <div class="card">
+    <div class="section-h">Healing &amp; boosts</div>
+    <div id="bp_healGrid" class="bp-list"></div>
+  </div>
+  <div class="card">
+    <div class="section-h">Throwables</div>
+    <div id="bp_throwGrid" class="bp-list"></div>
+  </div>
+</div>
+</div>
+
+
+<!-- ================= HIT ZONE DAMAGE EXPLORER ================= -->
+<!-- Hit Zone Explorer: canonical front-view markup; keep embedded index.html version synchronized. -->
+<div id="panel-hit-zone" class="hub-main" aria-hidden="true">
+  <div class="wrap">
+    <div class="eyebrow">Combat · Damage, range &amp; time to kill</div>
+    <h1>Combat Lab</h1>
+    <p class="sub">Choose one loadout and recorded distance. Switch the model between damage, hits to kill, heatmap and TTK. Select a body zone to update the range and timing results below.</p>
+    <nav class="dg-jumps" aria-label="Explore damage mechanics"><a href="#dg_calculation">Damage calculation ↓</a><a href="#dg_hit_area">Hit area ↓</a><a href="#dg_weapon_class">Weapon class ↓</a><a href="#dg_combined">Combined multipliers ↓</a></nav>
+    <div class="hz-workspace">
+      <div class="hz-tools">
+    <div class="card">
+      <div class="toolbar" aria-label="Damage explorer controls">
+        <div class="field"><label for="hz_weapon">Weapon</label><select id="hz_weapon"></select></div>
+        <div class="field"><label for="hz_distance">Recorded distance</label><select id="hz_distance"></select></div>
+        <div class="field"><label for="hz_helmet">Helmet</label><select id="hz_helmet">
+          <option value="0">None</option><option value="1">Level 1</option>
+          <option value="2">Level 2</option><option value="3">Level 3</option>
+        </select></div>
+        <div class="field"><label for="hz_vest">Vest</label><select id="hz_vest">
+          <option value="0">None</option><option value="1">Level 1</option>
+          <option value="2">Level 2</option><option value="3">Level 3</option>
+        </select></div>
+        <div class="field"><label for="hz_mode">Display</label><select id="hz_mode">
+          <option value="damage">Damage</option><option value="htk">Hits to kill</option>
+          <option value="heatmap">Heatmap + damage</option><option value="ttk">Time to kill (seconds)</option>
+          <option value="ideal-shells">Shotgun: theoretical minimum shells (all pellets hit)</option>
+        </select></div>
+      </div>
+      <p id="hz_status" class="note" role="status" aria-live="polite">Explorer preview: select a weapon and equipment after integration.</p>
+    </div>
+    <section class="card hz-results" aria-label="Text equivalent of all hit-zone values">
+      <div class="section-h">All zone results</div>
+      <div class="hz-table-scroll"><table><caption>All thirteen hit zones for the selected weapon and armour. Select a body zone for the optional multiplier breakdown.</caption><thead><tr><th scope="col">Hit zone</th><th scope="col">Value</th><th scope="col">Protection</th></tr></thead>
+      <tbody id="hz_rows"></tbody></table></div>
+    </section>
+      <details class="card hz-detail-card" aria-label="Damage calculations">
+        <summary>Selected zone — calculation details</summary>
+        <div id="hz_summary" aria-live="polite">Choose a loadout to see every hit-zone value.</div>
+        <div id="hz_detail">Select any body region to inspect the calculation.</div>
+      </details>
+      </div>
+      <section class="card hz-figure-card" aria-label="Front-view hit zone map">
+        <div class="section-h">Front view — all zones</div>
+        <svg id="hz_body" viewBox="0 0 500 760" role="group" aria-labelledby="hz_bodyTitle hz_bodyDesc" xmlns="http://www.w3.org/2000/svg">
+          <title id="hz_bodyTitle">Front view of PUBG damage hit zones</title>
+          <desc id="hz_bodyDesc">Thirteen anatomically separated hit zones with mirrored limbs. Damage for every zone is always visible in surrounding callouts. Keyboard or touch selection reveals optional detail.</desc>
+          <defs>
+            <linearGradient id="hz-skin" x1="0" y1="0" x2=".75" y2="1">
+              <stop stop-color="#385365"/><stop offset=".50" stop-color="#213845"/><stop offset="1" stop-color="#112532"/>
+            </linearGradient>
+            <linearGradient id="hz-vest-shell" x1="0" x2="1"><stop stop-color="#f5b54d"/><stop offset=".5" stop-color="#fce19a"/><stop offset="1" stop-color="#bd803a"/></linearGradient>
+            <radialGradient id="hz-reticle-glow"><stop stop-color="#168cae" stop-opacity=".16"/><stop offset="1" stop-color="#168cae" stop-opacity="0"/></radialGradient>
+            <pattern id="hz-grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#2a4a59" stroke-opacity=".36" stroke-width=".6"/></pattern>
+          </defs>
+          <rect width="500" height="760" rx="12" fill="#0a151e"/>
+          <rect width="500" height="760" rx="12" fill="url(#hz-grid)"/>
+          <circle cx="250" cy="354" r="253" fill="url(#hz-reticle-glow)"/>
+          <g class="hz-target-grid" stroke="#2f6677" stroke-opacity=".23" fill="none" pointer-events="none">
+            <circle cx="250" cy="335" r="112"/><circle cx="250" cy="335" r="192"/>
+            <path d="M250 20V742M150 335H350M240 31h20M240 738h20"/>
+          </g>
+          <!-- Neutral training mannequin: vector geometry matches the interactive regions. -->
+          <image class="hz-model" href="/training/assets/damage-training-mannequin.svg" x="0" y="5" width="500" height="750" preserveAspectRatio="xMidYMid meet" aria-hidden="true" pointer-events="none"/>
+          <g class="hz-figure-outline" fill="transparent" stroke="#61c8e2" stroke-opacity=".26" stroke-width="1.8" stroke-linejoin="round">
+            <g data-hit-zone="head" role="button" tabindex="0" aria-label="Head" aria-controls="hz_detail" aria-pressed="false"><ellipse cx="251" cy="76" rx="43" ry="48"/></g>
+            <g data-hit-zone="neck" role="button" tabindex="0" aria-label="Neck" aria-controls="hz_detail" aria-pressed="false"><path d="M231 117 Q251 129 270 118 L273 153 Q250 159 229 153Z"/></g>
+            <g data-hit-zone="clavicle" role="button" tabindex="0" aria-label="Clavicle" aria-controls="hz_detail" aria-pressed="false"><path d="M227 149 L271 149 Q308 154 328 178 L305 199 Q278 181 251 183 Q219 181 196 199 L173 179 Q190 158 227 149Z"/></g>
+            <g data-hit-zone="chest" role="button" tabindex="0" aria-label="Chest" aria-controls="hz_detail" aria-pressed="false"><path d="M196 198 Q219 181 251 183 Q279 181 305 198 L298 268 Q282 284 251 282 Q216 284 207 267Z"/></g>
+            <g data-hit-zone="upperStomach" role="button" tabindex="0" aria-label="Upper stomach" aria-controls="hz_detail" aria-pressed="false"><path d="M207 266 Q228 281 251 281 Q280 281 298 266 L292 310 Q273 320 251 320 Q226 320 213 310Z"/></g>
+            <g data-hit-zone="lowerStomach" role="button" tabindex="0" aria-label="Lower stomach" aria-controls="hz_detail" aria-pressed="false"><path d="M213 310 Q252 324 292 310 L302 357 Q251 369 202 357Z"/></g>
+            <g data-hit-zone="pelvis" role="button" tabindex="0" aria-label="Pelvis" aria-controls="hz_detail" aria-pressed="false"><path d="M202 357 Q249 368 302 357 L316 393 Q302 412 279 409 L251 400 L222 410 Q198 413 187 391Z"/></g>
+            <g data-hit-zone="upperArm" role="button" tabindex="0" aria-label="Upper arm" aria-controls="hz_detail" aria-pressed="false"><path d="M191 170 Q169 156 155 177 Q148 196 145 231 L129 276 Q145 293 171 290 L190 230 Q204 193 191 170Z"/><path d="M309 170 Q331 156 345 177 Q352 196 355 231 L371 276 Q355 293 329 290 L310 230 Q296 193 309 170Z"/></g>
+            <g data-hit-zone="forearm" role="button" tabindex="0" aria-label="Forearm" aria-controls="hz_detail" aria-pressed="false"><path d="M129 276 Q147 291 171 290 L158 349 Q152 378 145 398 L114 389 Q121 350 120 322Z"/><path d="M371 276 Q353 291 329 290 L342 349 Q348 378 355 398 L386 389 Q379 350 380 322Z"/></g>
+            <g data-hit-zone="hand" role="button" tabindex="0" aria-label="Hand" aria-controls="hz_detail" aria-pressed="false"><path d="M114 389 Q130 398 145 398 L150 419 Q151 435 140 443 Q126 448 120 430 L110 419 Q104 410 110 400Z"/><path d="M386 389 Q370 398 355 398 L350 419 Q349 435 360 443 Q374 448 380 430 L390 419 Q396 410 390 400Z"/></g>
+            <g data-hit-zone="thigh" role="button" tabindex="0" aria-label="Thigh" aria-controls="hz_detail" aria-pressed="false"><path d="M222 409 Q249 397 251 401 L248 476 L238 538 Q224 547 209 541 Q190 528 183 499 L183 438 Q185 408 222 409Z"/><path d="M278 409 Q251 397 249 401 L252 476 L262 538 Q276 547 291 541 Q310 528 317 499 L317 438 Q315 408 278 409Z"/></g>
+            <g data-hit-zone="calf" role="button" tabindex="0" aria-label="Calf" aria-controls="hz_detail" aria-pressed="false"><path d="M209 541 Q223 548 238 538 L232 621 L234 697 Q222 714 207 696 L196 618 L192 570Z"/><path d="M291 541 Q277 548 262 538 L268 621 L266 697 Q278 714 293 696 L304 618 L308 570Z"/></g>
+            <g data-hit-zone="foot" role="button" tabindex="0" aria-label="Foot" aria-controls="hz_detail" aria-pressed="false"><path d="M207 696 Q223 712 234 697 L238 720 L240 739 Q214 751 195 744 Q186 736 198 718Z"/><path d="M293 696 Q277 712 266 697 L262 720 L260 739 Q286 751 305 744 Q314 736 302 718Z"/></g>
+          </g>
+          <!-- Coverage aligns to the damage zones; these are not armour's physical dimensions. -->
+          <g class="hz-coverage" data-armour="helmet" aria-hidden="true" pointer-events="none"><ellipse cx="251" cy="76" rx="43" ry="48"/><path d="M231 117 Q251 129 270 118 L273 153 Q250 159 229 153Z"/></g>
+          <g class="hz-coverage" data-armour="vest" aria-hidden="true" pointer-events="none"><path d="M227 149 L271 149 Q308 154 328 178 L305 199 Q278 181 251 183 Q219 181 196 199 L173 179 Q190 158 227 149Z"/><path d="M196 198 Q219 181 251 183 Q279 181 305 198 L298 268 Q282 284 251 282 Q216 284 207 267Z"/><path d="M207 266 Q228 281 251 281 Q280 281 298 266 L292 310 Q273 320 251 320 Q226 320 213 310Z"/><path d="M213 310 Q252 324 292 310 L302 357 Q251 369 202 357Z"/><path d="M202 357 Q249 368 302 357 L316 393 Q302 412 279 409 L251 400 L222 410 Q198 413 187 391Z"/></g>
+          <g class="hz-callouts" aria-hidden="true">
+            <g class="hz-zone-card" data-hz-callout="head" transform="translate(356 47)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-68 32"/>
+              <circle class="hz-leader-dot" cx="-68" cy="32" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Head</text>
+              <text class="hz-chip-value" data-hz-value="head" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="neck" transform="translate(8 120)">
+              <path class="hz-leader" d="M137 18 L142 18 L225 14"/>
+              <circle class="hz-leader-dot" cx="225" cy="14" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Neck</text>
+              <text class="hz-chip-value" data-hz-value="neck" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="clavicle" transform="translate(356 147)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-54 23"/>
+              <circle class="hz-leader-dot" cx="-54" cy="23" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Clavicle</text>
+              <text class="hz-chip-value" data-hz-value="clavicle" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="chest" transform="translate(8 190)">
+              <path class="hz-leader" d="M137 18 L142 18 L204 22"/>
+              <circle class="hz-leader-dot" cx="204" cy="22" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Chest</text>
+              <text class="hz-chip-value" data-hz-value="chest" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="upperArm" transform="translate(8 230)">
+              <path class="hz-leader" d="M137 18 L142 18 L147 13"/>
+              <circle class="hz-leader-dot" cx="147" cy="13" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Upper arm</text>
+              <text class="hz-chip-value" data-hz-value="upperArm" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="upperStomach" transform="translate(356 252)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-70 18"/>
+              <circle class="hz-leader-dot" cx="-70" cy="18" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Upper stomach</text>
+              <text class="hz-chip-value" data-hz-value="upperStomach" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="lowerStomach" transform="translate(8 300)">
+              <path class="hz-leader" d="M137 18 L142 18 L206 16"/>
+              <circle class="hz-leader-dot" cx="206" cy="16" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Lower stomach</text>
+              <text class="hz-chip-value" data-hz-value="lowerStomach" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="forearm" transform="translate(356 315)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-3 18"/>
+              <circle class="hz-leader-dot" cx="-3" cy="18" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Forearm</text>
+              <text class="hz-chip-value" data-hz-value="forearm" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="pelvis" transform="translate(356 365)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-69 4"/>
+              <circle class="hz-leader-dot" cx="-69" cy="4" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Pelvis</text>
+              <text class="hz-chip-value" data-hz-value="pelvis" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="hand" transform="translate(8 406)">
+              <path class="hz-leader" d="M137 18 L142 18 L126 0"/>
+              <circle class="hz-leader-dot" cx="126" cy="0" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Hand</text>
+              <text class="hz-chip-value" data-hz-value="hand" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="thigh" transform="translate(356 456)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-64 19"/>
+              <circle class="hz-leader-dot" cx="-64" cy="19" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Thigh</text>
+              <text class="hz-chip-value" data-hz-value="thigh" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="calf" transform="translate(8 571)">
+              <path class="hz-leader" d="M137 18 L142 18 L191 9"/>
+              <circle class="hz-leader-dot" cx="191" cy="9" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Calf</text>
+              <text class="hz-chip-value" data-hz-value="calf" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="foot" transform="translate(356 685)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-56 16"/>
+              <circle class="hz-leader-dot" cx="-56" cy="16" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Foot</text>
+              <text class="hz-chip-value" data-hz-value="foot" x="11" y="32">—</text>
+            </g>
+          </g>
+          <text class="hz-plate-caption" x="250" y="749" text-anchor="middle">HELP CLAN / FRONT-ONLY HIT-ZONE REFERENCE</text>
+        </svg>
+        <p class="hz-caption">Both left and right limbs use the same hit-zone values. Coverage tints mark modeled protected hit zones, not the physical dimensions of equipment. Damage values are from published distance checkpoints.</p>
+      </section>
+    </div>
+<section id="damage-guide" aria-labelledby="damage-guide-title">
+  <div class="dg-intro"><div><p class="dg-kicker">UNDERSTAND EVERY HIT</p><h2 id="damage-guide-title">How PUBG damage works</h2><p>Follow one shot through the calculation, then compare the hit-area, weapon-class and gear factors on the models below.</p></div></div>
+  <nav class="dg-jumps" aria-label="Damage guide sections"><a href="#dg_calculation">Damage calculation ↓</a><a href="#dg_hit_area">Hit area ↓</a><a href="#dg_weapon_class">Weapon class ↓</a><a href="#dg_combined">Combined multipliers ↓</a></nav>
+  <section id="dg_calculation" class="dg-section" aria-labelledby="dg_calculation_title"><p class="dg-kicker">01 / THE FORMULA</p><h2 id="dg_calculation_title">Damage Calculation</h2><p>Actual damage is base damage multiplied by four factors: distance, armour remaining, hit area and weapon class. This worked example follows your weapon, gear and selected body zone in Combat Lab.</p><p id="dg_formula_context" class="workspace-context"></p><div class="dg-formula"><div id="dg_formula_values" class="dg-factors"></div><div class="dg-total"><span>Actual damage</span><strong id="dg_actual_damage"></strong></div></div><p id="dg_formula_note" class="helptext"></p></section>
+  <section id="dg_hit_area" class="dg-section" aria-labelledby="dg_area_title"><p class="dg-kicker">02 / WHERE THE BULLET LANDS</p><h2 id="dg_area_title">Hit Area Modifier</h2><p>Each of the thirteen precise body regions has its own hit-area factor. These factors stay the same across the listed classes; class and gear modifiers are applied separately. Left and right limbs share the same values.</p><div class="dg-area-layout"><div id="dg_area_model"></div><div><div id="dg_area_table"></div><p class="dg-source-note">100% means ×1.00; 110% means ×1.10. This layer alone does not represent final damage. The neutral training mannequin uses the same anatomical regions as the interactive map. Leader lines are diagram references, rather than an exact PUBG collision mesh.</p></div></div></section>
+  <section id="dg_weapon_class" class="dg-section" aria-labelledby="dg_class_title"><p class="dg-kicker">03 / WHAT YOU FIRE</p><h2 id="dg_class_title">Weapon Class Modifier</h2><p>Compare all seven class profiles. SMGs give more weight to limb hits; sniper rifles give more weight to head and torso hits. These models show only the class factor, before hit-area and gear effects.</p><p class="helptext">Class defaults are shown here. Weapon-specific exceptions still apply in the live calculation: Dragunov uses ×2.80 for head and neck instead of the DMR default ×2.35. LMG pelvis and torso factors differ.</p><div id="dg_class_models" class="dg-model-grid"></div></section>
+  <section id="dg_combined" class="dg-section" aria-labelledby="dg_combined_title"><p class="dg-kicker">04 / THE COMPLETE MULTIPLIER</p><h2 id="dg_combined_title">Combined Multipliers: Weapon Class, Hit Area &amp; Gear</h2><p>Class × hit area × armour remaining. Change the helmet and vest to compare protection across every class. Distance is excluded from this view.</p><div class="dg-gear-controls"><div class="field"><label for="dg_helmet">Guide helmet</label><select id="dg_helmet"><option value="0">None</option><option value="1">Level 1</option><option value="2" selected>Level 2</option><option value="3">Level 3</option></select></div><div class="field"><label for="dg_vest">Guide vest</label><select id="dg_vest"><option value="0">None</option><option value="1">Level 1</option><option value="2" selected>Level 2</option><option value="3">Level 3</option></select></div><button type="button" id="dg_copy_gear">Use Combat Lab gear</button></div><p id="dg_gear_context" class="workspace-context" aria-live="polite"></p><div id="dg_combined_models" class="dg-model-grid"></div></section>
+  <p class="dg-source-note">The guide exposes the same multiplier data used by our damage engine. <a href="https://pubgstatistics.com/weapons" target="_blank" rel="noopener noreferrer">PUBGStatistics reference</a>. Armour factors assume intact standard gear: Level 1 ×0.70, Level 2 ×0.60, Level 3 ×0.45. Helmets apply to head/neck, vests to torso/pelvis, and limbs stay unprotected. Class diagrams show class defaults rather than every weapon exception. Shotgun multipliers are per-pellet factors, not guaranteed whole-shell damage.</p>
+</section>
+
+  <p id="combat-selected-context" class="workspace-context" role="status"></p>
+<div id="panel-range" class="combat-result-section">
+<div class="wrap">
+  <div class="eyebrow">Combat · Effective Range</div>
+  <h2>Range &amp; ballistics</h2>
+  <p class="sub">Check damage and range at recorded distances. Shotguns also show a best-case minimum shell count, assuming every pellet hits.</p>
+  <div class="card combat-engine-controls" hidden>
+    <div class="section-h">Setup</div>
+    <div class="toolbar">
+      <div class="field"><label for="rg_weapon">Weapon</label><select id="rg_weapon"></select></div>
+      <div class="field"><label for="rg_hitbox">Hitbox</label>
+        <select id="rg_hitbox"><option value="head">Head</option><option value="chest" selected>Chest</option><option value="limb">Limbs</option></select>
+      </div>
+      <div class="field" style="flex:0 0 auto;justify-content:flex-end;flex-direction:row;align-items:center;gap:6px">
+        <label style="margin:0"><input type="checkbox" id="rg_detailed" style="width:auto;margin-right:4px;vertical-align:middle"> Detailed hitboxes</label>
+      </div>
+      <div class="field"><label for="rg_armor">Armor level (on that hitbox)</label>
+        <select id="rg_armor"><option value="0">None</option><option value="1">Level 1</option><option value="2">Level 2</option><option value="3" selected>Level 3</option></select>
+      </div>
+      <div class="field" id="rg_stanceField" style="display:none"><label for="rg_stance">Firing stance (shotguns only)</label>
+        <select id="rg_stance"><option value="hip" selected>Hip-fire</option><option value="ads">Aimed (ADS)</option></select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:6px"><label>Measured checkpoint: <span id="rg_rangeLabel">100 m</span></label>
+      <input type="range" id="rg_range" min="0" max="1" step="1" value="0" aria-label="Select a recorded distance">
+      <p class="helptext" id="rg_rangeEvidence">Only recorded distances are available.</p>
+    </div>
+    <div id="rg_approxNote"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-h">Result at this range</div>
+    <div class="grid4">
+      <div class="stat"><div class="n" id="rg_dmg">–</div><div class="l" id="rg_dmgLabel">Damage at range</div><div class="bar"><div class="bar-fill" id="rg_dmg_bar"></div></div></div>
+      <div class="stat"><div class="n" id="rg_htk">–</div><div class="l" id="rg_htkLabel">Hits to kill</div><div class="bar"><div class="bar-fill" id="rg_htk_bar"></div></div></div>
+      <div class="stat"><div class="n" id="rg_ttk">–</div><div class="l">TTK (seconds)</div><div class="bar"><div class="bar-fill" id="rg_ttk_bar"></div></div></div>
+      <div class="stat"><div class="n" id="rg_flight">–</div><div class="l">Minimum flight time (ideal)</div></div>
+    </div>
+    <p class="helptext" style="margin-top:8px">Ideal minimum: distance ÷ muzzle velocity, assuming no drag. Actual projectile travel time is longer.</p>
+  </div>
+
+  <section class="visual-art-panel" id="visual-range-artwork">
+    <h2 class="section-h">Weapon & range reference </h2>
+    <div class="visual-art-content">
+<figure class="visual-reference-banner" id="visual-range"><img data-visual-src="assets/range-target.svg" width="320" height="200" loading="lazy" decoding="async" alt="Range target reference"><figcaption><strong>Range target reference</strong><span>Illustrative target only; charts show recorded checkpoints.</span></figcaption></figure>
+<div class="visual-selected-weapon" id="visual-range-weapon" aria-live="polite"><img id="visual-range-weapon-image" width="960" height="320" alt="" decoding="async" loading="lazy" hidden><div><span class="visual-media-kicker">PUBG WEAPON ART</span><strong id="visual-range-weapon-title">Artwork not available</strong><small id="visual-range-weapon-note">Weapon stats are shown below. Reference artwork is not game data.</small></div></div>
+    </div>
+  </section>
+
+  <div class="card">
+    <div class="section-h">Estimated gravity drop at this range</div>
+    <div class="grid3">
+      <div class="stat"><div class="n" id="rg_drop">–</div><div class="l">Estimated gravity displacement (cm)</div></div>
+      <div class="stat"><div class="n" id="rg_holdover">–</div><div class="l">Equivalent angle (mrad)</div></div>
+      <div class="stat"><div class="n" id="rg_muzzlecmp">–</div><div class="l" id="rg_velocityLabel">Muzzle velocity (game files)</div></div>
+    </div>
+    <div class="note" id="rg_dropNote"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-h" id="rg_chartTitle">Damage at measured checkpoints</div>
+    <canvas id="rg_chartDmg" width="1100" height="200"></canvas>
+  </div>
+  <details class="card tt-disclosure" id="rg_comparison">
+    <summary>Compare another weapon at recorded checkpoints</summary>
+    <div class="field"><label for="rg_compare">Reference weapon</label><select id="rg_compare"><option value="">Choose a reference weapon</option></select></div>
+    <p class="helptext" id="rg_compareNote" role="status">Select a reference weapon. Comparisons use the same hitbox and equipment.</p>
+    <canvas id="rg_compareChart" width="1100" height="220" role="img" aria-label="Damage comparison at recorded checkpoints; exact values are listed in the following table"></canvas>
+    <div class="tt-table-scroll"><table id="rg_compareTable"></table></div>
+  </details>
+  <div class="card">
+    <div class="section-h">Hits-to-kill and TTK at recorded checkpoints</div>
+    <p class="helptext" style="margin-bottom:10px">Shotgun minimum shells assume every pellet hits the selected body area. Actual fights may require more.</p>
+    <table id="rg_brackets"></table>
+  </div>
+
+
+</div>
+</div><div id="panel-ttk" class="combat-result-section">
+<div class="wrap">
+  <div class="eyebrow">Combat · Time To Kill</div>
+  <h2>Time to kill &amp; weapon comparison</h2>
+  <p class="sub">Compare damage, hits to kill and time to kill at recorded distances. Missing values show No data.</p>
+  <div class="card combat-engine-controls" hidden>
+    <div class="section-h">Setup</div>
+    <div class="toolbar">
+      <div class="field"><label for="tk_weapon">Weapon</label><select id="tk_weapon"></select></div>
+      <div class="field"><label for="tk_distance">Recorded distance</label><select id="tk_distance"></select></div>
+      <div class="field"><label for="tk_hitbox">Hitbox</label>
+        <select id="tk_hitbox"><option value="head">Head</option><option value="chest" selected>Chest</option><option value="limb">Limbs</option></select>
+      </div>
+      <div class="field" style="flex:0 0 auto;justify-content:flex-end;flex-direction:row;align-items:center;gap:6px">
+        <label style="margin:0"><input type="checkbox" id="tk_detailed" style="width:auto;margin-right:4px;vertical-align:middle"> Detailed hitboxes</label>
+      </div>
+      <div class="field"><label for="tk_armor">Armor level</label>
+        <select id="tk_armor"><option value="0">None</option><option value="1">Level 1</option><option value="2">Level 2</option><option value="3" selected>Level 3</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-h">Result</div>
+    <div class="grid3">
+      <div class="stat"><div class="n" id="tk_dmg">–</div><div class="l">Damage per shot</div><div class="bar"><div class="bar-fill" id="tk_dmg_bar"></div></div></div>
+      <div class="stat"><div class="n" id="tk_htk">–</div><div class="l" id="tk_htkLabel">Hits to kill</div><div class="bar"><div class="bar-fill" id="tk_htk_bar"></div></div></div>
+      <div class="stat"><div class="n" id="tk_pure">–</div><div class="l">Pure TTK (s)</div><div class="bar"><div class="bar-fill" id="tk_pure_bar"></div></div></div>
+    </div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="stat"><div class="n" id="tk_reload">–</div><div class="l">TTK incl. reload (s)</div><div class="bar"><div class="bar-fill" id="tk_reload_bar"></div></div></div>
+    </div>
+    <div class="note" id="tk_note"></div>
+  </div>
+
+  <section class="visual-art-panel" id="visual-ttk-artwork">
+    <h2 class="section-h">Weapon & timing reference </h2>
+    <div class="visual-art-content">
+<figure class="visual-reference-banner" id="visual-ttk"><img data-visual-src="assets/ttk-timer.svg" width="320" height="200" loading="lazy" decoding="async" alt="Combat timing reference"><figcaption><strong>Combat timing reference</strong><span>Timer artwork only; calculated results remain authoritative.</span></figcaption></figure>
+<div class="visual-selected-weapon" id="visual-ttk-weapon" aria-live="polite"><img id="visual-ttk-weapon-image" width="960" height="320" alt="" decoding="async" loading="lazy" hidden><div><span class="visual-media-kicker">PUBG WEAPON ART</span><strong id="visual-ttk-weapon-title">Artwork not available</strong><small id="visual-ttk-weapon-note">Weapon stats are shown below. Reference artwork is not game data.</small></div></div>
+    </div>
+  </section>
+
+  <div class="card">
+    <div class="section-h">Compare weapons</div>
+    <p class="helptext" style="margin-bottom:10px">Uses the selected body zone, armour and recorded distance from the model. Pick up to three weapons. A missing exact distance shows No data.</p>
+    <div class="toolbar">
+      <div class="field"><label for="tk_cmpA">Weapon A</label><select id="tk_cmpA"></select></div>
+      <div class="field"><label for="tk_cmpB">Weapon B</label><select id="tk_cmpB"></select></div>
+      <div class="field"><label for="tk_cmpC">Weapon C</label><select id="tk_cmpC"><option value="">— none —</option></select></div>
+    </div>
+
+    <table id="tk_cmpTable"></table>
+    <section class="visual-art-panel visual-compare-art" id="visual-ttk-comparison-artwork">
+      <h2 class="section-h">Comparison weapon pictures </h2>
+      <div class="visual-art-content">
+        <div id="visual-ttk-comparisons" class="visual-weapon-comparisons" aria-label="Comparison weapon illustrations"><div class="visual-compare-tile" id="visual-compare-a"><img id="visual-compare-a-image" width="960" height="320" alt="" loading="lazy" decoding="async" hidden><strong id="visual-compare-a-title">Weapon A</strong><small id="visual-compare-a-note">PUBG / KRAFTON artwork</small></div><div class="visual-compare-tile" id="visual-compare-b"><img id="visual-compare-b-image" width="960" height="320" alt="" loading="lazy" decoding="async" hidden><strong id="visual-compare-b-title">Weapon B</strong><small id="visual-compare-b-note">PUBG / KRAFTON artwork</small></div><div class="visual-compare-tile" id="visual-compare-c"><img id="visual-compare-c-image" width="960" height="320" alt="" loading="lazy" decoding="async" hidden><strong id="visual-compare-c-title">Weapon C</strong><small id="visual-compare-c-note">PUBG / KRAFTON artwork</small></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+</div></div>
+</div>
+
+
+
+
+<script src="js/app-navigation.js"></script>
+
+<script src="js/shared.js"></script>
+<script src="visual-catalog.js"></script>
+<script src="official-art-catalog.js"></script>
+<script src="js/combat-database.js"></script>
+
+<script src="js/sensitivity.js"></script>
+
+<script src="recoil-reference.js"></script>
+<script src="recoil-model.js"></script>
+<script src="js/toolkit-calculators.js"></script>
+<script src="visual-controls.js"></script>
+<script src="combat-workspace.js"></script>
+<script src="toolkit-layout.js"></script>
+<script src="unified-workspace.js"></script>
+<script src="recoil-analyzer.js"></script>
+<script src="damage-guide.js"></script>
+
+<script src="sticky-weapon-header.js" defer></script>
+</body>
+</html>

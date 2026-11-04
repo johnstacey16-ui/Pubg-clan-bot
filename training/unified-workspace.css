@@ -1,0 +1,75 @@
+/* Visible artwork and a single model-led combat workspace. */
+[hidden] {display:none!important}
+#panel-sensitivity .panel[data-panel] {display:block;opacity:1;animation:none;margin-bottom:24px;scroll-margin-top:110px}
+#panel-sensitivity #tabs a,#panel-combat .quicknav a {display:inline-flex;align-items:center;min-height:44px;padding:10px 14px;border:1px solid #b68e4c;border-radius:6px;background:#302b20;color:#ffce80;text-decoration:none;font:600 13px/1.4 system-ui,sans-serif}
+#tabs a:focus-visible,#panel-sensitivity button:focus-visible {outline:2px solid #ffce80;outline-offset:3px}
+.sensitivity-howto {margin:16px 0;padding:14px 18px;background:#0d1b24;border-left:3px solid #dfaf61;border-radius:5px;font:14px/1.65 system-ui,sans-serif;color:#cedce4}
+.sensitivity-howto h2,.current-sensitivity-checker h2 {font:600 19px/1.4 system-ui,sans-serif;color:#ffcf86;margin:0 0 8px}
+.sensitivity-howto ol {padding-left:20px;margin:8px 0}
+.sensitivity-howto li {margin:7px 0}
+.sensitivity-howto p,.current-sensitivity-checker p {font:13px/1.6 system-ui,sans-serif;color:#b9cbd5}
+.current-sensitivity-checker {margin-top:24px;padding-top:18px;border-top:1px solid #405462}
+#current_sensitivity_table {min-width:620px}
+#current_sensitivity_table input {width:90px;min-height:44px;padding:8px;background:#0a1723;color:#f1f3ef;border:1px solid #526674;border-radius:4px;font:14px system-ui}
+#current_sensitivity_table button {min-height:44px;white-space:nowrap;background:#283b49;color:#f5cf90;border:1px solid #6c705f;border-radius:5px;padding:8px 10px;cursor:pointer}
+#current_sensitivity_table button:disabled {opacity:.45;cursor:default}
+#current_sensitivity_table input[aria-invalid=true] {border-color:#fa987f}
+.visual-art-panel {display:block;border:1px solid #354f5e;border-radius:9px;padding:14px;margin:16px 0;background:#0d1d27}
+.visual-art-panel h2 {margin:0 0 12px;color:#f8cb85;font:600 18px/1.4 system-ui,sans-serif}
+.armour-guide {margin:24px 0;scroll-margin-top:110px;border-top:2px solid #b68e4c;padding-top:18px}
+.armour-guide>h2 {font:600 27px/1.3 system-ui;color:#ffcf86;margin-bottom:16px}
+#panel-combat #combat-armour-disclosure {margin:0 0 16px}
+#panel-combat #combat-browser {margin:18px 0}
+.workspace-picker {margin:8px 0;border:1px solid #3c5361;padding:8px;border-radius:5px;background:#101b25}
+.workspace-picker h3 {font:600 13px/1.4 system-ui;color:#efca8c;margin:0 0 8px}
+.workspace-weapon-list {max-height:245px;grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
+#panel-hit-zone .workspace-equipment img {display:block!important}
+#panel-hit-zone .workspace-equipment img[hidden] {display:none!important}
+#panel-hit-zone .hz-workspace {margin-bottom:16px}
+#panel-hit-zone .hz-tools {display:block}
+#panel-hit-zone>.wrap>.hz-results,#panel-hit-zone>.wrap>.hz-detail-card {width:100%;margin-bottom:16px}
+.combat-result-section {display:block!important;scroll-margin-top:110px;margin:26px 0;border-top:2px solid #48616e;padding-top:20px;min-width:0}
+#panel-hit-zone .combat-result-section>.wrap {display:block;max-width:none;padding:0}
+.combat-result-section h2 {font:600 25px/1.3 system-ui;color:#ffcf86;margin:8px 0 14px}
+.combat-result-section .eyebrow {display:none}
+#panel-hit-zone .combat-result-section .card {padding:16px;margin-bottom:16px}
+#panel-hit-zone .combat-result-section .tt-primary-results {grid-column:auto}
+#panel-range table,#panel-ttk table {min-width:0}
+#panel-ttk #tk_cmpTable {min-width:440px}
+#panel-ttk .card:has(#tk_cmpTable) {overflow-x:auto}
+#armor-guide,#how-thresholds-work,#compare-weapons {scroll-margin-top:110px}
+@media(max-width:780px){
+ #panel-hit-zone .hz-workspace {display:flex;flex-direction:column}
+ #panel-hit-zone .hz-tools,#panel-hit-zone .hz-figure-card {width:100%;order:initial}
+ #panel-hit-zone .hz-figure-card {order:1}
+ #panel-hit-zone .workspace-equipment img {width:26px;height:30px}
+ .visual-weapon-comparisons {grid-template-columns:1fr}
+}
+#panel-combat .db-weapon-picture {display:block;width:86px;height:32px;object-fit:contain;margin:0 0 4px}
+.tt-slot-picker h3 {font:600 12px/1.5 system-ui;color:#edc884;margin:10px 0 4px;text-transform:capitalize}
+.tt-slot-options button {display:flex;align-items:center;gap:8px}
+.tt-slot-options img {width:64px;height:44px;object-fit:contain;flex:none}
+#panel-combat .tt-weapon-cards {max-height:none;overflow:visible}
+.full-weapon-library {grid-column:1/-1;max-width:100%;margin:20px 0}
+.full-weapon-library .workspace-weapon-list {grid-template-columns:repeat(auto-fill,minmax(100px,1fr));max-height:320px}
+.lab-weapon-preview {display:flex;gap:12px;align-items:center;padding:5px 0 12px;color:#f4d093;font:600 17px/1.3 system-ui}
+.lab-weapon-preview img {width:140px;height:46px;object-fit:contain}
+#attachment-library {grid-column:1/-1;margin:20px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;min-width:0}
+#attachment-library>h2 {grid-column:1/-1;font:600 22px/1.3 system-ui;color:#f4d093}
+#attachment-library .tt-slot-picker {border:1px solid #405666;padding:10px;border-radius:6px;min-width:0}
+#hz_context,#rg_context,#tk_context {display:none}
+.sensitivity-top-tools {display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,2fr);gap:16px;align-items:start;margin:18px 0 24px}
+#panel-sensitivity .sensitivity-top-tools #tabs {display:flex;flex-direction:column;margin:0;gap:8px}
+#panel-sensitivity .sensitivity-tool-guide {margin:0;padding:16px}
+#panel-sensitivity .sensitivity-tool-guide .card-title {font-size:17px;margin-bottom:8px}
+#panel-sensitivity .sensitivity-tool-guide td {white-space:normal;line-height:1.55;padding:9px 8px}
+#panel-sensitivity .sensitivity-tool-guide table {width:100%}
+#current_sensitivity_table {min-width:480px}
+.current-speed-spread {padding:12px 14px;background:#10252e;border-left:3px solid #e9bc74;color:#ffe0ad!important;font-weight:600!important;border-radius:4px;line-height:1.6}
+@media(max-width:700px){
+ .sensitivity-top-tools {grid-template-columns:minmax(0,1fr)}
+ #panel-sensitivity .sensitivity-top-tools #tabs {flex-direction:row;flex-wrap:wrap}
+ #panel-sensitivity .sensitivity-top-tools #tabs a {flex:1;justify-content:center}
+ #panel-sensitivity .sensitivity-tool-guide {padding:12px}
+ #panel-sensitivity .sensitivity-tool-guide td {font-size:12px}
+}

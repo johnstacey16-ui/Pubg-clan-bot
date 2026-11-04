@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Damage guide section visual review</title><style>html,body{margin:0;background:#091722}iframe{width:100%;height:100vh;border:0;display:block}</style></head><body><iframe id="preview" src="../index.html#panel-hit-zone" title="Damage guide section preview"></iframe><script>
+// Review fixture: place the unchanged production section at the top to avoid
+// Chromium CLI's blank compositor capture after a long document scroll.
+// Real navigation and gear interactions are separately covered by browser-smoke.
+const frame=document.getElementById('preview');frame.addEventListener('load',()=>{setTimeout(()=>{
+ const doc=frame.contentDocument,section=doc.getElementById(new URLSearchParams(location.search).get('section'));
+ const guide=doc.getElementById('damage-guide'),wrap=doc.querySelector('#panel-hit-zone>.wrap');
+ if(!section||!guide||!wrap)throw Error('Guide review section missing');
+ guide.replaceChildren(section);wrap.replaceChildren(guide);frame.contentWindow.scrollTo({top:0,behavior:'instant'});
+},300);});
+</script></body></html>

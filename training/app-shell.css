@@ -1,0 +1,1010 @@
+/* HELP Clan — App Workspace V2
+   Pure presentation/navigation. No calculator source code is changed.
+   Loaded after design-refresh.css so it can safely refine the app shell. */
+
+:root {
+  --app-sidebar-width: 282px;
+  --app-topbar-height: 86px;
+  --app-gold: #e9bc77;
+  --app-ivory: #f7f3eb;
+  --app-line: rgba(181,202,222,.12);
+  --app-muted: #a9b6c5;
+  --app-base: #0a1019;
+  --hub-nav-h: 0px;
+  --grouprow-h: 32px;
+}
+html { scroll-padding-top: calc(var(--app-topbar-height) + 18px); }
+body {
+  background: var(--app-base);
+  background-image:
+    radial-gradient(ellipse at 87% 12%,rgba(58,103,140,.105),transparent 48%),
+    radial-gradient(ellipse at 13% 86%,rgba(183,121,53,.045),transparent 45%);
+}
+#app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: var(--app-sidebar-width) minmax(0,1fr);
+}
+#app-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  isolation: isolate;
+  z-index: 110;
+  border-right: 1px solid rgba(176,194,210,.13);
+  background:
+    linear-gradient(160deg,rgba(27,43,57,.45),transparent 45%),
+    #0e1722;
+  box-shadow: 8px 0 40px rgba(0,0,0,.13);
+}
+#app-sidebar::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 3px;
+  background: linear-gradient(180deg,var(--app-gold),transparent 46%);
+  pointer-events: none;
+  z-index: 2;
+}
+#site-masthead {
+  display: flex;
+  width: 100%;
+  min-height: 118px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 28px 21px 25px 23px;
+  gap: 12px;
+  background: transparent;
+  border-bottom: 1px solid var(--app-line);
+}
+#site-masthead .site-brand { gap: 12px; min-width: 0; }
+#site-masthead .site-mark {
+  width: 48px; height: 48px;
+  flex: 0 0 48px;
+  border-radius: 13px;
+  position: relative;
+  background: #ebbf81;
+  color: #101b27;
+  font: 800 30px/1 "Barlow Condensed",sans-serif;
+  border: 1px solid rgba(255,255,255,.28);
+  box-shadow: 0 9px 30px rgba(233,188,119,.12);
+}
+.site-mark-spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  right: -3px;
+  top: -3px;
+  background: #9fe4db;
+  box-shadow: 0 0 0 3px #101b27;
+}
+#site-masthead .site-brand-name {
+  color: #fffaf2;
+  font: 800 26px/1.0 "Barlow Condensed",sans-serif;
+  letter-spacing: .06em;
+}
+#site-masthead .site-brand-sub {
+  margin-top: 7px;
+  color: #dfb783;
+  font: 600 9px/1.3 "IBM Plex Mono",monospace;
+  letter-spacing: .07em;
+}
+.sidebar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 25px 13px 28px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(151,178,203,.25) transparent;
+}
+.sidebar-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 14px 27px;
+  color: var(--app-gold);
+  font: 600 10px/1.4 "IBM Plex Mono",monospace;
+  letter-spacing: .18em;
+}
+.kicker-rule {
+  display: block;
+  width: 15px;
+  height: 1px;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+#app-toolnav {
+  display: flex;
+  flex-direction: column;
+  gap: 29px;
+}
+.nav-tool-group { min-width: 0; }
+.nav-group-label {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 13px 11px;
+  color: #8194a8;
+  font: 600 10px/1.5 "IBM Plex Mono",monospace;
+  letter-spacing: .11em;
+}
+.nav-group-label span {
+  color: #7a8b9f;
+  letter-spacing: 0;
+  font-size: 10px;
+}
+#app-toolnav .nav-tool {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 49px;
+  padding: 10px 12px;
+  margin: 3px 0;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  box-shadow: none;
+  color: #aebdca;
+  cursor: pointer;
+  text-align: left;
+  font: 600 12px/1.35 "Manrope",sans-serif;
+  letter-spacing: -.015em;
+  transition: color .18s ease, background .18s ease, border-color .18s ease;
+}
+#app-toolnav .nav-tool:hover {
+  color: #f4f7f9;
+  background: rgba(255,255,255,.055);
+}
+#app-toolnav .nav-tool.active {
+  color: #fff4df;
+  background: linear-gradient(105deg,rgba(225,172,102,.155),rgba(225,172,102,.038));
+  border-color: rgba(235,189,125,.22);
+  box-shadow: inset 2px 0 0 var(--app-gold);
+}
+#app-toolnav .nav-tool:focus-visible {
+  outline: 2px solid #e9bc77;
+  outline-offset: -2px;
+}
+.nav-tool-icon {
+  display: grid;
+  flex: 0 0 33px;
+  width: 33px;
+  height: 33px;
+  place-items: center;
+  border-radius: 9px;
+  border: 1px solid rgba(179,199,219,.10);
+  background: rgba(121,152,174,.075);
+  color: #b2c5d6;
+}
+.nav-tool-svg { width: 17px; height: 17px; display: block; }
+.nav-tool.active .nav-tool-icon {
+  background: rgba(233,188,119,.16);
+  border-color: rgba(233,188,119,.2);
+  color: #f5d4a3;
+}
+.nav-tool-name { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.nav-tool-chevron {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity .18s,transform .18s;
+}
+.nav-tool:hover .nav-tool-chevron, .nav-tool.active .nav-tool-chevron {
+  opacity: .85;
+  transform: translateX(0);
+}
+.sidebar-footer {
+  padding: 23px 23px 26px;
+  border-top: 1px solid var(--app-line);
+  background: rgba(6,11,18,.2);
+}
+.sidebar-footer-mark {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #c1d4cd;
+  font: 600 10px/1.5 "IBM Plex Mono",monospace;
+  letter-spacing: .055em;
+}
+.sidebar-live-dot {
+  display: block;
+  width: 7px; height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #86d2ac;
+  box-shadow: 0 0 0 4px rgba(134,210,172,.095);
+}
+#app-sidebar .site-edition {
+  display: block;
+  margin-top: 14px;
+  font: 500 9px/1.65 "IBM Plex Mono",monospace;
+  letter-spacing: .035em;
+  text-align: left;
+  text-transform: uppercase;
+  color: #7f94a7;
+}
+#app-sidebar .site-edition::before { display: none; }
+#sidebar-scrim { display: none; }
+
+/* Workspace / utility bar */
+#app-main {
+  min-width: 0;
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 85% 0%,rgba(57,94,120,.10),transparent 540px),
+    #0a111b;
+}
+#app-main::before {
+  content: "";
+  position: absolute; pointer-events: none;
+  inset: 0 0 auto;
+  height: 700px;
+  background: linear-gradient(90deg,rgba(146,175,201,.018) 1px,transparent 1px),
+              linear-gradient(0deg,rgba(146,175,201,.014) 1px,transparent 1px);
+  background-size: 54px 54px;
+  opacity: .42;
+  z-index: -1;
+}
+#app-topbar {
+  height: var(--app-topbar-height);
+  position: sticky;
+  top: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px clamp(24px,3vw,46px);
+  background: rgba(11,19,30,.93);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--app-line);
+}
+.topbar-main { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.topbar-heading { min-width: 0; }
+.topbar-breadcrumb {
+  font: 600 10px/1.5 "IBM Plex Mono",monospace;
+  letter-spacing: .13em;
+  color: #8299ac;
+}
+.topbar-breadcrumb span { margin-inline: 7px; color: #be985f; }
+.topbar-title {
+  margin-top: 3px;
+  color: #f3efe8;
+  font: 700 25px/1.1 "Barlow Condensed",sans-serif;
+  letter-spacing: .015em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar-title:focus { outline-offset: 4px; }
+.topbar-actions { display: flex; align-items: center; gap: 22px; }
+.topbar-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+  color: #a4b9c5;
+  font: 600 10px/1.5 "IBM Plex Mono",monospace;
+  letter-spacing: .08em;
+}
+.topbar-online span {
+  display: block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #8ed8ad;
+  box-shadow: 0 0 0 4px rgba(142,216,173,.11);
+}
+.topbar-index {
+  white-space: nowrap;
+  font: 600 13px/1.5 "IBM Plex Mono",monospace;
+  color: #f1cc99;
+}
+.topbar-index i { font-style: normal; color: #657b8e; padding-inline: 4px; }
+#mobile-nav-toggle { display: none; }
+
+/* Keep the existing eight content sections unchanged. */
+#app-workspace {
+  position: relative;
+  min-width: 0;
+  min-height: calc(100vh - var(--app-topbar-height));
+  padding-bottom: 30px;
+}
+#app-workspace > .hub-main {
+  min-width: 0;
+  padding: 0;
+}
+#app-workspace > .hub-main:not(.active) { display: none; }
+:is(#panel-combat, #panel-sensitivity, #panel-range, #panel-ttk, #panel-recoil2, #panel-attach, #panel-backpack, #panel-data).hub-main.active {
+  display: block;
+}
+#app-workspace > .hub-main .wrap {
+  max-width: 1320px;
+  width: min(100%,1320px);
+  padding: 40px clamp(22px,3vw,46px) 90px;
+}
+#panel-combat .wrap { padding-top: 34px !important; }
+#panel-combat header.hero {
+  margin: 0 0 29px;
+  padding: clamp(30px,4.3vw,62px);
+  border: 1px solid rgba(232,192,140,.22);
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 93% 20%,rgba(209,164,98,.16),transparent 34%),
+    radial-gradient(ellipse at 80% 110%,rgba(65,132,157,.20),transparent 53%),
+    linear-gradient(120deg,#192633,#1b3041 55%,#111f2e);
+  box-shadow: 0 24px 65px rgba(0,0,0,.21),inset 0 1px 0 rgba(255,255,255,.04);
+  overflow: hidden;
+}
+#panel-combat header.hero::before {
+  background:
+    radial-gradient(circle at 88% 43%,transparent 0 90px,rgba(209,190,151,.12) 91px 92px,transparent 93px 160px,rgba(209,190,151,.085) 161px 162px,transparent 163px 230px,rgba(209,190,151,.05) 231px 232px,transparent 233px),
+    linear-gradient(134deg,transparent 48%,rgba(246,219,180,.025));
+}
+#panel-combat header.hero::after {
+  content: "H / FIELD INTELLIGENCE";
+  position: absolute;
+  top: 27px; right: 31px;
+  color: rgba(226,193,145,.56);
+  font: 600 9px/1.5 "IBM Plex Mono",monospace;
+  letter-spacing: .12em;
+  pointer-events: none;
+}
+#panel-combat header.hero h1 {
+  max-width: 760px;
+  font-size: clamp(52px,5.4vw,79px);
+  line-height: .97;
+  color: #fff7ee;
+}
+#panel-combat header.hero .eyebrow,
+#panel-sensitivity .hdr .eyebrow,
+:is(#panel-range,#panel-ttk,#panel-recoil2,#panel-attach,#panel-backpack,#panel-data) .wrap > .eyebrow {
+  color: var(--app-gold);
+}
+#panel-combat header.hero .sub { color: #c5d0dc; }
+#panel-combat .hero-stats div {
+  background: rgba(8,17,27,.36);
+  border: 1px solid rgba(225,205,180,.16);
+  border-radius: 11px;
+  padding: 18px 19px;
+}
+#panel-combat .hero-stats b { color: #f1c78f; font-size: 37px; }
+#panel-combat .hero-stats span { color: #c4ced8; }
+#panel-combat .quicknav a {
+  border-color: rgba(219,185,136,.30);
+  color: #ffe0b4;
+  background: rgba(218,178,116,.08);
+}
+#panel-combat .quicknav a:hover {
+  background: rgba(218,178,116,.18);
+  border-color: rgba(219,185,136,.6);
+}
+:is(#panel-range,#panel-ttk,#panel-recoil2,#panel-attach,#panel-backpack,#panel-data) .wrap > h1 {
+  font-size: clamp(49px,5vw,69px);
+  color: #f6f3ee;
+  margin-bottom: 17px;
+}
+:is(#panel-range,#panel-ttk,#panel-recoil2,#panel-attach,#panel-backpack,#panel-data) .wrap > .sub {
+  max-width: 830px;
+  color: #bbcad9;
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+#panel-sensitivity .hdr {
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 86% 10%,rgba(228,192,139,.09),transparent 44%),
+    linear-gradient(120deg,#1b2d3e,#142230);
+  border: 1px solid rgba(232,192,140,.17);
+  padding: 37px clamp(25px,4vw,50px);
+}
+#panel-sensitivity .hdr .title { color: #f6f2ea; }
+
+/* More considered dashboard surfaces and controls */
+#app-workspace .card {
+  border-radius: 16px;
+  border: 1px solid rgba(183,201,217,.14);
+  background: linear-gradient(146deg,rgba(24,39,53,.97),rgba(19,32,46,.98));
+  box-shadow: 0 16px 42px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.022);
+  margin-bottom: 22px;
+}
+#app-workspace .card:focus-within {
+  border-color: rgba(183,201,217,.23);
+}
+#app-workspace .card h2, #app-workspace .card h3 { color: #f6f1e9; }
+#app-workspace .stat {
+  background: linear-gradient(150deg,#213448,#18283a);
+  border: 1px solid rgba(183,201,217,.12);
+}
+#app-workspace .stat .n { color: #b6e0e8; }
+#app-workspace .stat .l { color: #b4c2cf; }
+#app-workspace .section-h::before {
+  background: linear-gradient(#f3d19f,#ad7b45);
+}
+#app-workspace table tr { transition: background-color .12s; }
+#app-workspace table th {
+  background: #203043;
+  color: #c5d7e4;
+  border-bottom-color: rgba(221,189,147,.25);
+}
+#app-workspace table td { color: #d8e3ed; }
+#app-workspace :is(input:not([type="checkbox"]):not([type="range"]), select,textarea) {
+  background: #102030 !important;
+  border-color: #3d536a !important;
+}
+#app-workspace input[type="range"] { accent-color: #e9bc77; }
+#app-workspace .chip.on, #panel-sensitivity .tab.active {
+  background: rgba(234,188,120,.16);
+  border-color: rgba(234,188,120,.48);
+  color: #f8dcaf;
+}
+#app-workspace .modal { background: #1b2c3b; }
+#app-workspace a:focus-visible, #app-workspace button:focus-visible {
+  outline-color: #f2c98e;
+}
+#app-workspace .quicknav a,
+#app-workspace .chip,
+#app-workspace .tab { transition: background .16s,border-color .16s,color .16s; }
+
+/* When the device has a real mouse, hover polish is subtle. */
+@media (hover: hover) and (pointer: fine) {
+  #app-toolnav .nav-tool:not(.active):hover .nav-tool-icon {
+    background: rgba(121,152,174,.14);
+    border-color: rgba(179,199,219,.18);
+  }
+  #app-workspace .card { transition: border-color .18s; }
+}
+
+/* Tablet / mobile app shell. */
+@media (max-width: 1100px) {
+  :root { --app-sidebar-width: 250px; }
+  #site-masthead { padding-inline: 17px; }
+  #app-toolnav .nav-tool { gap: 8px; padding: 9px; font-size: 11.5px; }
+  #app-workspace > .hub-main .wrap { padding-inline: clamp(18px,2.3vw,28px); }
+  #app-topbar { padding-inline: 28px; }
+  .topbar-online { display: none; }
+}
+@media (max-width: 900px) {
+  :root { --app-sidebar-width: 300px; --app-topbar-height: 76px; }
+  #app-shell { display: block; min-height: 100dvh; }
+  #app-sidebar {
+    position: fixed; inset: 0 auto 0 0;
+    width: min(340px,86vw); max-width: 100vw;
+    height: 100dvh;
+    z-index: 210;
+    transform: translateX(-102%);
+    visibility: hidden;
+    transition: transform .24s ease, visibility .24s;
+    box-shadow: 30px 0 90px rgba(0,0,0,.45);
+  }
+  body.sidebar-open { overflow: hidden; }
+  body.sidebar-open #app-sidebar { transform: translateX(0); visibility: visible; }
+  #sidebar-scrim {
+    display: block;
+    position: fixed; inset: 0; z-index: 205;
+    background: rgba(2,8,15,.70);
+    opacity: 0; visibility: hidden;
+    transition: opacity .24s,visibility .24s;
+  }
+  body.sidebar-open #sidebar-scrim { opacity: 1; visibility: visible; }
+  #app-topbar {
+    padding: 10px 20px;
+    height: var(--app-topbar-height);
+    gap: 12px;
+  }
+  #mobile-nav-toggle {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid rgba(181,202,222,.21);
+    border-radius: 12px;
+    background: #192938;
+    color: #f3e9d8;
+    cursor: pointer;
+  }
+  #mobile-nav-toggle span {
+    width: 19px; height: 1.8px;
+    background: currentColor;
+    border-radius: 2px;
+  }
+  #app-workspace > .hub-main .wrap { padding: 26px 22px 70px; }
+  #panel-combat .wrap { padding-top: 25px !important; }
+  #app-toolnav .nav-tool { min-height: 52px; font-size: 12px; padding: 10px 12px; gap: 11px; }
+}
+@media (max-width: 600px) {
+  :root { --app-topbar-height: 72px; }
+  #app-topbar { padding-inline: 14px; }
+  .topbar-main { gap: 12px; }
+  .topbar-breadcrumb { font-size: 8.5px; letter-spacing: .06em; }
+  .topbar-title { font-size: 22px; line-height: 1.15; }
+  .topbar-index { font-size: 11px; }
+  #app-workspace > .hub-main .wrap { padding: 21px 13px 60px; }
+  #panel-combat .wrap { padding-top: 20px !important; }
+  #panel-combat header.hero {
+    border-radius: 18px;
+    padding: 27px 21px 24px;
+  }
+  #panel-combat header.hero::after { display: none; }
+  #panel-combat header.hero h1 {
+    font-size: clamp(38px, 11vw, 58px);
+    line-height: .97;
+  }
+  #panel-combat .hero-stats { gap: 7px; margin-top: 22px; }
+  #panel-combat .hero-stats div { padding: 12px 8px; }
+  #panel-combat .hero-stats b { font-size: 27px; }
+  #app-workspace .card { border-radius: 14px; margin-bottom: 16px; }
+  #panel-sensitivity .hdr { padding: 26px 19px; }
+  #panel-sensitivity .hdr .title { font-size: clamp(37px,9vw,55px); }
+  :is(#panel-range,#panel-ttk,#panel-recoil2,#panel-attach,#panel-backpack,#panel-data) .wrap > h1 {
+    font-size: clamp(40px,10vw,53px);
+  }
+  :is(#panel-range,#panel-ttk,#panel-recoil2,#panel-attach,#panel-backpack,#panel-data) .wrap > .sub {
+    font-size: 13px;
+  }
+  #app-workspace .quicknav { grid-template-columns: 1fr; }
+  #app-workspace .section-h { font-size: 23px; }
+}
+@media (max-width: 390px) {
+  .topbar-index { display: none; }
+  .topbar-title { font-size: 20px; }
+  #app-workspace > .hub-main .wrap { padding-inline: 10px; }
+  #panel-combat .hero-stats span { font-size: 8px; }
+}
+/* Respect reduced-motion accessibility settings. */
+@media (prefers-reduced-motion: reduce) {
+  #app-sidebar,#sidebar-scrim,.nav-tool,.nav-tool-chevron,#app-workspace .card {
+    transition: none !important;
+  }
+}
+
+
+/* Weapon database: page-sticky, horizontally synchronized two-row headings.
+   The original wide table remains horizontally scrollable as before. */
+#weapon-table-sticky-header {
+  position: fixed;
+  z-index: 94; /* Under the app topbar (95), above the table itself */
+  overflow: hidden;
+  border: 1px solid rgba(193,215,230,.30);
+  border-bottom: 2px solid #d0ae78;
+  border-radius: 0 0 11px 11px;
+  background: #182939;
+  box-shadow: 0 13px 28px rgba(0,0,0,.34);
+  color: #e1ecf4;
+}
+#weapon-table-sticky-header[hidden] { display: none !important; }
+#weapon-table-sticky-header .weapon-table-sticky-viewport {
+  width: 100%;
+  overflow: hidden;
+  scrollbar-width: none;
+}
+#weapon-table-sticky-header .weapon-table-sticky-copy {
+  display: table;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+  max-width: none;
+  background: #203145;
+  color: #d5e5f1;
+}
+#weapon-table-sticky-header th {
+  box-sizing: border-box;
+  position: relative;
+  white-space: nowrap;
+  padding: 12px 11px;
+  line-height: 1.45;
+  color: #c5d7e4;
+  border: 0;
+  border-bottom: 1px solid rgba(216,191,150,.2);
+  background: #203145;
+  font: 700 10px/1.45 "IBM Plex Mono", monospace;
+  letter-spacing: .035em;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: default;
+}
+#weapon-table-sticky-header tr.grouprow th {
+  padding: 5px 6px;
+  background: #182939;
+  color: #8bd8e8;
+  text-align: center;
+  font-size: 9.5px;
+  letter-spacing: .075em;
+  box-shadow: inset 0 -1px rgba(139,216,232,.2);
+}
+#weapon-table-sticky-header tr.colheader th {
+  background: #203145;
+  border-bottom: 1px solid rgba(139,216,232,.6);
+}
+#weapon-table-sticky-header tr.colheader th[data-key] {
+  cursor: pointer;
+}
+#weapon-table-sticky-header tr.colheader th[data-key]:hover {
+  color: #f2d3a0;
+  background: #2a3e52;
+}
+#weapon-table-sticky-header tr.colheader th[data-key]:focus-visible {
+  z-index: 5;
+  outline: 2px solid #f2d3a0;
+  outline-offset: -3px;
+}
+#weapon-table-sticky-header th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  box-shadow: 2px 0 5px rgba(0,0,0,.30);
+}
+#weapon-table-sticky-header tr.grouprow th:first-child { z-index: 3; }
+#weapon-table-sticky-header .arrow {
+  margin-left: 3px;
+  color: #f2d3a0;
+  font-size: 9px;
+}
+
+/* Native table's older sticky positions were relative to its horizontal
+   scroller, not the page. Keep horizontal sticky first-column cells intact. */
+#panel-combat #wTable tr.grouprow th,
+#panel-combat #wTable tr.colheader th { top: 0; }
+
+@media (max-width: 700px) {
+  #weapon-table-sticky-header th { padding: 10px 8px; }
+  #weapon-table-sticky-header tr.grouprow th { padding: 5px 6px; }
+}
+
+
+/* Recoil evidence explorer — transparent source status, no artificial graph. */
+#panel-recoil2 .recoil-evidence-surface {
+  display: flex;
+  gap: 21px;
+  align-items: center;
+  border: 1px dashed rgba(230,190,122,.38);
+  background: linear-gradient(130deg,rgba(231,180,101,.075),rgba(103,146,164,.04));
+  border-radius: 14px;
+  padding: clamp(20px,3vw,35px);
+  min-height: 134px;
+}
+#panel-recoil2 .recoil-evidence-symbol {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  border: 1px solid rgba(231,183,106,.33);
+  border-radius: 15px;
+  background: rgba(231,183,106,.10);
+  color: #f5d4a0;
+  font: 800 40px/1 "Barlow Condensed",sans-serif;
+}
+#panel-recoil2 .recoil-evidence-surface strong {
+  display: block;
+  color: #f8dfb5;
+  font: 700 clamp(19px,2vw,25px)/1.2 "Barlow Condensed",sans-serif;
+}
+#panel-recoil2 .recoil-evidence-surface p {
+  color: #b6c8d7;
+  margin: 7px 0 0;
+  font-size: 13px;
+  line-height: 1.75;
+}
+#panel-recoil2 .recoil-evidence-note {
+  padding: 12px 15px;
+  margin-top: 11px;
+  border-left: 3px solid #d9a967;
+  border-radius: 0 9px 9px 0;
+  background: rgba(233,188,119,.055);
+  color: #e0ceb7;
+  line-height: 1.75;
+  font-size: 13px;
+}
+#panel-recoil2 .recoil-source-list p {
+  padding: 16px 0;
+  margin: 0;
+  color: #bfccda;
+  border-bottom: 1px solid rgba(181,202,222,.12);
+  line-height: 1.85;
+}
+#panel-recoil2 .recoil-source-list p:last-child {border-bottom:0}
+#panel-recoil2 .recoil-source-list b {color:#ebd0a6}
+#panel-recoil2 .recoil-source-list a {color:#9de0ec}
+#panel-recoil2 #rc_table td:nth-child(2) {
+  color: #f5d4a0;
+  white-space: nowrap;
+}
+#panel-recoil2 #rc_table td:nth-child(3) {color:#afc1d0}
+@media (max-width:600px) {
+  #panel-recoil2 .recoil-evidence-surface {
+    gap: 15px;
+    padding: 20px 15px;
+    align-items: flex-start;
+  }
+  #panel-recoil2 .recoil-evidence-symbol {
+    width: 43px;height:43px;flex-basis:43px;font-size:29px;
+  }
+}
+
+
+/* Release-ready top bar: always-visible HELP CLAN in the centre of the
+   workspace. Grid keeps the brand truly centred, independent of side labels. */
+#app-topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content minmax(0, 1fr);
+  column-gap: clamp(10px, 1.6vw, 24px);
+  box-shadow: 0 10px 28px rgba(3,8,14,.19);
+}
+#app-topbar .topbar-main { grid-column: 1; min-width: 0; }
+#app-topbar .topbar-heading { min-width: 0; max-width: 100%; }
+#app-topbar .topbar-brand {
+  grid-column: 2;
+  justify-self: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+#app-topbar .topbar-brand-name {
+  display: block;
+  font: 800 clamp(27px, 2.9vw, 36px)/.94 "Barlow Condensed", "Arial Narrow", sans-serif;
+  letter-spacing: .105em;
+  white-space: nowrap;
+  text-align: center;
+  text-shadow: 0 2px 15px rgba(0,0,0,.23);
+}
+#app-topbar .brand-help { color: #f7f6f2; }
+#app-topbar .brand-clan { color: #f2bd73; }
+#app-topbar .topbar-brand-tagline {
+  color: #a8bfd0;
+  font: 700 8px/1.15 "IBM Plex Mono",monospace;
+  letter-spacing: .25em;
+  text-align: center;
+  white-space: nowrap;
+}
+#app-topbar .topbar-actions {
+  grid-column: 3;
+  justify-self: end;
+  min-width: 0;
+}
+@media (min-width: 901px) and (max-width: 1350px) {
+  #app-topbar .topbar-title { font-size: 22px; }
+  #app-topbar .topbar-online { display: none; }
+  #app-topbar .topbar-actions { gap: 10px; }
+}
+@media (max-width: 900px) {
+  #app-topbar { grid-template-columns: minmax(46px,1fr) auto minmax(46px,1fr); }
+  #app-topbar .topbar-main { justify-self: start; }
+  /* The active tool is still announced on navigation via the existing
+     live text node; hide it visually to keep the centre brand unobstructed. */
+  #app-topbar .topbar-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+  #app-topbar .topbar-brand-name { font-size: clamp(26px, 4.5vw, 34px); }
+  #app-topbar .topbar-brand-tagline { font-size: 7.5px; letter-spacing: .18em; }
+  #app-topbar .topbar-online { display: none; }
+}
+@media (max-width: 390px) {
+  #app-topbar .topbar-brand-name { font-size: clamp(24px, 7vw, 29px); }
+  #app-topbar .topbar-brand-tagline { font-size: 7px; letter-spacing: .16em; }
+}
+
+/* Prominent Recoil Analyzer coming-soon banner. Recoil values that are already
+   provided in the tool remain visible and unchanged below the notice. */
+#panel-recoil2 .recoil-release-row {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin: 16px 0 30px;
+  padding: clamp(24px, 3.7vw, 44px);
+  overflow: hidden;
+  border: 1px solid rgba(241,189,113,.58);
+  border-left: 6px solid #f0b76b;
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse at 94% 48%,rgba(221,167,86,.24),transparent 49%),
+    linear-gradient(115deg,#30271f 0%,#2d2c2c 44%,#1b2834 100%);
+  box-shadow: 0 21px 47px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,231,193,.13);
+}
+#panel-recoil2 .recoil-release-row::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg,#fff2cf,#ebb86c 40%,transparent 85%);
+  z-index: 1;
+}
+#panel-recoil2 .recoil-release-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(10px,1.35vw,16px);
+  min-width: 0;
+}
+#panel-recoil2 .recoil-release-caption {
+  color: #f0c998;
+  font: 700 clamp(10px,1vw,13px)/1.35 "IBM Plex Mono",monospace;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+#panel-recoil2 .recoil-coming-soon {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(11px, 1.3vw, 21px);
+  padding: 0;
+  background: none;
+  border: none;
+  color: #fff2d5;
+  font: 800 clamp(52px, 7.5vw, 101px)/.88 "Barlow Condensed", "Arial Narrow",sans-serif;
+  letter-spacing: .035em;
+  white-space: nowrap;
+  text-shadow: 0 4px 24px rgba(234,156,59,.20);
+}
+#panel-recoil2 .recoil-status-dot {
+  display: block;
+  flex: 0 0 clamp(10px,1.4vw,17px);
+  width: clamp(10px,1.4vw,17px);
+  height: clamp(10px,1.4vw,17px);
+  border-radius: 50%;
+  background: #ffe0a7;
+  box-shadow: 0 0 0 7px rgba(249,207,145,.12), 0 0 32px rgba(249,207,145,.32);
+}
+#panel-recoil2 .recoil-release-detail {
+  display: block;
+  max-width: 590px;
+  color: #d6d8d7;
+  font: 500 clamp(12px,1.15vw,15px)/1.65 "Manrope",sans-serif;
+}
+#panel-recoil2 .recoil-release-graphic {
+  position: relative;
+  flex: 0 0 clamp(110px,16vw,200px);
+  width: clamp(110px,16vw,200px);
+  aspect-ratio: 1;
+  opacity: .9;
+  transform: rotate(-12deg);
+}
+#panel-recoil2 .recoil-target-ring {
+  position: absolute;
+  border: 1px solid rgba(251,211,151,.45);
+  border-radius: 50%;
+}
+#panel-recoil2 .recoil-ring-outer { inset: 0; box-shadow: 0 0 0 13px rgba(244,193,129,.035); }
+#panel-recoil2 .recoil-ring-inner { inset: 25%; border-width: 2px; }
+#panel-recoil2 .recoil-release-graphic::before,
+#panel-recoil2 .recoil-release-graphic::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  background: rgba(244,207,155,.48);
+}
+#panel-recoil2 .recoil-release-graphic::before { left: 50%; top: -10%; width: 1px; height: 120%; }
+#panel-recoil2 .recoil-release-graphic::after { top: 50%; left: -10%; height: 1px; width: 120%; }
+#panel-recoil2 .recoil-target-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f5c483;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 0 8px rgba(245,196,131,.12);
+  z-index: 2;
+}
+@media (max-width: 700px) {
+  #panel-recoil2 .recoil-release-row {
+    margin: 12px 0 24px;
+    padding: 27px 21px;
+    border-radius: 16px;
+    border-left-width: 5px;
+  }
+  #panel-recoil2 .recoil-release-graphic { display: none; }
+  #panel-recoil2 .recoil-coming-soon {
+    font-size: clamp(48px, 11vw, 78px);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  #panel-recoil2 .recoil-release-caption { font-size: 10px; letter-spacing: .1em; }
+  #panel-recoil2 .recoil-release-detail { font-size: 12.5px; }
+}
+@media (max-width: 390px) {
+  #panel-recoil2 .recoil-coming-soon { font-size: clamp(43px,10vw,53px); }
+  #panel-recoil2 .recoil-status-dot { flex-basis: 9px; width: 9px; height: 9px; }
+  #panel-recoil2 .recoil-release-row { padding: 23px 17px; }
+}
+
+/* Final launch polish: immediately usable scope results, uncluttered technical
+   constants, and easy-to-tap sensitivity controls on small screens. */
+#panel-sensitivity .scope-results-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border-radius: 12px;
+  scrollbar-width: thin;
+}
+#panel-sensitivity .scope-results-scroll:focus-visible {
+  outline: 2px solid #f0c88d;
+  outline-offset: 3px;
+}
+#panel-sensitivity #px_table {
+  width: 100%;
+  min-width: 310px;
+  font-variant-numeric: tabular-nums;
+}
+#panel-sensitivity #px_table th:nth-child(2),
+#panel-sensitivity #px_table td:nth-child(2),
+#panel-sensitivity #px_table th:nth-child(3),
+#panel-sensitivity #px_table td:nth-child(3) {
+  display: none;
+}
+#panel-sensitivity .tab {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  border-radius: 9px;
+  text-align: center;
+}
+#panel-sensitivity .panel[data-panel="scope"] .card {
+  border-color: rgba(233,188,119,.29);
+}
+@media (max-width: 600px) {
+  #panel-sensitivity .tabs { gap: 8px; }
+  #panel-sensitivity .tab { flex: 1 1 135px; letter-spacing: .025em; padding: 10px 11px; }
+  #panel-sensitivity #px_table { min-width: 290px; }
+  #panel-sensitivity #px_table th { font-size: 10px; white-space: normal; }
+  #panel-sensitivity #px_table td { font-size: 11px; }
+}
+
+
+/* All seven tools now share one navigation group. The button/icon alignment
+   applies equally to Combat DB and every other calculator. */
+#app-toolnav { gap: 0; }
+#app-toolnav .nav-tool { min-height: 52px; }
+#app-toolnav .nav-tool-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 9px;
+}
+#app-toolnav .nav-tool-svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}

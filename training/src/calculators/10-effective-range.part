@@ -1,0 +1,208 @@
+/* ================= 1. EFFECTIVE RANGE & DAMAGE ================= */
+// Strict source-only policy: show published checkpoints, never inferred distances
+// or assumed shotgun pellet connections.
+(function(){
+  const $ = id => document.getElementById(id);
+  fillWeaponSelect($("rg_weapon"), "AKM");
+  const rangeSlider = $("rg_range");
+  let previousWeaponName = null;
+  let preferredRange = 100;
+  function currentWeapon(){ return PT.WBYNAME[$("rg_weapon").value]; }
+  function isPelletShotgun(w){ return SHOTGUN_PELLETS[w.name] != null; }
+  function rowsFor(w){ return sourcedRangeRows(w); }
+
+  function selectMeasuredRange(w) {
+    const rows = rowsFor(w);
+    $("rg_stanceField").style.display = "none"; // no verified hip-fire / ADS impact count
+    if(!rows || !rows.length) {
+      rangeSlider.disabled = true;
+      rangeSlider.min = "0"; rangeSlider.max = "0"; rangeSlider.value = "0";
+      $("rg_rangeLabel").textContent = "No recorded distance";
+      $("rg_rangeEvidence").textContent = "No damage readings available.";
+      previousWeaponName = w.name;
+      return null;
+    }
+    rangeSlider.disabled = false;
+    rangeSlider.min = "0";
+    rangeSlider.max = String(rows.length-1);
+    rangeSlider.step = "1";
+    if(previousWeaponName !== w.name) {
+      let chosen = 0;
+      for(let k=1;k<rows.length;k++){
+        if(Math.abs(rows[k][0]-preferredRange)<Math.abs(rows[chosen][0]-preferredRange)) chosen=k;
+      }
+      rangeSlider.value = String(chosen);
+      previousWeaponName = w.name;
+    }
+    const chosenIndex = Math.max(0, Math.min(rows.length-1, Number(rangeSlider.value)||0));
+    const distance = rows[chosenIndex][0];
+    $("rg_rangeLabel").textContent = distance+" m";
+    $("rg_rangeEvidence").textContent =
+      w.name+": recorded "+rows[0][0]+"–"+rows[rows.length-1][0]+
+      "m ("+rows.length+" measured checkpoints). No figures beyond this range or between sampled points.";
+    return distance;
+  }
+
+  function updateDrop(w, range) {
+    const data=DROP_TABLES[w.name],velocity=knownMuzzleVelocity(w);
+    $("rg_muzzlecmp").textContent=velocity==null?"No data":velocity+" m/s";
+    $("rg_velocityLabel").textContent=Object.prototype.hasOwnProperty.call(GAME_MUZZLE_VEL_43_2,w.name)
+      ? "Muzzle velocity (43.2 game files)"
+      : "Muzzle velocity (historical measurement)";
+    const point=dropAtRange(w,range);
+    if(point==null){
+      $("rg_drop").textContent="No data";
+      $("rg_holdover").textContent="No data";
+      $("rg_dropNote").textContent=data?
+        "No gravity-drop estimate for "+range+"m. Available bucket starts: "+data.map(p=>p[0]+"m").join(", ")+
+        ".":"No gravity-drop estimates for this weapon.";
+      return;
+    }
+    $("rg_drop").textContent=point.toFixed(1);
+    // WinnerMeta's observations cover 50m distance buckets; approximate angular
+    // equivalent uses the bucket midpoint, never a fabricated exact-range holdover.
+    const effectiveRange=range>0 ? range+25 : 0;
+    $("rg_holdover").textContent=(effectiveRange>0?(point/100)/effectiveRange*1000:0).toFixed(2);
+    $("rg_dropNote").textContent=range===0
+      ? "Mathematical zero at muzzle; no telemetry drop measurement at 0m."
+      : "Telemetry-derived gravity estimate for the "+range+"–"+(range+50)+"m bucket (not an exact "+range+"m impact reading). Equivalent angle uses bucket midpoint and is not scope holdover.";
+  }
+  function updateEvidence(w,range){
+    const rows=rowsFor(w);
+    if(!rows){
+      $("rg_approxNote").textContent="No damage readings available.";
+      return;
+    }
+    const first=rows[0][0],last=rows[rows.length-1][0];
+    $("rg_approxNote").textContent=isPelletShotgun(w)?
+      "Available range: "+first+"–"+last+"m. Minimum shells assume all "+SHOTGUN_PELLETS[w.name].count+" pellets hit the selected area; actual shots may need more. TTK is unknown.":
+      "Available range: "+first+"–"+last+"m. Damage uses the selected hitbox and armor.";
+  }
+
+  function updatePoint(w,range){
+    const pellet = isPelletShotgun(w);
+    const hitbox = $("rg_hitbox").value;
+    const armor = +$("rg_armor").value;
+    const damage = range==null ? null :
+      pellet ? measuredValueAt(PELLET_FALLOFF[w.name], range) :
+      finalDamageAt(w,range,hitbox,armor);
+    const htk = pellet ? shotgunMinShellsAt(w,range,hitbox,armor) : htkFor(damage);
+    const ttk = pellet ? null : pureTtk(htk,w.rpm);
+    $("rg_dmgLabel").textContent = pellet ? "Measured base dmg / pellet" : "Damage at checkpoint";
+    $("rg_htkLabel").textContent = pellet ? "Minimum shells (all pellets hit)" : "Hits to kill";
+    $("rg_dmg").textContent = damage==null ? "No data" : damage.toFixed(1);
+    $("rg_htk").textContent = htk==null ? "No data" : String(htk);
+    $("rg_ttk").textContent = ttk==null ? "No data" : ttk.toFixed(2);
+    // Ideal minimum is not real PUBG flight time: drag and the curved
+    // trajectory make actual travel slower. Preserve a clear unknown state
+    // when no velocity or measured range is available.
+    const idealFlight=range==null ? null : minimumIdealFlightTime(w,range);
+    $("rg_flight").textContent = idealFlight==null ? "No data" : idealFlight.toFixed(3)+" s";
+    setBar("rg_dmg",damage, (pellet ? SHOTGUN_PELLETS[w.name].dmgPerPellet : w.dmg)*1.3);
+    setBar("rg_htk",htk,8);
+    setBar("rg_ttk",ttk,2);
+    if(range == null) {
+      $("rg_drop").textContent = "No data";
+      $("rg_holdover").textContent = "No data";
+      $("rg_muzzlecmp").textContent = "No data";
+      $("rg_dropNote").textContent = "No supported range available.";
+    } else updateDrop(w,range);
+    updateEvidence(w,range);
+  }
+
+  function updateCharts(){
+    const w = currentWeapon();
+    const rows = rowsFor(w);
+    const pellet = isPelletShotgun(w);
+    const ctx = $("rg_chartDmg").getContext("2d");
+    const table = $("rg_brackets");
+    if(!rows || !rows.length){
+      ctx.clearRect(0,0,$("rg_chartDmg").width,$("rg_chartDmg").height);
+      $("rg_chartTitle").textContent = "No recorded damage chart";
+      table.innerHTML = '<tr><td>No recorded damage checkpoints for this weapon.</td></tr>';
+      return;
+    }
+    const hitbox = $("rg_hitbox").value;
+    const armor = +$("rg_armor").value;
+    const points = rows.map(([range,perPellet])=>({
+      x:range,
+      y:pellet ? perPellet : finalDamageAt(w,range,hitbox,armor)
+    })).filter(p=>p.y!=null);
+    $("rg_chartTitle").textContent = pellet ?
+      "Measured base damage per pellet ("+rows[0][0]+"–"+rows[rows.length-1][0]+"m)" :
+      "Calculated damage at measured checkpoints ("+rows[0][0]+"–"+rows[rows.length-1][0]+"m)";
+    if(points.length) drawLineChart($("rg_chartDmg"), [{
+      label:pellet ? "Base damage / pellet" : "Damage at recorded distances",
+      color:"#8bd8e8", data:points
+    }], {pointsOnly:true});
+    if(pellet){
+      table.innerHTML =
+        '<tr><th>Recorded range</th><th>Minimum shells (all pellets hit)</th><th>TTK</th></tr>'+
+        rows.map(([range])=>{
+          const min=shotgunMinShellsAt(w,range,hitbox,armor);
+          return "<tr><td>"+range+"m</td><td>"+(min==null?"No data":min)+
+            "</td><td>No data</td></tr>";
+        }).join("");
+      return;
+    }
+    table.innerHTML =
+      '<tr><th>Measured range</th><th>Hits to kill (calculated)</th><th>TTK (s, calculated)</th></tr>'+
+      points.map(p=>{
+        const hits=htkFor(p.y), time=pureTtk(hits,w.rpm);
+        return "<tr><td>"+p.x+"m</td><td>"+(hits==null?"No data":hits)+
+          "</td><td>"+(time==null?"No data":time.toFixed(2))+"</td></tr>";
+      }).join("");
+  }
+
+  const compareSelect=$("rg_compare");
+  for(const weapon of PT.WEAPONS)compareSelect.add(new Option(weapon.name,weapon.name));
+  function updateComparison(){
+    const ref=PT.WBYNAME[compareSelect.value],w=currentWeapon(),table=$("rg_compareTable"),canvas=$("rg_compareChart");
+    if(!ref){table.replaceChildren();canvas.hidden=true;$("rg_compareNote").textContent="Choose a reference weapon. Comparisons use the same hitbox and equipment.";return;}
+    const hitbox=$("rg_hitbox").value,armor=Number($("rg_armor").value),a=rowsFor(w)||[],b=rowsFor(ref)||[];
+    const pellet=isPelletShotgun(w),otherPellet=isPelletShotgun(ref);
+    const value=(gun,distance)=>isPelletShotgun(gun)?measuredValueAt(rowsFor(gun),distance):finalDamageAt(gun,distance,hitbox,armor);
+    const selected=parseFloat($("rg_rangeLabel").textContent);
+    const num=n=>Number.isFinite(n)?n.toFixed(1):"No data";
+    const unit=gun=>isPelletShotgun(gun)?"base damage / pellet":"damage to selected hitbox";
+    const distances=[...new Set([...a,...b].map(row=>row[0]))].sort((x,y)=>x-y);
+    table.innerHTML='<caption>Exact source checkpoints. A missing reading stays No data; no interpolation. Selected: '+(Number.isFinite(selected)?selected+' m':'No recorded distance')+'.</caption><thead><tr><th scope="col">Distance</th><th scope="col">'+w.name+' · '+unit(w)+'</th><th scope="col">'+ref.name+' · '+unit(ref)+'</th></tr></thead><tbody>'+
+      distances.map(distance=>'<tr'+(distance===selected?' class="tt-selected-checkpoint"':'')+'><th scope="row">'+distance+' m</th><td>'+num(value(w,distance))+'</td><td>'+num(value(ref,distance))+'</td></tr>').join('')+'</tbody>';
+    const sameUnits=pellet===otherPellet;
+    canvas.hidden=!sameUnits||!a.length||!b.length;
+    $("rg_compareNote").textContent=(Number.isFinite(selected)?'At '+selected+' m: '+w.name+' '+num(value(w,selected))+'; '+ref.name+' '+num(value(ref,selected))+'. ':'')+
+      (sameUnits?(pellet?'Both series show base damage per pellet, not whole-shell damage. ':'Both series use the selected hitbox and equipment. '):'Mixed units: shotgun per-pellet damage and player damage are listed separately; no combined chart. ')+
+      'Markers show recorded checkpoints only. No connecting curve or inferred intermediate damage.';
+    if(!canvas.hidden&&$("rg_comparison").open){
+      drawLineChart(canvas,[{label:w.name,color:'#e9bd77',data:a.map(([x])=>({x,y:value(w,x)})).filter(p=>p.y!=null)},
+        {label:ref.name,color:'#72cde1',data:b.map(([x])=>({x,y:value(ref,x)})).filter(p=>p.y!=null)}],{pointsOnly:true});
+    }
+  }
+  compareSelect.addEventListener('change',updateComparison);
+  $("rg_comparison").addEventListener('toggle',updateComparison);
+  function update(){
+    const w=currentWeapon(), range=selectMeasuredRange(w);
+    if(range!=null) preferredRange=range;
+    updatePoint(w,range);
+    updateCharts();
+    updateComparison();
+  }
+  rangeSlider.addEventListener("input",()=>{
+    const w=currentWeapon(), range=selectMeasuredRange(w);
+    if(range!=null) preferredRange=range;
+    updatePoint(w,range);
+    updateComparison();
+  });
+  ["rg_weapon","rg_hitbox","rg_armor"].forEach(id=>{
+    $(id).addEventListener("input",update);
+    $(id).addEventListener("change",update);
+  });
+  // Kept for compatibility but cannot affect a reported value without verified spread evidence.
+  $("rg_stance").addEventListener("change",update);
+  $("rg_detailed").addEventListener("change",()=>{
+    fillHitboxSelect($("rg_hitbox"),$("rg_detailed").checked);
+    update();
+  });
+  update();
+})();
+

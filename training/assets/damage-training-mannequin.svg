@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="750" viewBox="0 0 500 750" role="img" aria-label="Neutral front-view training mannequin">
+<title>Neutral training mannequin — thirteen anatomical regions</title>
+<defs>
+ <linearGradient id="steel" x1="0" y1="0" x2="1" y2=".25"><stop stop-color="#58788e"/><stop offset=".3" stop-color="#b9cbd6"/><stop offset=".55" stop-color="#91adbf"/><stop offset="1" stop-color="#3d5b73"/></linearGradient>
+ <linearGradient id="head" x1="0" y1="0" x2="1" y2=".65"><stop stop-color="#c4d4de"/><stop offset=".5" stop-color="#97b0c2"/><stop offset="1" stop-color="#4a6980"/></linearGradient>
+ <linearGradient id="boot" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#829cad"/><stop offset="1" stop-color="#365267"/></linearGradient>
+ <clipPath id="body"><ellipse cx="251" cy="76" rx="43" ry="48"/><path d="M231 117 Q251 129 270 118 L273 153 Q250 159 229 153Z"/><path d="M227 149 L271 149 Q308 154 328 178 L305 199 Q278 181 251 183 Q219 181 196 199 L173 179 Q190 158 227 149Z"/><path d="M196 198 Q219 181 251 183 Q279 181 305 198 L298 268 Q282 284 251 282 Q216 284 207 267Z"/><path d="M207 266 Q228 281 251 281 Q280 281 298 266 L292 310 Q273 320 251 320 Q226 320 213 310Z"/><path d="M213 310 Q252 324 292 310 L302 357 Q251 369 202 357Z"/><path d="M202 357 Q249 368 302 357 L316 393 Q302 412 279 409 L251 400 L222 410 Q198 413 187 391Z"/><path d="M191 170 Q169 156 155 177 Q148 196 145 231 L129 276 Q145 293 171 290 L190 230 Q204 193 191 170Z"/><path d="M309 170 Q331 156 345 177 Q352 196 355 231 L371 276 Q355 293 329 290 L310 230 Q296 193 309 170Z"/><path d="M129 276 Q147 291 171 290 L158 349 Q152 378 145 398 L114 389 Q121 350 120 322Z"/><path d="M371 276 Q353 291 329 290 L342 349 Q348 378 355 398 L386 389 Q379 350 380 322Z"/><path d="M114 389 Q130 398 145 398 L150 419 Q151 435 140 443 Q126 448 120 430 L110 419 Q104 410 110 400Z"/><path d="M386 389 Q370 398 355 398 L350 419 Q349 435 360 443 Q374 448 380 430 L390 419 Q396 410 390 400Z"/><path d="M222 409 Q249 397 251 401 L248 476 L238 538 Q224 547 209 541 Q190 528 183 499 L183 438 Q185 408 222 409Z"/><path d="M278 409 Q251 397 249 401 L252 476 L262 538 Q276 547 291 541 Q310 528 317 499 L317 438 Q315 408 278 409Z"/><path d="M209 541 Q223 548 238 538 L232 621 L234 697 Q222 714 207 696 L196 618 L192 570Z"/><path d="M291 541 Q277 548 262 538 L268 621 L266 697 Q278 714 293 696 L304 618 L308 570Z"/><path d="M207 696 Q223 712 234 697 L238 720 L240 739 Q214 751 195 744 Q186 736 198 718Z"/><path d="M293 696 Q277 712 266 697 L262 720 L260 739 Q286 751 305 744 Q314 736 302 718Z"/></clipPath>
+</defs>
+<g stroke="#193748" stroke-width="2" stroke-linejoin="round">
+<g data-region="head" fill="url(#head)"><ellipse cx="251" cy="76" rx="43" ry="48"/></g>
+<g data-region="neck" fill="url(#head)"><path d="M231 117 Q251 129 270 118 L273 153 Q250 159 229 153Z"/></g>
+<g data-region="clavicle" fill="url(#steel)"><path d="M227 149 L271 149 Q308 154 328 178 L305 199 Q278 181 251 183 Q219 181 196 199 L173 179 Q190 158 227 149Z"/></g>
+<g data-region="chest" fill="url(#steel)"><path d="M196 198 Q219 181 251 183 Q279 181 305 198 L298 268 Q282 284 251 282 Q216 284 207 267Z"/></g>
+<g data-region="upperStomach" fill="url(#steel)"><path d="M207 266 Q228 281 251 281 Q280 281 298 266 L292 310 Q273 320 251 320 Q226 320 213 310Z"/></g>
+<g data-region="lowerStomach" fill="url(#steel)"><path d="M213 310 Q252 324 292 310 L302 357 Q251 369 202 357Z"/></g>
+<g data-region="pelvis" fill="url(#steel)"><path d="M202 357 Q249 368 302 357 L316 393 Q302 412 279 409 L251 400 L222 410 Q198 413 187 391Z"/></g>
+<g data-region="upperArm" fill="url(#steel)"><path d="M191 170 Q169 156 155 177 Q148 196 145 231 L129 276 Q145 293 171 290 L190 230 Q204 193 191 170Z"/><path d="M309 170 Q331 156 345 177 Q352 196 355 231 L371 276 Q355 293 329 290 L310 230 Q296 193 309 170Z"/></g>
+<g data-region="forearm" fill="url(#steel)"><path d="M129 276 Q147 291 171 290 L158 349 Q152 378 145 398 L114 389 Q121 350 120 322Z"/><path d="M371 276 Q353 291 329 290 L342 349 Q348 378 355 398 L386 389 Q379 350 380 322Z"/></g>
+<g data-region="hand" fill="url(#boot)"><path d="M114 389 Q130 398 145 398 L150 419 Q151 435 140 443 Q126 448 120 430 L110 419 Q104 410 110 400Z"/><path d="M386 389 Q370 398 355 398 L350 419 Q349 435 360 443 Q374 448 380 430 L390 419 Q396 410 390 400Z"/></g>
+<g data-region="thigh" fill="url(#steel)"><path d="M222 409 Q249 397 251 401 L248 476 L238 538 Q224 547 209 541 Q190 528 183 499 L183 438 Q185 408 222 409Z"/><path d="M278 409 Q251 397 249 401 L252 476 L262 538 Q276 547 291 541 Q310 528 317 499 L317 438 Q315 408 278 409Z"/></g>
+<g data-region="calf" fill="url(#steel)"><path d="M209 541 Q223 548 238 538 L232 621 L234 697 Q222 714 207 696 L196 618 L192 570Z"/><path d="M291 541 Q277 548 262 538 L268 621 L266 697 Q278 714 293 696 L304 618 L308 570Z"/></g>
+<g data-region="foot" fill="url(#boot)"><path d="M207 696 Q223 712 234 697 L238 720 L240 739 Q214 751 195 744 Q186 736 198 718Z"/><path d="M293 696 Q277 712 266 697 L262 720 L260 739 Q286 751 305 744 Q314 736 302 718Z"/></g>
+</g>
+<g clip-path="url(#body)" pointer-events="none">
+ <path d="M251 29L224 62L226 101L251 124L251 29Z" fill="#deebf2" opacity=".18"/>
+ <path d="M251 29L278 62L275 101L251 124Z" fill="#203f56" opacity=".16"/>
+ <path d="M251 159L196 198L217 260L251 281Z M251 321L211 317L208 357L251 367Z" fill="#d9e9f2" opacity=".17"/>
+ <path d="M251 159L306 198L284 260L251 281Z M251 368L301 359L316 393L279 408L251 400Z" fill="#183b53" opacity=".2"/>
+ <path d="M201 410L219 423L213 531L200 511Z M270 410L287 424L294 528L281 537Z" fill="#e1eef5" opacity=".16"/>
+ <path d="M202 558L217 563L224 687L209 687Z M282 558L296 565L287 688L274 687Z" fill="#d8e8f1" opacity=".19"/>
+ <path d="M161 186L172 190L150 270L137 270Z M333 190L344 185L363 270L350 270Z" fill="#e5eff5" opacity=".18"/>
+ <path d="M130 301L143 302L127 380L116 377Z M356 300L369 301L383 378L373 381Z" fill="#e5eff5" opacity=".17"/>
+ <path d="M250 183V354M205 230H296M215 299H290M205 384H300" stroke="#d5e7f0" stroke-opacity=".27" stroke-width="1.5" fill="none"/>
+ <path d="M213 551Q223 556 234 550M266 550Q279 556 289 551" stroke="#18394f" stroke-opacity=".5" stroke-width="5" fill="none"/>
+</g>
+</svg>

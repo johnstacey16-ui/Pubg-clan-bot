@@ -1,0 +1,441 @@
+/* ================= 4. ATTACHMENTS & RECOIL ================= */
+const ATTACH_MOD = {
+  muzzle: {
+    none: {v:0,h:0,recov:0,label:"None"},
+    compensator: {v:-0.25,h:-0.20,recov:0,label:"Compensator"},
+    compensator_ar: {v:-0.15,h:-0.10,recov:0,label:"Compensator (AR/DMR)"},
+    suppressor: {v:0,h:0,recov:0,label:"Suppressor"},
+    flash: {v:-0.10,h:-0.10,recov:0,label:"Flash Hider"},
+    brake: {v:-0.10,h:-0.08,recov:0,label:"Muzzle Brake"},
+    choke: {v:0,h:0,recov:0,label:"Choke (SG)"},
+    duckbill: {v:0,h:0,recov:0,label:"Duckbill (SG)"},
+  },
+  grip: {
+    none: {v:0,h:0,recov:0,label:"None"},
+    vertical: {v:-0.15,h:0,recov:0,label:"Vertical Foregrip"},
+    angled: {v:0.05,h:-0.20,recov:0,label:"Angled Foregrip"},
+    half: {v:-0.08,h:-0.16,recov:0.10,label:"Half Grip"},
+    light: {v:0,h:0,recov:0.20,label:"Light Grip"},
+    thumb: {v:-0.10,h:0,recov:0.10,label:"Thumb Grip"},
+    laser: {v:0,h:0,recov:0,label:"Laser Sight"},
+    tilted: {v:-0.12,h:-0.06,recov:0,shake:-0.25,label:"Tilted Grip"},
+  },
+  stock: {
+    none: {v:0,h:0,recov:0,label:"None"},
+    tactical: {v:0,h:0,recov:0.05,label:"Tactical Stock"},
+    heavy: {v:-0.10,h:-0.10,recov:0.05,label:"Heavy Stock"},
+    folding: {v:-0.20,h:0,recov:0.15,label:"Folding Stock"},
+    cheek: {v:-0.20,h:0,recov:0,label:"Cheek Pad"},
+    loops: {v:0,h:0,recov:0,label:"Bullet Loops"},
+  },
+};
+// Sourced from official PUBG patch notes (pubg.com/en/news):
+// - Half Grip horizontal recoil control: +8% -> +16% (Update 41.1) — reflected above as h:-0.16.
+// - Angled Foregrip removed from world spawn, its role folded into Half Grip (Update 41.1) — kept in the
+//   dropdown (it can still turn up via crates/inventory carryover in some contexts) but labeled as removed.
+// - Tilted Grip added: +12% vertical recoil control, +6% horizontal recoil control, +25% camera-shake
+//   control (Update 41.1). This toolkit doesn't model camera shake elsewhere, so "shake" is shown as a
+//   note only, not folded into the vertical/horizontal recoil totals.
+// slot access assigned by weapon class + the explicit exceptions given in the build spec, plus RPD (Update 42.3)
+// Weapon slot tags in PUBG game-file extract (Update 43.2).
+const STOCK_LIST = new Set(["M16A4","M416","MK47 Mutant","ACE 32","Vector","MP5K","MP9","M249","RPD"]);
+const HEAVY_STOCK_LIST = new Set(["M16A4","M416","MK47 Mutant","ACE 32","Vector","MP5K","M249","RPD"]);
+const GRIP_LIST = new Set([
+  "ACE 32","AUG A3","Beryl M762","Desert Eagle","G18C","G36C","M416","P92",
+  "MP5K","Mk12","MK47 Mutant","O12","QBZ95","SCAR-L","SKS","Tommy Gun","UMP9","Vector","Skorpion"
+]);
+// Update 43.2 attachment-item compatibility, taken from weapon tags.
+// The source has multiple suppressor/compensator variants. Show DMR/SR as
+// the primary compensator for DMRs and offer the AR/DMR variant separately.
+// All sets use the standard-mode gun names from our WEAPONS array.
+const MUZZLE_AR_COMPAT = new Set([
+  "ACE 32","AKM","AUG A3","Beryl M762","FAMAS","SLR",
+  "G36C","Groza","M416","K2","M16A4","Mini 14","Mk12",
+  "MK14 EBR","MK47 Mutant","O12","QBZ95","SCAR-L","SKS",
+  "S12K","SVD Dragunov"
+]);
+const MUZZLE_SR_COMPAT = new Set([
+  "AWM","SVD Dragunov","SLR","Kar98k","M24","Mini 14",
+  "Mk12","MK14 EBR","SKS"
+]);
+const MUZZLE_SMG_COMPAT = new Set([
+  "JS9","MP5K","Tommy Gun","UMP9","Micro Uzi","Vector"
+]);
+const MUZZLE_HANDGUN_COMPAT = new Set(["G18C","P92","R1895","Skorpion"]);
+const CHOKE_COMPAT = new Set(["S686","Sawn-off"]);
+const DUCKBILL_COMPAT = new Set(["S12K"]);
+const FOLDING_STOCK_LIST = new Set(["MP9","Micro Uzi","Skorpion"]);
+const CHEEK_PAD_LIST = new Set([
+  "AWM","SVD Dragunov","SLR","M24","MK14 EBR","SKS","VSS Vintorez","Kar98k"
+]);
+const BULLET_LOOPS_LIST = new Set(["S686","Kar98k"]);
+
+// Verified optic fit from PUBG PC Update 43.2 attachment table. No sight
+// options are generated from weapon class: integrated or unsupported optics
+// (e.g. P90, VSS, Sawed-off, S686) remain unavailable.
+const SIGHT_6X_COMPAT = new Set([
+  "ACE 32","AKM","AUG A3","AWM","Beryl M762","DBS","SVD Dragunov",
+  "FAMAS","SLR","G36C","Groza","M416","JS9","Kar98k","K2","Lynx AMR",
+  "M16A4","M249","M24","MG3","MP5K","Mini 14","Mk12","MK14 EBR",
+  "MK47 Mutant","O12","QBZ95","RPD","SCAR-L","SKS","S12K",
+  "UMP9","Vector"
+]);
+const SIGHT_8X_COMPAT = new Set([
+  "AWM","SVD Dragunov","SLR","Kar98k","Lynx AMR","M16A4",
+  "M24","Mini 14","Mk12","MK14 EBR","MK47 Mutant","SKS"
+]);
+const SIGHT_RED_DOT_ONLY = new Set([
+  "Desert Eagle","G18C","P92","MP9","Micro Uzi","Skorpion","Tommy Gun"
+]);
+// The extracted 43.2 item table lists Dot Sight, Hybrid Scope and Thermal
+// 4x in addition to the usual Red Dot/Holo and 2x–15x optics. These share
+// the UpperSmall/UpperLarge weapon groups; compact pistols/SMGs which only
+// accept Red Dot/Holo do not get the extra optics.
+const SIGHT_LABELS = {
+  none:"No optic",reddot:"Red Dot Sight",holo:"Holographic Sight",
+  dot:"Dot Sight",
+  "2x":"2x Scope","3x":"3x Scope","4x":"4x Scope",
+  hybrid:"Hybrid Scope",thermal4x:"Thermal 4x Scope",
+  "6x":"6x Scope","8x":"8x Scope","15x":"15x Scope"
+};
+function opticChoicesFor(w){
+  const common=["none","reddot","holo","dot","2x","3x","4x","hybrid","thermal4x","6x"];
+  if(SIGHT_8X_COMPAT.has(w.name))return [...common,"8x","15x"];
+  if(SIGHT_6X_COMPAT.has(w.name))return common;
+  if(SIGHT_RED_DOT_ONLY.has(w.name))return ["none","reddot","holo"];
+  return ["none"];
+}
+// Buttons and presets use "compensator"/"flash"/"suppressor" as stable
+// option keys; each muzzle is filtered to options the selected gun accepts.
+function attachmentChoicesFor(w,group){
+  if(group==="grip")return GRIP_LIST.has(w.name)
+    ? ["none","vertical","half","light","thumb","laser","tilted"]
+    : ["none"];
+  if(group==="stock"){
+    const options=["none"];
+    if(STOCK_LIST.has(w.name)) options.push("tactical");
+    if(HEAVY_STOCK_LIST.has(w.name)) options.push("heavy");
+    if(FOLDING_STOCK_LIST.has(w.name)) options.push("folding");
+    if(CHEEK_PAD_LIST.has(w.name)) options.push("cheek");
+    if(BULLET_LOOPS_LIST.has(w.name)) options.push("loops");
+    return options;
+  }
+  if(group==="muzzle"){
+    const options=["none"];
+    const name=w.name;
+    const ar=MUZZLE_AR_COMPAT.has(name),sr=MUZZLE_SR_COMPAT.has(name),smg=MUZZLE_SMG_COMPAT.has(name);
+    if(ar||sr||smg){
+      options.push("compensator","flash","suppressor");
+      if(ar&&sr) options.push("compensator_ar");
+      if(ar)options.push("brake");
+    } else if(MUZZLE_HANDGUN_COMPAT.has(name)) {
+      options.push("suppressor");
+    }
+    if(CHOKE_COMPAT.has(name))options.push("choke");
+    if(DUCKBILL_COMPAT.has(name))options.push("duckbill");
+    return options;
+  }
+  return ["none"];
+}
+// Presets optimise the simplified recoil modifiers from current compatible
+// weapon attachments, not a hard-coded loadout shared between every gun.
+// These are model scores, not an exact physical spray simulation.
+function bestAttachmentPreset(w,focus){
+  const muzzles=attachmentChoicesFor(w,"muzzle");
+  const grips=attachmentChoicesFor(w,"grip");
+  const stocks=attachmentChoicesFor(w,"stock");
+  let best={muzzle:"none",grip:"none",stock:"none"}, bestScore=-Infinity;
+  for(const muzzle of muzzles)for(const grip of grips)for(const stock of stocks){
+    const m=muzzle==="compensator" ? compensatorFor(w) : ATTACH_MOD.muzzle[muzzle];
+    const g=ATTACH_MOD.grip[grip],s=ATTACH_MOD.stock[stock];
+    const v=m.v+g.v+s.v,h=m.h+g.h+s.h;
+    const recovery=(ATTACH_MOD.muzzle[muzzle].recov||0)+(g.recov||0)+(s.recov||0);
+    const vertical=-v,horizontal=-h;
+    const score=focus==="vertical"
+      ? vertical*1000 + horizontal + recovery*0.01
+      : focus==="horizontal"
+      ? horizontal*1000 + vertical + recovery*0.01
+      : (vertical+horizontal)*100 - Math.abs(vertical-horizontal)*25 + recovery;
+    if(score>bestScore+1e-9){bestScore=score;best={muzzle,grip,stock};}
+  }
+  return best;
+}
+// Class-specific compensators: AR/DMR/S12K +15V/+10H; SMG +25V/+20H;
+// DMR/SR compensator +20V/+20H. Other tooltips aren't identical across classes.
+function compensatorFor(w){
+  if(w.cls==="SMG")return {v:-0.25,h:-0.20};
+  if(w.cls==="DMR"||w.cls==="SR")return {v:-0.20,h:-0.20};
+  if(w.cls==="AR"||w.name==="S12K"||w.name==="O12")return {v:-0.15,h:-0.10};
+  return {v:0,h:0};
+}
+// Each magazine family has weapon-specific limits. The global "extended
+// magazine adds 30%" shortcut was an approximation and does not represent
+// the official Extended vs Extended QuickDraw distinction.
+// Explicit values below derive from official patch notes and linked weapon
+// tables (full references in docs/research-and-patch-references.md).
+// Historical name: the rows below include both directly published and
+// cross-source reconciled capacities. Provenance is specified explicitly
+// so the latter cannot be misrepresented as direct in-game verification.
+const MAG_CAP_EVIDENCE = Object.freeze({
+  "M416": "official-15.1-weapon-example",
+  "ACE 32": "cross-source-magazine-type-reconciliation",
+  "MK14 EBR": "weapon-specific-family-tables",
+  "SVD Dragunov": "unresolved-family-and-type"
+});
+const MAG_CAP_VERIFIED = {
+  "M416":     {extended:42,extquick:40}, // Official PUBG Update 15.1 magazine example.
+  // ACE32's source-published 40/42 pair is mapped using PUBG's official
+  // Extended (higher capacity) vs Extended QuickDraw (slightly lower) rule.
+  // Cross-source reconciliation; direct 43.2 Xbox loaded-round check pending.
+  "ACE 32":   {extended:42,extquick:40},
+  "AWM":      {extended:8, extquick:7},  // 43.2 DMR/SR item data
+  "M24":      {extended:8, extquick:7},
+  // Current weapon-specific tables: these 10/20-round DMRs do not use the
+  // attachment's "42 rounds" item label as their resulting gun capacity.
+  "SKS":      {extended:20,extquick:20},
+  "SLR":      {extended:20,extquick:20},
+  "VSS Vintorez":{extended:20,extquick:20},
+  "Mini 14":  {extended:30,extquick:30},
+  "Mk12":     {extended:30,extquick:30},
+  // Mk14 accepts both AR/DMR and DMR/SR magazine families in 43.2.
+  // Wiki magazine-family tables list different loaded-round capacities:
+  // DMR/SR Extended 22; DMR/SR Extended QuickDraw 20;
+  // AR/DMR Extended and Extended QuickDraw 20.
+  "MK14 EBR": {extended:22,extquick:20,extended_ar:20,extquick_ar:20},
+  // Dragunov's historical 18/20 pair is not mapped to exact magazine FAMILY
+  // and TYPE in a 43.2 Xbox loaded-round check. Keep all variants unknown
+  // instead of transferring another DMR's 20-round capacity.
+  // Never substitute generic attachment-item labels for weapon-loaded rounds.
+  "M249":     {extended:150,extquick:null}, // no checked EQ capacity
+  "RPD":      {extended:110,extquick:null}, // official 42.3 max; EQ unverified
+  "MK47 Mutant": {extended:30,extquick:null},
+  "S12K":     {extended:10,extquick:10},
+  "Tommy Gun":{extended:50,extquick:50},
+  "Skorpion": {extended:40,extquick:40},
+  "Vector":   {extended:33,extquick:33},
+  "UMP9":     {extended:35,extquick:35},
+  "MP5K":     {extended:40,extquick:40},
+  "Micro Uzi":{extended:35,extquick:35},
+  "P92":      {extended:20,extquick:20},
+  "G18C":     {extended:25,extquick:25},
+  "Desert Eagle":{extended:10,extquick:10}
+};
+// Game-file slot tags include BOTH AR/DMR and DMR/SR magazines on these DMRs.
+ // Keep their AR variant choices distinct from the DMR/SR item family.
+ // For Dragunov both family-specific loaded capacities remain unverified.
+const DUAL_MAG_FAMILY = new Set([
+  "SVD Dragunov","SLR","Mini 14","Mk12","MK14 EBR","SKS","VSS Vintorez"
+]);
+// Most 30-round assault rifles have 40 loaded rounds with an extended mag.
+// The "42 rounds" shown on the shared 43.2 attachment item is not a reliable
+// universal *weapon-loaded* count. Only explicitly listed, independently
+// supported guns use this fallback. M416 overrides it with its sourced 42/40;
+// ACE 32's published 40/42 pair is now reconciled by magazine TYPE, not
+// silently applied to other 30-round ARs.
+const MAG_LARGE_30_ROUND_MODEL = new Set([
+  "AKM","AUG A3","Beryl M762","G36C","Groza","M16A4",
+  "SCAR-L","QBZ95","K2","FAMAS"
+]);
+function slotsFor(w){
+  // Lynx AMR is optics-only, and P90 uses an integral 50-round magazine.
+  if(w.name==="Lynx AMR" || w.name==="P90")
+    return {muzzle:null, grip:null, stock:null, magazine:null};
+  if(w.name==="RPD") return {muzzle:null, grip:null, stock:"tactical", magazine:"AR_LMG"}; // official: no muzzle, no foregrip
+  const muzzle = (MUZZLE_SR_COMPAT.has(w.name)) ? "DMR_SR"
+    : MUZZLE_AR_COMPAT.has(w.name) ? "AR_DMR_S12K"
+    : MUZZLE_SMG_COMPAT.has(w.name) ? "SMG"
+    : MUZZLE_HANDGUN_COMPAT.has(w.name) ? "HANDGUN"
+    : CHOKE_COMPAT.has(w.name) ? "CHOKE"
+    : DUCKBILL_COMPAT.has(w.name) ? "DUCKBILL" : null;
+  const grip = GRIP_LIST.has(w.name) ? "FOREGRIP" : null;
+  const stock = STOCK_LIST.has(w.name) ? "tactical"
+    : FOLDING_STOCK_LIST.has(w.name) ? "folding"
+    : CHEEK_PAD_LIST.has(w.name) ? "cheek"
+    : BULLET_LOOPS_LIST.has(w.name) ? "loops" : null;
+  // Current magazine attachment table excludes the bolt-fed Kar98k and
+  // revolver R1895. M249 (class MG in our dataset) explicitly takes LMG mags.
+  const magazine = w.name==="Kar98k" || w.name==="R1895" || w.name==="MG3" || w.name==="O12"
+    ? null
+    : w.name==="M249" ? "AR_LMG"
+    : (w.cls==="SR"||w.cls==="DMR") ? "DMR_SR"
+    : (w.cls==="AR"||w.name==="S12K") ? "AR_DMR_S12K"
+    : (w.cls==="SMG"||w.cls==="Pistol") ? "SMG_PISTOL" : null;
+  return {muzzle, grip, stock, magazine};
+}
+function extendedCapFor(w,kind="extended"){
+  const slots=slotsFor(w);
+  if(!slots.magazine || !w.mag) return null;
+  const exact=MAG_CAP_VERIFIED[w.name];
+  if(exact && Object.prototype.hasOwnProperty.call(exact,kind)) return exact[kind];
+  // Other dual-family DMRs share confirmed weapon-loaded counts.  Never copy
+  // the generic AR attachment label of 42 rounds onto them.
+  if(DUAL_MAG_FAMILY.has(w.name) && (kind==="extended_ar"||kind==="extquick_ar"))
+    return exact && Object.prototype.hasOwnProperty.call(exact,kind==="extended_ar"?"extended":"extquick")
+      ? exact[kind==="extended_ar"?"extended":"extquick"] : null;
+  if(MAG_LARGE_30_ROUND_MODEL.has(w.name) && w.mag===30)
+    return kind==="extended" || kind==="extquick" ? 40 : null;
+  // Missing source figures stay unknown rather than masquerading as a
+  // verified "+5" or "+30%" universal magazine rule.
+  return null;
+}
+(function(){
+  const $ = id => document.getElementById(id);
+  fillWeaponSelect($("at_weapon"), "AKM");
+  function populateSlot(selId, group, w, defaultKey){
+    const sel = $(selId);
+    const choices = attachmentChoicesFor(w,group);
+    const available = choices.length > 1;
+    sel.disabled = !available;
+    if(!available){ sel.innerHTML = `<option value="none">No slot</option>`; return; }
+    const selected = choices.includes(defaultKey) ? defaultKey : "none";
+    sel.innerHTML = choices.map(k=>`<option value="${k}" ${k===selected?'selected':''}>${ATTACH_MOD[group][k].label}</option>`).join("");
+  }
+  function update(){
+    const w = PT.WBYNAME[$("at_weapon").value];
+    const slots = slotsFor(w);
+    populateSlot("at_muzzle","muzzle", w, $("at_muzzle").value||"none");
+    populateSlot("at_grip","grip", w, $("at_grip").value||"none");
+    populateSlot("at_stock","stock", w, $("at_stock").value||"none");
+    const sight=$("at_sight"),sightChoices=opticChoicesFor(w);
+    const previousSight=sightChoices.includes(sight.value)?sight.value:"none";
+    sight.disabled=sightChoices.length===1;
+    sight.innerHTML=sightChoices.map(id=>`<option value="${id}"${id===previousSight?" selected":""}>${SIGHT_LABELS[id]}</option>`).join("");
+    // magazine select
+    const magSel = $("at_mag");
+    if(!slots.magazine || !w.mag){ magSel.innerHTML = `<option value="none">No slot</option>`; magSel.disabled = true; }
+    else {
+      magSel.disabled = false;
+      const ext = extendedCapFor(w,"extended");
+      const eq  = extendedCapFor(w,"extquick");
+      const both = DUAL_MAG_FAMILY.has(w.name);
+      const previous=magSel.value;
+      const extAr=both?extendedCapFor(w,"extended_ar"):null;
+      const eqAr=both?extendedCapFor(w,"extquick_ar"):null;
+      magSel.innerHTML = `<option value="none">None (${w.mag})</option>
+        <option value="extended">Extended${both?" (DMR/SR)":""} (${ext==null?"No data":ext})</option>
+        <option value="quickdraw">QuickDraw (${w.mag}, +60% reload speed)</option>
+        <option value="extquick">Extended QuickDraw${both?" (DMR/SR)":""} (${eq==null?"No data":eq}, +15% reload speed)</option>`+
+        (both ? `
+        <option value="extended_ar">Extended (AR/DMR) (${extAr==null?"No data":extAr})</option>
+        <option value="extquick_ar">Extended QuickDraw (AR/DMR) (${eqAr==null?"No data":eqAr}, +15% reload speed)</option>` : "");
+      // Keep a compatible choice when comparing weapons; never carry over
+      // dual-family magazine choices to a gun without that magazine family.
+      magSel.value=[...magSel.options].some(o=>o.value===previous)?previous:"none";
+    }
+    recompute();
+  }
+  function recompute(){
+    const w = PT.WBYNAME[$("at_weapon").value];
+    const slots = slotsFor(w);
+    const mVal = slots.muzzle ? $("at_muzzle").value : "none";
+    const gVal = slots.grip ? $("at_grip").value : "none";
+    const sVal = slots.stock ? $("at_stock").value : "none";
+    const magVal = (slots.magazine && w.mag) ? $("at_mag").value : "none";
+    const sightChoices=opticChoicesFor(w);
+    const selectedSight=sightChoices.includes($("at_sight").value)?$("at_sight").value:"none";
+    $("at_opticNote").textContent=
+      (sightChoices.length===1 ? "No compatible detachable optic is listed for this weapon."
+      : selectedSight==="none" ? "Select an optic to confirm fit."
+      : SIGHT_LABELS[selectedSight]+" fits this weapon.")+
+      " Optics do not change recoil calculations here; use Scope Sensitivity Matcher for turning speed.";
+    const m = ATTACH_MOD.muzzle[mVal] || ATTACH_MOD.muzzle.none;
+    const g = ATTACH_MOD.grip[gVal] || ATTACH_MOD.grip.none;
+    const selectedStock = attachmentChoicesFor(w,"stock").includes(sVal) ? sVal : "none";
+    const s = ATTACH_MOD.stock[selectedStock] || ATTACH_MOD.stock.none;
+    const comp = mVal==="compensator" ? compensatorFor(w) : m;
+    const vChange = comp.v + g.v + s.v;
+    const hChange = comp.h + g.h + s.h;
+    const recovChange = m.recov + g.recov + s.recov;
+    const baseCap = w.mag || null;
+    const ext = extendedCapFor(w,"extended");
+    const extQuick = extendedCapFor(w,"extquick");
+    let newCap = baseCap;
+    let reloadSpeedMultiplier = 1;
+    if(magVal==="extended") newCap = ext;
+    else if(magVal==="quickdraw"){ newCap = baseCap; reloadSpeedMultiplier = 1.60; }
+    else if(magVal==="extquick"){ newCap = extQuick; reloadSpeedMultiplier = 1.15; }
+    else if(magVal==="extended_ar") newCap = extendedCapFor(w,"extended_ar");
+    else if(magVal==="extquick_ar"){ newCap = extendedCapFor(w,"extquick_ar"); reloadSpeedMultiplier = 1.15; }
+    // Bullet Loops (SG/SR) currently has a documented +30% reload-speed
+    // tooltip for the Kar98k variant. The S686 entry does not publish a
+    // comparable speed modifier, so do not infer one from the same name.
+    if(selectedStock==="loops" && w.name==="Kar98k") reloadSpeedMultiplier *= 1.30;
+    const realBaseReload = reloadSecondsForWeapon(w);
+    // Attachments change the current base reload; 42.3's LMG adjustment is
+    // already included in the two official timings above.
+    const reloadMult = 1 / reloadSpeedMultiplier;
+    $("at_vrecoil").textContent = (vChange*100).toFixed(0)+"%";
+    $("at_hrecoil").textContent = (hChange*100).toFixed(0)+"%";
+    $("at_recovery").textContent = "+"+(recovChange*100).toFixed(0)+"%";
+    const finalReload = realBaseReload==null ? null : realBaseReload*reloadMult;
+    $("at_reload").textContent = finalReload==null ? "No data" : reloadMult<1
+      ? finalReload.toFixed(2)+"s (−"+((1-reloadMult)*100).toFixed(0)+"%)"
+      : finalReload.toFixed(2)+"s";
+    $("at_capBase").textContent = baseCap ?? "—";
+    $("at_capNew").textContent = newCap ?? "No data";
+    let note = `Attachment control percentages are from the 43.2 item descriptions; combined reductions and suggested setups remain a simplified model, not a measured spray. Attachment stacking is additive here; whether PUBG adds or multiplies combined attachment effects remains unresolved.`;
+    if(w.name==="MG3") note += " MG3 real reload-animation time is not verified.";
+    if(["extended","extquick","extended_ar","extquick_ar"].includes(magVal) && newCap==null)
+      note += " This magazine's capacity is not verified.";
+    if(w.name==="MK14 EBR" && magVal!=="none")
+      note += " Mk14 capacity depends on magazine family; values await a direct 43.2 in-game capacity check.";
+    if(w.name==="ACE 32" && ["extended","extquick"].includes(magVal))
+      note += " ACE32's 42/40 capacity mapping follows the official magazine trade-off and published weapon range; direct current-build Xbox confirmation is pending.";
+    if(w.name==="SVD Dragunov" &&
+      ["extended","extquick","extended_ar","extquick_ar"].includes(magVal))
+      note += " Dragunov's reported 18/20 variants are not mapped to exact magazine types and families in verified current-build data.";
+    if(mVal==="choke") note += " Choke tightens pellet spread by 13%; no hit probability is modeled.";
+    if(mVal==="duckbill") note += " Duckbill tightens vertical pellet spread by 50%; no hit probability is modeled.";
+    if(selectedStock==="cheek") note += " Cheek Pad also boosts sway control by 15% and muzzle-rise control by 20%.";
+    if(selectedStock==="tactical") note += " Tactical Stock also gives +10% ADS speed, sway and muzzle-rise control.";
+    if(selectedStock==="heavy") note += " Heavy Stock trades -10% ADS speed and hip-fire accuracy for recoil control.";
+    if(gVal==="half") note += " Half Grip carries a -10% sway-control trade-off.";
+    if(gVal==="light") note += " Lightweight Grip also improves initial-shot recoil control by 30%, sway by 20% and muzzle-rise by 10%.";
+    if(gVal==="thumb") note += " Thumbgrip also gives +40% ADS speed and +20% sway control.";
+    if(gVal==="laser") note += " Laser Sight improves hip-fire accuracy by 30%, not recoil.";
+    if(gVal==="tilted") note += " Tilted Grip also improves camera-shake control by 25%.";
+    if(mVal==="brake") note += " Muzzle Brake also improves camera-shake control by 35%.";
+    
+    
+    
+    $("at_note").innerHTML = note;
+  }
+  ["at_weapon"].forEach(id=>$(id).addEventListener("change", update));
+  ["at_muzzle","at_grip","at_stock","at_mag","at_sight"].forEach(id=>$(id).addEventListener("change", recompute));
+  function applyPreset(focus){
+    const w=PT.WBYNAME[$("at_weapon").value];
+    const best=bestAttachmentPreset(w,focus);
+    trySet("at_muzzle",best.muzzle);
+    trySet("at_grip",best.grip);
+    trySet("at_stock",best.stock);
+    recompute();
+  }
+  $("at_presetVert").onclick = ()=>applyPreset("vertical");
+  $("at_presetHoriz").onclick = ()=>applyPreset("horizontal");
+  $("at_presetBal").onclick = ()=>applyPreset("balanced");
+  $("at_presetClear").onclick = ()=>{ trySet("at_muzzle","none"); trySet("at_grip","none"); trySet("at_stock","none"); trySet("at_mag","none"); trySet("at_sight","none"); recompute(); };
+  function trySet(id,val){ const sel=$(id); if(!sel.disabled && [...sel.options].some(o=>o.value===val)) sel.value = val; }
+  update();
+})();
+
+
+// Read-only adapter: Recoil Analyzer uses the same compatibility and additive
+// attachment effects as the established Attachments calculator.
+PT.RECOIL_ATTACHMENTS=Object.freeze({
+ choices(name,slot){
+  const w=PT.WBYNAME[name];if(!w)return [];
+  return attachmentChoicesFor(w,slot).map(value=>{
+   const item=ATTACH_MOD[slot][value],effect=slot==='muzzle'&&value==='compensator'?compensatorFor(w):item;
+   return {value,label:item.label,v:effect.v,h:effect.h};
+  });
+ },
+ combine(name,selection){
+  let v=1,h=1;
+  for(const slot of ['muzzle','grip','stock']){
+   const option=this.choices(name,slot).find(x=>x.value===selection[slot])||this.choices(name,slot)[0];
+   if(option){v+=option.v;h+=option.h;}
+  }
+  return {v:Math.max(0,v),h:Math.max(0,h)};
+ }
+});
+
