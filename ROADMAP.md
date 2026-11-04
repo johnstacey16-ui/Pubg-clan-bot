@@ -86,6 +86,16 @@
 - [ ] Verify historical clan leaderboard on live website with multiple real player snapshots
 - [ ] Observe and verify the next genuine production daily season/ranked collection
 
+### Legacy console dashboard migration
+
+- [x] Import and attribute seven pinned publisher dictionaries without private player data or another API
+- [x] Add public-safe saved PUBG source explorer for profile, seasons, ranked, mastery, survival and match fields, including typed nested paths and safe JSON download
+- [ ] Integrate match-local telemetry rival/combat analysis and 2D replay
+- [ ] Official regional/season leaderboards using the existing Supabase atomic budget
+- [ ] Complete telemetry source browsing, player activity, sample and tournament resources
+- [ ] Verify migrated features using production API, Chromium and console browsers
+- [ ] Retain old private source until feature parity and acceptance; no deletion
+
 ### Phase 4 — Secure updates and Discord integration
 - [ ] Authenticated manager-only website refresh using existing budget and database lock
 - [x] Discord dashboard **View full dashboard** link

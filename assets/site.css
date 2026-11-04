@@ -139,3 +139,13 @@
 #page-data-tools input[type=file]{width:100%;max-width:300px}
 #page-analysis .scroll-table th,#page-data-tools .scroll-table th{white-space:nowrap}
 @media(max-width:600px){.cc-glossary dl{grid-template-columns:1fr;gap:5px}.cc-glossary dd{margin-bottom:16px}.cc-awards-grid{grid-template-columns:1fr}}
+
+/* Saved source browser and KRAFTON terminology dictionary. */
+#page-sources .filters{margin:14px 0;align-items:end}
+#page-sources .filters label{flex:1 1 155px}
+#page-sources .filters input,#page-sources .filters select{width:100%;min-width:0}
+#page-sources .scroll-table{margin-top:12px}
+#source-table td:first-child,#dictionary-table td:first-child{overflow-wrap:anywhere;max-width:360px}
+#source-table td:nth-child(2){overflow-wrap:anywhere;max-width:480px}
+#source-table code,#dictionary-table code{color:#b3e8e0;font-size:.84rem}
+#source-count{margin:0}

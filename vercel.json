@@ -68,6 +68,10 @@
       "dest": "api/public-insights.js"
     },
     {
+      "src": "/api/public-source",
+      "dest": "api/public-source.js"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
     },

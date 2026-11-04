@@ -360,3 +360,10 @@ What-if controls update only the page's displayed model. They do not
 change Supabase records, Discord state or the PUBG API budget. A
 multi-snapshot consistency award will only be introduced once sufficient
 separate genuine observations exist.
+
+
+## Salvaged PUBG source explorer and official game dictionaries (2026-11-03)
+
+The PUBG Data Library at /#sources explores actual saved player, season, ranked, weapon, survival and match responses without another PUBG request. Its read-only /api/public-source endpoint uses verified saved console identities, strips account IDs/asset URLs/private keys, caps response size, checks match participation, and returns the original fetch timestamp. Searchable nested field paths preserve zero, null, false, empty objects and arrays, with an export of sanitized JSON.
+
+Seven pinned KRAFTON publisher dictionaries from pubg/api-assets are included and attributed under design/pubg-dictionary-provenance.md. They are static, may become outdated as PUBG changes and add zero upstream requests.

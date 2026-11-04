@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="/assets/site.css">
 <script defer src="/assets/clan-analytics.js"></script>
 <script defer src="/assets/command-centre.js"></script>
+<script defer src="/assets/pubg-dictionaries.js"></script>
+<script defer src="/assets/source-explorer.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -29,6 +31,7 @@
       <button class="nav-link" type="button" data-page="analysis"><span>◈</span> Deep analysis</button>
       <button class="nav-link" type="button" data-page="data-tools"><span>⇩</span> Data tools</button>
       <button class="nav-link" type="button" data-page="help"><span>?</span> Analytics guide</button>
+      <button class="nav-link" type="button" data-page="sources"><span>▤</span> PUBG data library</button>
       <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
     </nav>
     <div class="side-bottom"><b><span class="dot"></span> SUPABASE CACHE</b><p>One clan. One shared database. Xbox and PlayStation.</p><span class="chip">XBOX</span><span class="chip">PLAYSTATION</span></div>
@@ -281,6 +284,41 @@
           <dt>CSV imports</dt><dd>Local preview only. The official Supabase database is untouched. A future manager-only persistent import would need authenticated authorisation and a separate source label.</dd>
           <dt>Sample size</dt><dd>Large, Medium and Limited labels describe observed match counts. They are not a confidence level or probability of accuracy.</dd>
         </dl>
+      </div>
+    </section>
+    <section class="page" id="page-sources" hidden>
+      <div class="page-head"><p class="eyebrow">OFFICIAL SOURCE TRANSPARENCY</p>
+        <h1>PUBG <em>data library.</em></h1>
+        <p>Inspect every saved public-safe field from genuine PUBG responses, including missing/null values. No extra PUBG requests or second backend.</p></div>
+      <div class="card panel">
+        <div class="panel-heading"><h2>Saved source browser</h2><span class="chip">READ ONLY</span></div>
+        <div class="filters">
+          <label>Saved player <input type="search" id="source-name" maxlength="100" placeholder="Exact gamertag" autocomplete="off"></label>
+          <label>Console <select id="source-platform"><option value="auto">Saved console (auto)</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label>
+          <label>Response <select id="source-kind"><option value="profile">Player profile</option><option value="seasons">Season catalogue</option><option value="season">Current season</option><option value="ranked">Current ranked</option><option value="weapons">Weapon mastery</option><option value="survival">Survival mastery</option><option value="match">Specific saved match</option></select></label>
+          <label id="source-match-wrap" hidden>Match UUID <input id="source-match" maxlength="36" placeholder="Saved match ID"></label>
+          <button class="primary" type="button" id="source-load">Inspect saved response</button>
+          <button class="secondary" type="button" id="source-download">Download safe JSON</button>
+        </div>
+        <p class="small muted" id="source-note" aria-live="polite">Enter a known console player and select a saved resource. Player account IDs, asset URLs and private database information are never included.</p>
+        <div class="filters"><label>Find a field <input id="source-filter" type="search" placeholder="Search nested field paths and values"></label>
+          <p id="source-count" class="small muted">0 fields</p>
+          <button id="source-prev" type="button" class="secondary">← Previous fields</button>
+          <button id="source-next" type="button" class="secondary">Next fields →</button></div>
+        <div class="scroll-table"><table><thead><tr><th>ORIGINAL FIELD PATH</th><th>RETURNED VALUE</th><th>TYPE</th><th>PUBLISHER LABEL</th></tr></thead>
+          <tbody id="source-table"></tbody></table></div>
+      </div>
+      <div class="card panel"><div class="panel-heading"><div>
+          <p class="eyebrow subtle">PINNED OFFICIAL TERMINOLOGY</p><h2>PUBG dictionary catalogue</h2></div></div>
+        <p id="dictionary-provenance" class="small muted"></p>
+        <div class="filters"><label>Dictionary <select id="dictionary-kind"></select></label>
+          <label>Search codes or names <input id="dictionary-filter" type="search" autocomplete="off"></label></div>
+        <p id="dictionary-count" class="small muted"></p>
+        <div class="scroll-table"><table><thead><tr><th>PUBG CODE</th><th>OFFICIAL DESCRIPTION</th></tr></thead>
+          <tbody id="dictionary-table"></tbody></table>
+        </div>
+        <p class="small muted">© KRAFTON. Original codes are preserved; missing or newly introduced codes are not guessed.
+          <a href="https://github.com/pubg/api-assets" target="_blank" rel="noopener noreferrer">Publisher source ↗</a></p>
       </div>
     </section>
     <section class="page" id="page-roadmap" hidden><div class="page-head"><p class="eyebrow">THE DEVELOPMENT PLAN</p><h1>What's <em>next.</em></h1><p>Tracked in GitHub: no claiming features are done before their acceptance checks.</p></div><div class="roadmap-grid"><article class="card panel"><span class="mint">FOUNDATION</span><h3>First working web app</h3><p>Responsive website, saved-data API, roster, leaderboard, modes, comparisons.</p></article><article class="card panel"><span class="lavender">PHASE TWO</span><h3>Profiles and discovery</h3><p>Advanced statistics, real historical snapshots, shareable player profiles.</p></article><article class="card panel"><span class="lavender">PHASE THREE</span><h3>Match and weapon analysis</h3><p>Recent match records, squads, rivals, weapons, ranked histories. No replays.</p></article><article class="card panel"><span class="lavender">PHASE FOUR</span><h3>Protected refresh and release</h3><p>Admin web controls, Discord integration, browser regression and Xbox checks.</p></article></div><div class="card panel"><h3>Saved visual references & roadmap</h3><p>The original vector example pictures are versioned in GitHub.</p><div class="links"><a href="/design/overview-reference.svg" target="_blank" rel="noopener noreferrer">Overview reference ↗</a><a href="/design/leaderboard-reference.svg" target="_blank" rel="noopener noreferrer">Leaderboard reference ↗</a><a href="https://github.com/johnstacey16-ui/Pubg-clan-bot/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Full checklist ↗</a></div></div></section>
