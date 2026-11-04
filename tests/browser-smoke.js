@@ -39,6 +39,13 @@ function reply(res,code,body){
 }
 const server=http.createServer(async(req,res)=>{
  const uri=new URL(req.url,'http://127.0.0.1');
+ // Vercel serves this analytics route in production; it is intentionally inert
+ // in the offline Chrome fixture. Chrome also probes favicon.ico automatically.
+ if(uri.pathname==='/_vercel/insights/script.js'){
+  res.writeHead(204,{'Content-Type':'text/javascript'});res.end();return;
+ }
+ if(uri.pathname==='/favicon.ico'){res.writeHead(204);res.end();return;}
+
  if(uri.pathname==='/api/public-stats')return reply(res,200,fixture);
  if(uri.pathname==='/api/health')return reply(res,200,health);
  if(uri.pathname==='/api/public-insights'&&uri.searchParams.get('kind')==='survival')
@@ -78,6 +85,10 @@ async function run(){
    const errors=[],page=await browser.newPage({viewport:{width,height:850}});
    page.on('pageerror',e=>errors.push(e.message));
    page.on('console',e=>{if(e.type()==='error')errors.push(e.text());});
+   page.on('response',response=>{
+    if(response.status()>=400 && response.url().startsWith('http://127.0.0.1:'))
+      errors.push('HTTP '+response.status()+' '+response.url());
+   });
    const response=await page.goto('http://127.0.0.1:'+server.address().port+'/dashboard/',{
     waitUntil:'networkidle'});
    assert.equal(response.status(),200);
