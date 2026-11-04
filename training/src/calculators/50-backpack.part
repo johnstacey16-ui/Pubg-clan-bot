@@ -1,0 +1,107 @@
+/* ================= 5. BACKPACK CALCULATOR ================= */
+// Update 41.1 verifies Jammer and normal backpack carry bonuses match;
+// do not confuse the +150/+200/+250 pack additions with total character capacity.
+// Update 28.2 integrated the former +50 Utility Belt bonus into character
+// base capacity: old innate 20 + belt 50 = 70; Update 41.1 confirms Jammer
+// Packs grant exactly the same +150/+200/+250 as standard backpacks.
+// These are total character carrying capacities, not item weights.
+const CHARACTER_BASE_CAPACITY = 70;
+// 28.2 incorporated the old Utility Belt into base capacity, not the equipped vest.
+const VEST_CAPACITY_BONUS = 50;
+const BACKPACK_CAPACITY_BONUS = Object.freeze({1:150, 2:200, 3:250});
+const BACKPACKS = {
+  standard: Object.fromEntries(Object.entries(BACKPACK_CAPACITY_BONUS).map(([level,bonus])=>[level,CHARACTER_BASE_CAPACITY+bonus])),
+  jammer: Object.fromEntries(Object.entries(BACKPACK_CAPACITY_BONUS).map(([level,bonus])=>[level,CHARACTER_BASE_CAPACITY+bonus])),
+};
+const JAMMER_PROTECTION = {1:"Low", 2:"Medium", 3:"High"};
+const BP_CAP = BACKPACKS.standard; // kept for reference; calc() now reads BACKPACKS[type] directly
+const BP_AMMO = [ // [key,label,weight]
+  ["9mm","9mm (per round)",0.30], ["57","5.7mm / P90 (per round)",0.35], [".45acp",".45 ACP (per round)",0.40],
+  ["556","5.56mm (per round)",0.50], ["762","7.62mm (per round)",0.60],
+  ["300mag",".300 Magnum (per round)",1.00], ["12g","12 Gauge (per round)",1.25],
+  ["bolt","Crossbow bolt (per round)",2.00],
+  ["50cal",".50 Caliber / Lynx AMR (per round)",1.00],
+];
+const BP_HEAL = [
+  ["bandage","Bandage",2], ["firstaid","First Aid Kit",10], ["medkit","Med Kit",15],
+  ["energy","Energy Drink",4], ["pain","Painkiller",6], ["adren","Adrenaline Syringe",10],
+];
+const BP_THROW = [
+  ["frag","Frag Grenade",27], ["smoke","Smoke Grenade",14], ["stun","Stun Grenade",12],
+  ["molotov","Molotov Cocktail",16], ["c4","C4",35],
+  // Standard 43.2 game inventory weights; additional throwables vary by map/mode.
+  ["bz","BZ Grenade",23], ["decoy","Decoy Grenade",12],
+  ["sticky","Sticky Bomb",20], ["spike","Spike Trap",18],
+  ["minismoke","Mini Smoke Grenade",10],
+  ["coverflare","Emergency Cover Flare",27],
+  ["supportflare","Emergency Support Flare",35],
+];
+(function(){
+  const $ = id => document.getElementById(id);
+  function buildGrid(container, items){
+    container.innerHTML = items.map(([k,label,wt])=>
+      `<div class="bp-row">
+        <span class="bp-name">${label}</span>
+        <span class="bp-wt">${wt}ea</span>
+        <span class="bp-sub" data-sub="${k}">0</span>
+        <span class="bp-stepper">
+          <button type="button" data-step="-1" data-target="${k}">−</button>
+          <input type="number" min="0" step="1" value="0" data-bp="${k}" data-wt="${wt}">
+          <button type="button" data-step="1" data-target="${k}">+</button>
+        </span>
+      </div>`
+    ).join("");
+  }
+  buildGrid($("bp_ammoGrid"), BP_AMMO);
+  buildGrid($("bp_healGrid"), BP_HEAL);
+  buildGrid($("bp_throwGrid"), BP_THROW);
+  function allInputs(){ return [...document.querySelectorAll('#panel-backpack input[data-bp]')]; }
+  function calc(){
+    const type = $("bp_type").value;
+    const level = +$("bp_level").value;
+    const cap = BACKPACKS[type][level] + ($("bp_vest").value === "yes" ? VEST_CAPACITY_BONUS : 0);
+    $("bp_jammerNote").innerHTML = type==="jammer"
+      ? `<div class="note">Jammer Pack Lv.${level}: ${JAMMER_PROTECTION[level]} Blue Zone protection.</div>` : "";
+    let used = 0;
+    const cats = {Ammo:0, "Healing & Boosts":0, Throwables:0};
+    const ammoKeys = new Set(BP_AMMO.map(a=>a[0])), healKeys = new Set(BP_HEAL.map(a=>a[0]));
+    allInputs().forEach(inp=>{
+      const n = Math.max(0, parseInt(inp.value)||0);
+      const wt = +inp.dataset.wt;
+      const sub = n*wt;
+      used += sub;
+      const subEl = document.querySelector(`.bp-sub[data-sub="${inp.dataset.bp}"]`);
+      if(subEl) subEl.textContent = sub.toFixed(1).replace(/\.0$/,"");
+      if(ammoKeys.has(inp.dataset.bp)) cats.Ammo += sub;
+      else if(healKeys.has(inp.dataset.bp)) cats["Healing & Boosts"] += sub;
+      else cats.Throwables += sub;
+    });
+    const rem = cap - used;
+    $("bp_cap").textContent = cap;
+    $("bp_used").textContent = used.toFixed(1);
+    $("bp_rem").textContent = rem.toFixed(1);
+    setBar("bp_used", used, cap);
+    setBar("bp_rem", Math.max(0,rem), cap);
+    document.getElementById("bp_remStat").classList.toggle("warn", rem<0);
+    $("bp_breakdown").innerHTML = Object.entries(cats).map(([k,v])=>`<div class="catrow">${k}<b>${v.toFixed(1)}</b></div>`).join("");
+    $("bp_warn").innerHTML = rem<0
+      ? `<b>Over capacity by ${Math.abs(rem).toFixed(1)}.</b> Consider dropping some ammo or grenades to get back under the limit.`
+      : "";
+  }
+  document.addEventListener("input", e=>{ if(e.target.matches('#panel-backpack input[data-bp], #panel-backpack select#bp_level, #panel-backpack select#bp_type, #panel-backpack select#bp_vest')) calc(); });
+  document.addEventListener("change", e=>{ if(e.target.matches('#panel-backpack select#bp_level, #panel-backpack select#bp_type, #panel-backpack select#bp_vest')) calc(); });
+  document.addEventListener("click", e=>{
+    const btn = e.target.closest('#panel-backpack .bp-stepper button');
+    if(!btn) return;
+    const inp = document.querySelector(`#panel-backpack input[data-bp="${btn.dataset.target}"]`);
+    if(!inp) return;
+    inp.value = Math.max(0, (parseInt(inp.value)||0) + (+btn.dataset.step));
+    calc();
+  });
+  $("bp_clear").onclick = ()=>{ allInputs().forEach(i=>i.value=0); calc(); };
+  calc();
+})();
+
+
+
+})();

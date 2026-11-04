@@ -1,0 +1,104 @@
+/* ================= 2. TTK CALCULATOR ================= */
+(function(){
+  const $ = id => document.getElementById(id);
+  fillWeaponSelect($("tk_weapon"), "AKM");
+  fillWeaponSelect($("tk_cmpA"), "AKM");
+  fillWeaponSelect($("tk_cmpB"), "UMP9");
+  $("tk_cmpC").innerHTML += PT.WEAPONS.map(w=>"<option>"+w.name+"</option>").join("");
+  function reloadDistances(){
+    const select=$("tk_distance"), previous=select.value;
+    const rows=sourcedRangeRows(PT.WBYNAME[$("tk_weapon").value]) || [];
+    select.replaceChildren();
+    rows.forEach(([m])=>select.add(new Option(m+" m",String(m))));
+    select.disabled=!rows.length;
+    if(!rows.length) select.add(new Option("No recorded checkpoints",""));
+    if(rows.some(([m])=>String(m)===previous)) select.value=previous;
+  }
+  reloadDistances();
+  $("tk_weapon").addEventListener("change",reloadDistances);
+  $("tk_weapon").addEventListener("input",reloadDistances);
+  const display = (value, digits) => value == null ? "No data" : Number(value).toFixed(digits);
+  const displayReload = r => r.withReload == null ? "No data" :
+    (r.reloadConfidence==="estimate" ? "≈" : "")+display(r.withReload,2);
+  // Shared with Attachments calculator: official LMG reload durations are
+  // post-patch values and must not have the 25% reduction applied twice.
+  function reloadSecondsFor(w){ return reloadSecondsForWeapon(w); }
+  // The standard TTK excludes reloads. Only low-capacity weapons requiring
+  // an additional magazine depend on these optional timings.
+  function reloadConfidenceForWeapon(w, reloads){
+    if(reloads===0) return "not-needed";
+    if(w.name==="MG3") return "unknown";
+    return Object.prototype.hasOwnProperty.call(LMG_RELOAD_2026,w.name)
+      ? "published" : "estimate";
+  }
+  function computeFor(w, hitbox, armor){
+    if(SHOTGUN_PELLETS[w.name]){
+      // 0m exists in the published pellet tables: only the theoretical
+      // minimum shells is calculable; damage-to-player and time-to-kill
+      // still require knowing how many pellets connected.
+      return {dmg:null,htk:shotgunMinShellsAt(w,Number($("tk_distance").value),hitbox,armor),
+        pure:null,withReload:null,reloads:null,bestCase:true};
+    }
+    const dmg = finalDamageAt(w, Number($("tk_distance").value), hitbox, armor);
+    if(dmg==null){
+      return {dmg:null,htk:null,pure:null,withReload:null,reloads:null};
+    }
+    const htk = htkFor(dmg);
+    const pure = pureTtk(htk,w.rpm);
+    if(htk==null || pure==null) return {dmg,htk:null,pure:null,withReload:null,reloads:null};
+    const reloads = w.mag ? Math.max(0, Math.ceil(htk/w.mag)-1) : 0;
+    const reloadTime = reloads>0 ? reloadSecondsFor(w) : 0;
+    const withReload = reloadTime == null ? null : pure + reloads*reloadTime;
+    return {dmg,htk,pure,withReload,reloads,reloadConfidence:reloadConfidenceForWeapon(w,reloads)};
+  }
+  function update(){
+    const w=PT.WBYNAME[$("tk_weapon").value];
+    const hitbox=$("tk_hitbox").value, armor=+$("tk_armor").value;
+    const r=computeFor(w,hitbox,armor);
+    $("tk_dmg").textContent=display(r.dmg,1);
+    $("tk_htkLabel").textContent=SHOTGUN_PELLETS[w.name] ? "Minimum shells (all pellets hit)" : "Hits to kill";
+    $("tk_htk").textContent=r.htk==null?"No data":r.htk;
+    $("tk_pure").textContent=display(r.pure,2);
+    $("tk_reload").textContent=display(r.withReload,2);
+    setBar("tk_dmg",r.dmg,w.dmg*1.3);
+    setBar("tk_htk",r.htk,8);
+    setBar("tk_pure",r.pure,2);
+    setBar("tk_reload",r.withReload,6);
+    let tkNote;
+    if(SHOTGUN_PELLETS[w.name]){
+      tkNote="Minimum shells assumes all "+SHOTGUN_PELLETS[w.name].count+" pellets hit the selected area. Actual shots may need more; TTK unavailable.";
+    } else if(r.dmg==null){
+      tkNote="No damage reading at "+$("tk_distance").value+"m for "+w.name+"; TTK unavailable.";
+    } else if(r.withReload==null){
+      tkNote="Reload time is unavailable for "+w.name+"; total TTK cannot be calculated.";
+    } else if(r.reloads>0){
+      tkNote="Includes "+r.reloads+" reload(s). "+(r.reloadConfidence==="published" ? "Uses published LMG reload timing." : "Reload timing is an estimate, not independently verified.");
+    } else {
+      tkNote="No reload needed for this calculation.";
+    }
+    $("tk_note").textContent=tkNote+(w.rpmDisputed?" "+w.rpmNote:"");
+    renderCompare();
+  }
+  function renderCompare(){
+    const hitbox=$("tk_hitbox").value, armor=+$("tk_armor").value;
+    const names=[$("tk_cmpA").value,$("tk_cmpB").value,$("tk_cmpC").value].filter(Boolean);
+    const rows=names.map(n=>{const w=PT.WBYNAME[n];return {name:n,...computeFor(w,hitbox,armor)};});
+    $("tk_cmpTable").innerHTML=
+      '<tr><th>Weapon</th><th>Dmg</th><th>HTK (SG: minimum)</th><th>Pure TTK</th><th>Incl. reload</th></tr>'+
+      rows.map(r=>'<tr><td>'+r.name+(PT.WBYNAME[r.name].rpmDisputed?' (rate disputed)':'')+'</td><td>'+display(r.dmg,1)+
+        '</td><td>'+(r.htk==null?'No data':r.htk)+
+        '</td><td>'+display(r.pure,2)+
+        '</td><td>'+displayReload(r)+'</td></tr>').join("");
+  }
+  ["tk_weapon","tk_hitbox","tk_armor","tk_distance"].forEach(id=>{
+    $(id).addEventListener("input",update);
+    $(id).addEventListener("change",update);
+  });
+  $("tk_detailed").addEventListener("change",()=>{
+    fillHitboxSelect($("tk_hitbox"),$("tk_detailed").checked);
+    update();
+  });
+  ["tk_cmpA","tk_cmpB","tk_cmpC"].forEach(id=>$(id).addEventListener("change",renderCompare));
+  update();
+})();
+

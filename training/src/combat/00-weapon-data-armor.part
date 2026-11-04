@@ -1,0 +1,301 @@
+
+// ---- Combat & Armor Intelligence logic ----
+(function(){
+ 
+/* ---------------- DATA ---------------- */
+const WEAPONS = [
+["Lynx AMR","SR",".50 Cal",true,118,86,1200,169,10,3.1,["Semi"]],
+["AWM","SR",".300 Mag",true,105,32,945,56,5,3.7,["Bolt"]],
+["O12","SG","12G Slug",false,100,480,625,800,30,2.3,["Semi","Burst","Auto"]],
+["Kar98k","SR","7.62mm",false,79,39,760,51,5,2.0,["Bolt"]],
+["M24","SR","7.62mm",false,75,42,790,53,5,3.7,["Bolt"]],
+["R1895","Pistol","7.62mm",false,64,240,330,256,7,3.0,["Semi"]],
+["Desert Eagle","Pistol",".45 ACP",false,62,300,450,310,7,2.0,["Semi"]],
+["MK14 EBR","DMR","7.62mm",true,54,400,853,360,10,3.1,["Semi","Auto"]],
+["SVD Dragunov","DMR","7.62mm",false,53,180,830,159,10,3.1,["Semi"]],
+["MK47 Mutant","AR","7.62mm",false,49,800,780,653,20,3.1,["Semi","Burst"]],
+["SLR","DMR","7.62mm",false,49,330,870,270,10,3.1,["Semi"]],
+["AKM","AR","7.62mm",false,48,600,715,480,30,3.1,["Semi","Auto"]],
+["Groza","AR","7.62mm",true,47,750,715,588,30,3.1,["Semi","Auto"]],
+["SKS","DMR","7.62mm",false,47,330,800,259,10,3.1,["Semi"]],
+["VSS Vintorez","DMR","9mm",false,45,700,430,525,10,3.1,["Semi","Auto"]],
+["Beryl M762","AR","7.62mm",false,44,700,715,513,30,3.1,["Semi","Burst","Auto"]],
+["M16A4","AR","5.56mm",false,43,800,900,573,30,2.5,["Semi","Burst"]],
+["ACE 32","AR","7.62mm",false,43,680,720,487,30,3.1,["Semi","Auto"]],
+["Mk12","DMR","5.56mm",false,43,330,900,237,10,2.5,["Semi"]],
+["SCAR-L","AR","5.56mm",false,42,650,870,455,30,3.1,["Semi","Auto"]],
+["QBZ95","AR","5.56mm",false,42,650,870,455,30,3.1,["Semi","Auto"]],
+["Mini 14","DMR","5.56mm",false,42,330,990,231,20,2.5,["Semi"]],
+["UMP9","SMG","9mm",false,42,670,400,469,25,3.1,["Semi","Burst","Auto"]],
+["MG3","MG","7.62mm",false,42,700,820,490,75,3.5,["Auto"]],
+["K2","AR","5.56mm",false,41,700,880,478,30,3.1,["Semi","Burst","Auto"]],
+["G36C","AR","5.56mm",false,41,700,870,478,30,3.1,["Semi","Auto"]],
+["M249","MG","5.56mm",false,41,800,915,547,75,3.5,["Auto"]],
+["M416","AR","5.56mm",false,40,700,880,467,30,3.1,["Semi","Auto"]],
+["AUG A3","AR","5.56mm",false,40,720,890,480,30,3.1,["Semi","Auto"]],
+["Tommy Gun","SMG","9mm",false,40,750,280,500,30,3.1,["Semi","Auto"]],
+["FAMAS","AR","5.56mm",true,39,900,925,585,30,3.1,["Semi","Burst","Auto"]],
+["P90","SMG","5.7mm",false,35,1000,716,583,50,3.1,["Semi","Auto"]],
+["P92","Pistol","9mm",false,34,600,380,340,15,2.3,["Semi"]],
+["MP5K","SMG","9mm",false,32,901,400,481,30,3.1,["Semi","Burst","Auto"]],
+["JS9","SMG","9mm",false,32,900,400,480,30,3.1,["Semi","Auto"]],
+["Vector","SMG","9mm",false,31,1101,380,569,19,3.1,["Semi","Burst","Auto"]],
+["MP9","SMG","9mm",false,31,1000,400,517,30,3.1,["Semi","Auto"]],
+["DBS","SG","12 Gauge",false,28,480,360,224,14,6.1,["Semi"]],
+["Micro Uzi","SMG","9mm",false,26,1250,350,542,25,3.1,["Semi","Auto"]],
+["S686","SG","12 Gauge",false,26,240,370,104,2,2.3,["Semi"]],
+["S12K","SG","12 Gauge",false,23,240,350,92,5,2.3,["Semi"]],
+["G18C","Pistol","9mm",false,23,1000,375,383,17,2.3,["Semi","Auto"]],
+["Skorpion","SMG","9mm",false,22,850,350,312,20,3.1,["Semi","Auto"]],
+["Sawn-off","SG","12 Gauge",false,21,240,330,84,2,3.0,["Semi"]],
+["RPD","MG","7.62mm",false,43,750,735,538,50,3.5,["Auto"]],
+].map(w=>({name:w[0],cls:w[1],ammo:w[2],crate:w[3],dmg:w[4],rpm:w[5],vel:w[6],dps:w[7],mag:w[8],reload:w[9],modes:w[10]}));
+// w[9] ("reload") is preserved as originally supplied, including RPD's
+// unverified 3.5s placeholder. TTK and Attachments read it through
+// reloadSecondsForWeapon(): official post-42.3 RPD/M249 times override it,
+// and MG3 stays unknown rather than treating the generic 3.5s as measured.
+// Other weapon reload timings remain owner-supplied inputs, not guaranteed
+// to be animation-verified.
+// 27 October 2026 evidence review: pubg.gs PC 43.2 extraction lists
+// MP5K 901 and Vector 1101 RPM. DPS above is rounded damage * RPM / 60.
+// MG3's extracted default conflicts with KRAFTON's published 660/990 modes.
+for(const w of WEAPONS){
+  if(w.name==="MP5K" || w.name==="Vector")
+    w.rpmNote="Extracted reference rate: "+w.rpm+" RPM (PUBG PC 43.2, pubg.gs). This is not a measured Xbox firing rate.";
+  if(w.name==="MG3"){
+    w.rpmDisputed=true;
+    w.rpmNote="MG3 rate disputed: this toolkit uses 700 RPM from the 43.2 extraction; KRAFTON's published modes are 660/990 RPM. Active slow-mode timing remains unverified.";
+  }
+}
+
+// RPD added per official Update 42.3 patch notes (pubg.com/en/news/10885): dmg 43, RPM 750, velocity 735 m/s,
+// base magazine 50 (expandable to 110 via AR/LMG magazine attachments), Auto only, world spawn on all maps.
+// RPD's 43.2 engine recoil parameters are now recorded below; the precise
+// shot-by-shot spray remains unknown. Official post-balance base reload 5.2s
+// is stored in LMG_RELOAD_2026, not in the legacy weapon record.
+ 
+// recoil-pattern data: v.recoil, crouch modifier (mult + %), h.bias (direction + value), vert/horiz recovery speed, min horizontal %
+// G18C's row was cut off in the source paste after h.bias — its vert/horiz speed and min-h% were not supplied, so they stay null rather than guessed.
+// Crouch recoil multipliers from current 43.1/43.2 game build:
+// M249: .70, MG3: .60, RPD: .70 (not the pre-43.1 M249 .54/MG3 .50).
+// "crouchPct" is (multiplier - 1) × 100, not a separate game asset field.
+const RECOIL_RAW = {
+  "Desert Eagle": [null, 0.82,-18, "→",0.17, 15,12, 42],
+  "Mini 14":      [3.15, 0.75,-25,"→",0.15, 11.2,11,30], // 43.2 vertical recoil maximum
+  "UMP9":         [null, null,null,"→",0.12, 10,9, 50],
+  "SCAR-L":       [7.0,  0.84,-16,"→",0.10, 15,11, 40],
+  "G36C":         [7.0,  0.84,-16,"→",0.10, 15,11, 40],
+  "QBZ95":        [7.0,  0.84,-16,"→",0.10, 14,11.5,43],
+  "Kar98k":       [7.0,  null,null,"→",0.10, 15,7, null],
+  "M24":          [7.0,  null,null,"→",0.10, 15,7, null],
+  "AWM":          [7.0,  null,null,"→",0.10, 15,7, null],
+  "S12K":         [9.0,  0.85,-15,"→",0.10, 15,16, 50],
+  "O12":          [9.0,  null,null,"→",0.10, 13,12, 50],
+  "Mk12":         [null, 0.75,-25,"→",0.05, 11.5,11,30],
+  "MP5K":         [null, null,null,"→",0.05, 12,12, 60],
+  "JS9":          [null, 0.85,-15,"→",0.05, 11,11, 63],
+  "Tommy Gun":    [null, null,null,"→",0.033,15,11, 30], // PUBG 43.2 exact horizontal tendency
+  "Vector":       [null, null,null,"→",0.03, 15,16, 55],
+  "AUG A3":       [7.0,  0.86,-14,"←",0.05, 10,10.8,40],
+  "K2":           [7.0,  0.84,-16,"←",0.05, 13,12, 40],
+  "SLR":          [8.0,  0.75,-25,"←",0.05, 11.5,10,40],
+  "M416":         [7.0,  0.84,-16,"←",0.10, 12,12, 40],
+  "Beryl M762":   [8.0,  0.88,-12,"←",0.10, 16.5,11,50],
+  "ACE 32":       [7.0,  0.84,-16,"←",0.10, 15,9.5, 40],
+  "FAMAS":        [7.0,  0.84,-16,"←",0.10, 10,10.8,40],
+  "SKS":          [8.0,  0.75,-25,"←",0.10, 9.5,7.2, 40],
+  "MK14 EBR":     [8.0,  0.75,-25,"←",0.10, 11.5,10,40],
+  "SVD Dragunov": [10.0, 0.75,-25,"←",0.10, 12,11, 40],
+  "Lynx AMR":     [7.0,  0.75,-25,"←",0.10, 20,8,  40],
+  "AKM":          [8.0,  0.84,-16,"←",0.20, 15,9.5, 42],
+  "Groza":        [8.0,  null,null,null,null, 14,11, 35],
+  "M16A4":        [7.0,  0.84,-16,null,null, 11,13, 40],
+  "MK47 Mutant":  [8.0,  0.88,-12,null,null, 12.5,10,48],
+  "VSS Vintorez": [8.0,  0.75,-25,null,null, 10.5,8, 40],
+  "Micro Uzi":    [null, null,null,null,null, 15,14, 35],
+  "MP9":          [null, null,null,null,null, 11,10.5,63],
+  "P90":          [null, null,null,null,null, 11,10.5,63],
+  "Skorpion":     [null, 0.85,-15,null,null, 15,14, 35],
+  "M249":         [7.0,  0.70,-30,null,null, 15,10, 20],
+  "MG3":          [null, 0.60,-40,null,null, 16,11.5,25],
+  "S686":         [null, null,null,null,null, 13,11, 70],
+  "DBS":          [null, null,null,null,null, 12,10, 75],
+  "Sawn-off":     [null, null,null,null,null, 15,12, null],
+  "P92":          [1.0,  null,null,null,null, 15,12, null],
+  "R1895":        [null, null,null,null,null, 15,12, null],
+  "G18C":         [null, null,null,null,null, 15,12,15], // P18C in 43.2 game data
+  "RPD":          [7.5,  0.70,-30,null,null, 15.5,11,25], // Update 43.2 extracted gun data
+};
+// Additional recoil engine fields actually exposed by Update 43.2.
+// The existing RECOIL_RAW schema has no recovery, prone, climb/fall or
+// direction-switch columns. Keep these separate to avoid mislabeling them as
+// per-shot movement, and never infer unknown fields from another weapon.
+// Each entry maps the standard game-file "Recoil" section for this gun.
+const RECOIL_DETAIL_43_2 = {
+  // Additional directly extracted weapon records; null is an unknown field,
+  // not an assumed zero or copied stance modifier.
+  "AKM":          {switchShots:2, proneMod:null, recoveryV:8.2, climb:0.7,  fall:2.4},
+  "Beryl M762":   {switchShots:2, proneMod:0.70, recoveryV:8.2, climb:0.65, fall:2.15},
+  "M416":         {switchShots:2, proneMod:null, recoveryV:7,   climb:0.7,  fall:2.1},
+  "AUG A3":       {switchShots:2, proneMod:null, recoveryV:6,   climb:0.65, fall:2.1},
+  "G36C":         {switchShots:2, proneMod:null, recoveryV:8,   climb:0.65, fall:2.3},
+  "Kar98k":       {switchShots:1, proneMod:null, recoveryV:5.5, climb:0.7,  fall:3},
+  "AWM":          {switchShots:1, proneMod:null, recoveryV:5.5, climb:0.7,  fall:3},
+  "M24":          {switchShots:1, proneMod:null, recoveryV:5.5, climb:0.5,  fall:3},
+  "SCAR-L":       {switchShots:2, proneMod:null, recoveryV:8,   climb:0.75, fall:2.3},
+  "QBZ95":        {switchShots:2, proneMod:null, recoveryV:8,   climb:0.75, fall:2.4},
+  "MG3":          {switchShots:2, proneMod:0.265,recoveryV:8.5, climb:0.75, fall:3.3},
+  "Mini 14":      {switchShots:1, proneMod:null, recoveryV:9,   climb:1.2,  fall:3},
+  "MK14 EBR":     {switchShots:1, proneMod:0.25, recoveryV:6,   climb:0.9,  fall:3},
+  // Remaining 12 weapon mappings. Missing climb/prone fields deliberately
+  // remain null when the extracted gun record has no corresponding number.
+  "Lynx AMR":     {switchShots:1, proneMod:0.25, recoveryV:10,  climb:null, fall:4},
+  "O12":          {switchShots:1, proneMod:0.70, recoveryV:8,   climb:1.8,  fall:2},
+  "R1895":        {switchShots:1, proneMod:0.70, recoveryV:11,  climb:1.2,  fall:5.5},
+  "Desert Eagle": {switchShots:1, proneMod:0.75, recoveryV:11,  climb:1.2,  fall:3.5},
+  "MK47 Mutant":  {switchShots:1, proneMod:0.70, recoveryV:8.2, climb:0.7,  fall:2.5},
+  "Mk12":         {switchShots:1, proneMod:0.20, recoveryV:9,   climb:1.25, fall:2.8},
+  "K2":           {switchShots:2, proneMod:null, recoveryV:8,   climb:0.75, fall:2.1},
+  "FAMAS":        {switchShots:2, proneMod:null, recoveryV:7,   climb:0.6,  fall:2.1},
+  "P92":          {switchShots:1, proneMod:0.70, recoveryV:11,  climb:null, fall:4},
+  "JS9":          {switchShots:5, proneMod:0.70, recoveryV:7,   climb:0.4,  fall:2},
+  "S686":         {switchShots:1, proneMod:null, recoveryV:6,   climb:null, fall:2},
+  "Skorpion":     {switchShots:2, proneMod:0.80, recoveryV:12,  climb:0.23, fall:2},
+  "UMP9":         {switchShots:2, proneMod:0.70, recoveryV:7,   climb:0.48, fall:1.8},
+  "MP5K":         {switchShots:2, proneMod:0.70, recoveryV:8.5, climb:0.6,  fall:2.5},
+  "Micro Uzi":    {switchShots:2, proneMod:0.70, recoveryV:12,  climb:0.2,  fall:1.25},
+  "Tommy Gun":    {switchShots:2, proneMod:0.70, recoveryV:12,  climb:0.5,  fall:1.5},
+  "Vector":       {switchShots:2, proneMod:0.70, recoveryV:12,  climb:0.5,  fall:2.2},
+  "P90":          {switchShots:null,proneMod:0.70, recoveryV:7,  climb:0.4,  fall:2},
+  "MP9":          {switchShots:null,proneMod:0.70, recoveryV:7,  climb:0.4,  fall:2},
+  "G18C":         {switchShots:1, proneMod:0.70, recoveryV:11,  climb:0.18, fall:2},
+  "RPD":          {switchShots:2, proneMod:0.32, recoveryV:7,   climb:0.7,  fall:2.2},
+  "M249":         {switchShots:2, proneMod:0.32, recoveryV:6,   climb:0.75, fall:2.4},
+  "SLR":          {switchShots:1, proneMod:null, recoveryV:5.3, climb:1.1,  fall:1.9},
+  "SKS":          {switchShots:1, proneMod:null, recoveryV:4.8, climb:null, fall:2.4},
+  "S12K":         {switchShots:1, proneMod:0.75, recoveryV:7,   climb:1.8,  fall:3},
+  "DBS":          {switchShots:1, proneMod:0.70, recoveryV:6,   climb:null, fall:2},
+  "Sawn-off":     {switchShots:1, proneMod:0.70, recoveryV:11,  climb:1.2,  fall:1.9},
+  "VSS Vintorez": {switchShots:1, proneMod:null, recoveryV:6,   climb:0.5,  fall:2},
+  "M16A4":        {switchShots:1, proneMod:null, recoveryV:8,   climb:0.8,  fall:2.6},
+  "SVD Dragunov": {switchShots:1, proneMod:null, recoveryV:6,   climb:1.1,  fall:2},
+  "ACE 32":       {switchShots:2, proneMod:null, recoveryV:8.2, climb:0.65, fall:2.15},
+  "Groza":        {switchShots:2, proneMod:null, recoveryV:8.2, climb:0.65, fall:2.1}
+};
+WEAPONS.forEach(w=>{
+  const r = RECOIL_RAW[w.name];
+  if(!r) return;
+  const [vRecoil,crouchMod,crouchPct,hBiasDir,hBiasVal,vertSpeed,horizSpeed,minH] = r;
+  Object.assign(w, {vRecoil,crouchMod,crouchPct,hBiasDir,hBiasVal,vertSpeed,horizSpeed,minH});
+  w.recoilDetail = RECOIL_DETAIL_43_2[w.name] || null;
+});
+ 
+// crossover data keyed by normalized weapon key (maps onto WEAPONS via ALIAS)
+const ALIAS = { // crossover-sheet name -> weapon-db name
+  "FAMAS G2":"FAMAS","QBZ":"QBZ95","VSS":"VSS Vintorez","Mk47 Mutant":"MK47 Mutant",
+  "Mk14":"MK14 EBR","P18C":"G18C","ACE 32":"ACE 32","Mini 14":"Mini 14"
+};
+ 
+// [name, chestDmg, l3->l2, l2->l1]
+const VEST_RAW = [
+["AKM",48,"≤26 (10%)","Always keep"],
+["Beryl M762",44,"≤24 (10%)","≤24 (11%)"],
+["M416",40,"≤44 (18%)","≤22 (10%)"],
+["SCAR-L",42,"≤23 (9%)","≤23 (10%)"],
+["G36C",41,"≤45 (18%)","≤22 (10%)"],
+["Mk47 Mutant",49,"≤26 (10%)","Always keep"],
+["QBZ",42,"≤23 (9%)","≤23 (10%)"],
+["Groza",47,"≤25 (10%)","≤51 (23%)"],
+["AUG A3",40,"≤44 (18%)","≤22 (10%)"],
+["ACE 32",43,"≤23 (9%)","≤23 (10%)"],
+["FAMAS G2",39,"≤42 (17%)","≤21 (10%)"],
+["K2",41,"≤45 (18%)","≤22 (10%)"],
+["M16A4",43,"≤23 (9%)","≤23 (10%)"],
+["UMP9",44.1,"≤16 (6%)","≤16 (7%)"],
+["Vector",32.6,"≤37 (15%)","≤24 (11%)"],
+["Tommy Gun",42,"≤16 (6%)","≤16 (7%)"],
+["P90",36.8,"≤28 (11%)","Always keep"],
+["MP5K",33.6,"≤12 (5%)","≤25 (11%)"],
+["MP9",32.6,"≤37 (15%)","≤24 (11%)"],
+["Micro Uzi",27.3,"≤41 (16%)","≤31 (14%)"],
+["JS9",33.6,"≤12 (5%)","≤25 (11%)"],
+["Skorpion",23.1,"≤35 (14%)","≤35 (16%)"],
+["Mini 14",44.1,"≤25 (10%)","≤25 (11%)"],
+["SKS",49.4,"≤28 (11%)","Always keep"],
+["SLR",51.5,"≤29 (12%)","Always keep"],
+["Mk14",56.7,"Always keep","Always keep"],
+["Mk12",45.2,"≤25 (10%)","≤25 (11%)"],
+["SVD Dragunov",55.7,"Always keep","Always keep"],
+["VSS",47.3,"≤27 (11%)","≤54 (25%)"],
+["Kar98k",102.7,"Always keep","Always keep"],
+["M24",97.5,"Always keep","Always keep"],
+["AWM",136.5,"Always keep","Always keep"],
+["Lynx AMR",153.4,"Always keep","Always keep"],
+["M249",43.1,"≤22 (9%)","≤22 (10%)"],
+["MG3",44.1,"≤23 (9%)","≤23 (10%)"],
+["Desert Eagle",62,"Always keep","Always keep"],
+["R1895",64,"Always keep","≤25 (11%)"],
+["P92",34,"≤13 (5%)","≤27 (12%)"],
+["P18C",23,"≤36 (14%)","≤36 (16%)"],
+];
+
+const HELM_RAW = [
+["AKM",112.8,"Always keep","Always keep"],
+["Beryl M762",103.4,"Always keep","Always keep"],
+["M416",94,"Always keep","Always keep"],
+["SCAR-L",98.7,"Always keep","Always keep"],
+["G36C",96.4,"Always keep","Always keep"],
+["Mk47 Mutant",115.2,"Always keep","Always keep"],
+["QBZ",98.7,"Always keep","Always keep"],
+["Groza",110.5,"Always keep","Always keep"],
+["AUG A3",94,"Always keep","Always keep"],
+["ACE 32",101.1,"Always keep","Always keep"],
+["FAMAS G2",91.7,"Always keep","Always keep"],
+["K2",96.4,"Always keep","Always keep"],
+["M16A4",101.1,"Always keep","Always keep"],
+["UMP9",88.2,"Always keep","Always keep"],
+["Vector",65.1,"Always keep","≤12 (8%)"],
+["Tommy Gun",84,"Always keep","Always keep"],
+["P90",73.5,"≤14 (6%)","Always keep"],
+["MP5K",67.2,"Always keep","≤12 (8%)"],
+["MP9",65.1,"Always keep","≤12 (8%)"],
+["Micro Uzi",54.6,"≤20 (9%)","Always keep"],
+["JS9",67.2,"Always keep","≤12 (8%)"],
+["Skorpion",46.2,"≤8 (3%)","≤17 (11%)"],
+["Mini 14",98.7,"Always keep","Always keep"],
+["SKS",110.5,"Always keep","Always keep"],
+["SLR",115.2,"Always keep","Always keep"],
+["Mk14",126.9,"Always keep","Always keep"],
+["Mk12",101.1,"Always keep","Always keep"],
+["SVD Dragunov",124.6,"Always keep","Always keep"],
+["VSS",105.8,"Always keep","Always keep"],
+["Kar98k",197.5,"Always keep","Always keep"],
+["M24",187.5,"Always keep","Always keep"],
+["AWM",262.5,"Always keep","Always keep"],
+["Lynx AMR",295,"Always keep","Always keep"],
+["M249",94.3,"Always keep","Always keep"],
+["MG3",96.6,"Always keep","Always keep"],
+["Desert Eagle",142.6,"Always keep","Always keep"],
+["R1895",147.2,"Always keep","Always keep"],
+["P92",78.2,"≤13 (6%)","Always keep"],
+["P18C",52.9,"≤18 (8%)","Always keep"],
+];
+ 
+function norm(n){ return ALIAS[n] || n; }
+function buildIndex(raw){
+  const idx = {};
+  raw.forEach(r=>{ idx[norm(r[0])] = {srcName:r[0], dmg:r[1], l3:r[2], l2:r[3]}; });
+  return idx;
+}
+const VEST = buildIndex(VEST_RAW);
+const HELM = buildIndex(HELM_RAW);
+const WBYNAME = {}; WEAPONS.forEach(w=>WBYNAME[w.name]=w);
+ 
+function parseThreshold(str){
+  // returns {always:true} or {pct:number, raw:number}
+  if(/always/i.test(str)) return {always:true, label:str};
+  const m = str.match(/≤\s*(\d+(?:\.\d+)?)\s*\((\d+)%\)/);
+  if(m) return {always:false, raw:+m[1], pct:+m[2], label:str};
+  return {always:false, label:str};
+}
+ 

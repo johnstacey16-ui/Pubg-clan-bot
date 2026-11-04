@@ -1,0 +1,164 @@
+/* UNWIRED scaffold: do not load as a browser script on its own.
+ * When P1 adapter is tested, move/adapt this controller into a bundled
+ * src/calculators/*.part section inside the shared calculator closure.
+ * It does not guess any weapon data, multipliers, or source checkpoints.
+ *
+ * API:
+ * initHitZoneExplorer({
+ *   panel: document.getElementById('panel-hit-zone'),
+ *   weapons: PT.WEAPONS,
+ *   getCheckpoints: w => sourcedRangeRows(w), // [metres, value] rows or null
+ *   getZoneResults: (w, distance, helmetLevel, vestLevel) =>
+ *     getAllZoneDamageForWeapon(w, distance, helmetLevel, vestLevel),
+ *   isPelletShotgun: w => !!SHOTGUN_PELLETS[w.name]
+ * });
+ */
+function initHitZoneExplorer({ panel, weapons, getCheckpoints, getZoneResults, isPelletShotgun }) {
+  if (!panel) throw new Error('Hit Zone Explorer panel is missing');
+  const byId = id => panel.querySelector('#' + id);
+  const weaponSelect = byId('hz_weapon');
+  const distanceSelect = byId('hz_distance');
+  const helmetSelect = byId('hz_helmet');
+  const vestSelect = byId('hz_vest');
+  const modeSelect = byId('hz_mode');
+  const body = byId('hz_body');
+  const rowsElement = byId('hz_rows');
+  const detail = byId('hz_detail');
+  const summary = byId('hz_summary');
+  const status = byId('hz_status');
+  const zones = [...panel.querySelectorAll('[data-hit-zone]')];
+  let selectedZone = 'chest';
+  let results = [];
+
+  const decimal = n => Number(n).toFixed(1);
+  const showValue = (zone, mode) => {
+    if (!zone || zone.damage == null || !Number.isFinite(zone.damage)) return 'No data';
+    if (mode === 'htk') return zone.htk == null ? 'No data' : String(zone.htk) + ' hits';
+    return decimal(zone.damage);
+  };
+  function currentWeapon() {
+    return weapons.find(w => w.name === weaponSelect.value) || null;
+  }
+  function reloadCheckpoints() {
+    const previousDistance = distanceSelect.value;
+    const w = currentWeapon();
+    const points = w ? getCheckpoints(w) : null;
+    distanceSelect.replaceChildren();
+    if (!Array.isArray(points) || points.length === 0) {
+      const option = new Option('No recorded checkpoints', '');
+      distanceSelect.add(option);
+      distanceSelect.disabled = true;
+      return;
+    }
+    distanceSelect.disabled = false;
+    for (const [distance] of points) {
+      distanceSelect.add(new Option(String(distance) + ' m', String(distance)));
+    }
+    if ([...distanceSelect.options].some(opt => opt.value === previousDistance)) {
+      distanceSelect.value = previousDistance;
+    }
+  }
+  function selectZone(id) {
+    if (!results.some(r => r.id === id)) return;
+    selectedZone = id;
+    zones.forEach(el => el.classList.toggle('selected', el.dataset.hitZone === id));
+    renderDetail();
+  }
+  function renderDetail() {
+    const zone = results.find(r => r.id === selectedZone);
+    if (!zone) {
+      detail.textContent = 'No zone result available for this selection.';
+      return;
+    }
+    const mode = modeSelect.value;
+    const lines = [
+      zone.label + ': ' + showValue(zone, mode),
+      'Hit-area multiplier: ' + (zone.hitAreaMultiplier == null ? 'No data' : zone.hitAreaMultiplier),
+      'Class multiplier: ' + (zone.classMultiplier == null ? 'No data' : zone.classMultiplier),
+      'Armour multiplier: ' + (zone.armorMultiplier == null ? 'No data' : zone.armorMultiplier),
+      'Protective equipment: ' + (zone.armorSource || 'None'),
+    ];
+    if (zone.damage == null) lines.push('No whole-hit damage data for this weapon and recorded distance.');
+    detail.textContent = lines.join('\n');
+  }
+  function render() {
+    const w = currentWeapon();
+    const distance = Number(distanceSelect.value);
+    const helmet = Number(helmetSelect.value);
+    const vest = Number(vestSelect.value);
+    const mode = modeSelect.value;
+    if (!w || distanceSelect.disabled || !Number.isFinite(distance)) {
+      results = [];
+      status.textContent = 'No recorded damage checkpoints for the chosen weapon.';
+    } else {
+      results = getZoneResults(w, distance, helmet, vest) || [];
+      status.textContent = (isPelletShotgun && isPelletShotgun(w))
+        ? 'No data for actual total shell damage or actual hits-to-kill: published values are per pellet.'
+        : 'Values calculated at the selected recorded checkpoint only (' + distance + ' m); no interpolation.';
+    }
+    body.classList.toggle('has-helmet', helmet > 0);
+    body.classList.toggle('has-vest', vest > 0);
+    summary.textContent = w
+      ? w.name + ' · ' + (distanceSelect.disabled ? 'No recorded range' : distance + ' m') +
+        ' · Helmet ' + helmet + ' · Vest ' + vest
+      : 'Weapon unavailable';
+    const byZone = new Map(results.map(r => [r.id, r]));
+    const supportedDamages = results.map(r => r.damage).filter(Number.isFinite);
+    const low = supportedDamages.length ? Math.min(...supportedDamages) : 0;
+    const high = supportedDamages.length ? Math.max(...supportedDamages) : 0;
+
+    // Fill every annotation, not only a tapped zone.
+    panel.querySelectorAll('[data-hz-value]').forEach(node => {
+      const zone = byZone.get(node.dataset.hzValue);
+      const val = showValue(zone, mode);
+      node.textContent = mode === 'htk' ? val.replace(' hits', 'x') : val;
+    });
+    zones.forEach(node => {
+      const data = byZone.get(node.dataset.hitZone);
+      node.classList.toggle('selected', node.dataset.hitZone === selectedZone);
+      node.style.removeProperty('fill');
+      if (mode === 'heatmap' && data && Number.isFinite(data.damage)) {
+        const t = high === low ? 0.5 : (data.damage - low) / (high - low);
+        // Hue shift (cyan -> amber/orange); all numbers remain visible for non-color users.
+        const hue = Math.round(190 - 165 * t);
+        node.style.fill = 'hsl(' + hue + ' 60% 29%)';
+      }
+      const value = showValue(data, mode);
+      node.setAttribute('aria-label', (data ? data.label : node.dataset.hitZone) + ': ' + value);
+    });
+
+    const fragment = document.createDocumentFragment();
+    for (const zone of results) {
+      const tr = document.createElement('tr');
+      const name = document.createElement('th');
+      name.scope = 'row'; name.textContent = zone.label;
+      const val = document.createElement('td');
+      val.textContent = showValue(zone, mode);
+      const gear = document.createElement('td');
+      gear.textContent = zone.armorSource || 'None';
+      tr.append(name, val, gear);
+      fragment.append(tr);
+    }
+    rowsElement.replaceChildren(fragment);
+    renderDetail();
+  }
+
+  weaponSelect.replaceChildren();
+  for (const w of weapons) weaponSelect.add(new Option(w.name, w.name));
+  if (weapons.some(w => w.name === 'M416')) weaponSelect.value = 'M416';
+  weaponSelect.addEventListener('change', () => { reloadCheckpoints(); render(); });
+  for (const control of [distanceSelect, helmetSelect, vestSelect, modeSelect]) {
+    control.addEventListener('change', render);
+  }
+  for (const node of zones) {
+    node.addEventListener('click', () => selectZone(node.dataset.hitZone));
+    node.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectZone(node.dataset.hitZone);
+      }
+    });
+  }
+  reloadCheckpoints();
+  render();
+}

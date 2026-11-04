@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hit Zone Explorer — isolated visual QA</title>
+<link rel="stylesheet" href="../src/explorer/hit-zone-explorer.scaffold.css">
+<link rel="stylesheet" href="../combat-workspace.css">
+<style>html,body{margin:0;background:#07090e;color:#e9f0f4;font-family:Arial,sans-serif}body{overflow-x:hidden}#panel-hit-zone{display:block!important;min-height:100vh}#result{position:fixed;z-index:99;top:0;right:0;background:#07201b;color:#98ecb8;padding:7px;font:12px monospace;opacity:.95}#result[data-qa=fail]{background:#400b10;color:#fff}</style>
+</head>
+<body>
+<div id="result" data-qa="pending">Preparing isolated figure...</div>
+<div id="mount"></div>
+<script>
+(()=>{
+const result=document.getElementById('result');
+function assert(cond,reason){if(!cond)throw Error(reason);}
+try{
+const request=new XMLHttpRequest();
+request.open('GET','../src/explorer/hit-zone-explorer.fragment.html',false);
+request.send();
+assert(request.status===200,'Source fragment fetch failed: HTTP '+request.status);
+document.getElementById('mount').innerHTML=request.responseText;
+const panel=document.getElementById('panel-hit-zone');
+const figure=document.getElementById('hz_body');
+assert(panel&&figure,'SVG front view missing');
+const markers=[...figure.querySelectorAll('[data-hit-zone]')];
+const labels=[...figure.querySelectorAll('[data-hz-value]')];
+assert(markers.length===13 && labels.length===13,'Thirteen regions/labels must be shown');
+for(const [i,item] of labels.entries())item.textContent=i%3===0?'No data':i%3===1?'123.4':'9 hits';
+figure.classList.add('has-helmet','has-vest');
+// Force style calculation now; do not depend on requestAnimationFrame in headless Chrome.
+void figure.getBoundingClientRect();
+const svgBox=figure.getBoundingClientRect();
+assert(svgBox.width>275,'On-phone figure below minimum workable width: '+svgBox.width);
+assert(svgBox.right<=innerWidth+1 && svgBox.left>=-1,'SVG extends beyond phone screen');
+assert(document.documentElement.scrollWidth<=innerWidth+2,'Page has horizontal overflow');
+const nameTexts=[...figure.querySelectorAll('.hz-chip-name')];
+assert(nameTexts.length===13,'Labels require visible titles');
+for(const node of [...labels,...nameTexts]){
+ const rect=node.getBoundingClientRect();
+ assert(rect.left>=svgBox.left-1 && rect.right<=svgBox.right+1,
+   'Readout text clipped: '+node.textContent+' x '+rect.x+'..'+rect.right);
+ assert(rect.top>=svgBox.top-1 && rect.bottom<=svgBox.bottom+1,'Readout text vertically clipped');
+}
+const frames=[...figure.querySelectorAll('.hz-chip-frame')].map(el=>el.getBoundingClientRect());
+for(let i=0;i<frames.length;i++){
+ for(let j=i+1;j<frames.length;j++){
+  const a=frames[i],b=frames[j];
+  const overlapWidth=Math.min(a.right,b.right)-Math.max(a.left,b.left);
+  const overlapHeight=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
+  assert(overlapWidth<=1 || overlapHeight<=1,'Damage cards overlap ('+i+' and '+j+')');
+ }
+}
+assert(markers.every(el=>el.getAttribute('tabindex')==='0'),'All hit zones keyboard focusable');
+assert(markers.every(el=>el.getAttribute('aria-controls')==='hz_detail'&&el.getAttribute('aria-pressed')==='false'),'Zones expose detail target and initial state');
+assert(!!panel.querySelector('table caption'),'Tabular equivalent has a caption');
+assert(!!figure.querySelector('[data-armour=helmet]')&&!!figure.querySelector('[data-armour=vest]'),'Separate armour overlays');
+// The earlier geometry/layout checks can pass even if an SVG <image> is 404.
+// Decode the real WebP through the browser before reporting the preview as passed.
+const photo = new Image();
+photo.onload=()=>{
+ try{
+  assert(photo.naturalWidth===500 && photo.naturalHeight===750,
+    'Unexpected model image dimensions: '+photo.naturalWidth+'×'+photo.naturalHeight);
+  result.textContent='PASS: 13 visible values, no collisions or overflow, and Neutral mannequin decoded';
+  result.dataset.qa='pass';
+  document.body.dataset.previewStatus='pass';
+ }catch(e){
+  result.textContent='FAIL: '+e.message;
+  result.dataset.qa='fail';
+  document.body.dataset.previewStatus='fail';
+ }
+};
+photo.onerror=()=>{
+ result.textContent='FAIL: Neutral mannequin did not load';
+ result.dataset.qa='fail';
+ document.body.dataset.previewStatus='fail';
+};
+photo.src='../assets/damage-training-mannequin.svg';
+}catch(e){
+result.textContent='FAIL: '+e.message;
+result.dataset.qa='fail';
+document.body.dataset.previewStatus='fail';
+}
+})();
+</script></body></html>

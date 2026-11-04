@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>HELP Toolkit Browser Smoke</title></head>
+<body data-smoke-status="pending">
+<pre id="result">Running real browser checks…</pre>
+<iframe id="app-frame" title="Toolkit under test" src="../index.html" width="390" height="780"></iframe>
+<script>
+(function(){
+  'use strict';
+  const output=document.getElementById('result'),frame=document.getElementById('app-frame');
+  const eq=(actual,expected,message)=>{if(actual!==expected)throw new Error(message+' (expected '+expected+', got '+actual+')');};
+  const check=(yes,message)=>{if(!yes)throw new Error(message);};
+  const change=(el,val,type='change')=>{check(!!el,'Missing input');el.value=val;el.dispatchEvent(new Event(type,{bubbles:true}));};
+  frame.addEventListener('load',()=>{
+    setTimeout(async ()=>{
+      try {
+        const child=frame.contentDocument;
+        check(!!child && !!child.getElementById('panel-sensitivity'),'Loaded real index.html');
+        const get=id=>{const element=child.getElementById(id);check(!!element,'Missing '+id);return element};
+        const text=id=>get(id).textContent.trim();
+        const open=async id=>{
+          const parent=['panel-range','panel-ttk'].includes(id)?'panel-hit-zone':id;
+          const button=child.querySelector('[data-open-panel="'+parent+'"]');
+          check(!!button,'Missing navigation '+id);
+          button.click();await Promise.resolve();
+          check(get(parent).classList.contains('active'),'Panel did not open '+id);
+          eq(child.querySelectorAll('.hub-main.active').length,1,'Exactly one visible panel');
+          const visible=child.defaultView.getComputedStyle(get(id));
+          eq(visible.animationName,'none','Panel must not fade: '+id);
+          eq(visible.opacity,'1','Panel must be fully opaque: '+id);
+          eq(visible.transform,'none','Panel must not shift on entry: '+id);
+        };
+        check(get('panel-sensitivity').classList.contains('active'),'Scope matcher must open first');
+        const scopeContent=child.querySelector('#panel-sensitivity .panel[data-panel="scope"].active');
+        check(!!scopeContent,'Scope sub-panel must be active on landing');
+        const scopeComputed=child.defaultView.getComputedStyle(scopeContent);
+        eq(scopeComputed.animationName,'none','Scope controls never fade to unreadable opacity');
+        eq(scopeComputed.opacity,'1','Scope controls have full opacity immediately');
+
+        eq(get('px_scope').value,'1x','Reference starts at 1x');
+        eq(get('px_sens').value,'10','Reference sensitivity starts at 10');
+        eq(text('px_speed'),'3600','Default 1x sensitivity 10 speed');
+        // Synthetic initial-screen media budget, evaluated before tool navigation.
+        // This is not a real-user LCP score or device network benchmark.
+        const initialMediaEntries=child.defaultView.performance.getEntriesByType('resource')
+          .filter(entry=>/\/assets\/[^/?]+\.(?:svg|webp|avif|png)(?:\?|$)/.test(entry.name));
+        const initialMediaBytes=initialMediaEntries.reduce((sum,entry)=>sum+(entry.decodedBodySize||0),0);
+        check(initialMediaEntries.length<=8,'Initial scope media request count: '+initialMediaEntries.length+' ('+initialMediaEntries.map(entry=>new URL(entry.name).pathname).join(', ')+')');
+        check(!initialMediaEntries.some(entry=>/\/assets\/weapon-/.test(entry.name)),
+          'No gun artwork can be requested before a player selects a weapon');
+        check(initialMediaBytes<=65536,'Initial visual transfers exceed 64 KiB decoded budget');
+        check(child.querySelectorAll('#panel-sensitivity img[src]').length===1,'Only the 1x reference art is active on the landing panel');
+        eq(child.querySelectorAll('#wTable img').length,45,'All table rows have pictures');
+        eq(child.querySelectorAll('#wTable img[src]').length,0,'Inactive database pictures defer requests');
+
+        eq(child.querySelectorAll('#px_table tbody tr').length,8,'Eight aiming-mode conversions including Aim');
+        const sensitivityLinks=[...get('tabs').querySelectorAll('a')];
+        eq(sensitivityLinks.length,3,'Three sensitivity jump links');
+        for(const link of sensitivityLinks)check(link.getBoundingClientRect().height>=44,'Jump links are touch sized');
+        for(const id of ['scope','vert','res'])check(get('sensitivity-panel-'+id).getBoundingClientRect().height>0,'Every sensitivity section is visible');
+        const scopePreview=get('visual-scope-preview');
+        const previewInitialHeight=scopePreview.getBoundingClientRect().height;
+        const initialSrc=get('visual-scope-image').getAttribute('src');
+        change(get('px_scope'),'8x');
+        const preview8xHeight=scopePreview.getBoundingClientRect().height;
+        check(Math.abs(previewInitialHeight-preview8xHeight)<=1,
+          'Switching 1x→8x artwork must not shift the preview card height');
+        eq(get('visual-scope-image').getAttribute('src'),'assets/optic-8x.svg','8x preview image is correct');
+        change(get('px_scope'),'1x');
+        eq(get('visual-scope-image').getAttribute('src'),initialSrc,'Scope reference art restores without a layout shift');
+        const baselineSpeed=text('px_speed');
+        change(get('px_scope'),'aim');const aimSpeed=text('px_speed');
+        change(get('px_scope'),'15x');eq(text('px_speed'),aimSpeed,'Aim and 15x share A/B constants');
+        const current3=get('current_sens_3x');change(current3,'12','input');
+        eq(current3.closest('tr').querySelector('output').textContent,'3912','Current 3x setting has its independent speed');
+        change(get('current_sens_1x'),'10','input');change(get('current_sens_15x'),'10','input');change(get('current_sens_aim'),'10','input');
+        eq(get('current_sens_aim').closest('tr').querySelector('output').textContent,get('current_sens_15x').closest('tr').querySelector('output').textContent,'Current Aim speed matches 15x at equal settings');
+        check(text('current_speed_spread').includes('747 px/s'),'Largest mismatch compares fastest and slowest entered settings');
+        check(text('current_speed_spread').includes('20.8%'),'Mismatch percentage uses the slowest entered speed');
+        eq(get('current_sensitivity_table').querySelectorAll('button').length,0,'Current checker has no reference buttons');
+        eq(get('current_sensitivity_table').querySelectorAll('thead th').length,4,'Current checker omits reference column');
+        const mismatchBefore=text('current_speed_spread');change(get('px_scope'),'2x');
+        eq(text('current_speed_spread'),mismatchBefore,'Current mismatch is independent of the matcher reference');
+        change(current3,'','input');eq(current3.closest('tr').querySelector('output').textContent,'–','Blank speed clears');
+        change(current3,'21','input');eq(current3.closest('tr').querySelector('output').textContent,'–','Invalid sensitivity has no calculated speed');
+        eq(current3.getAttribute('aria-invalid'),'true','Invalid entry is identified');
+        change(get('current_sens_1x'),'','input');
+        check(text('current_speed_spread').includes('no pixel-speed difference'),'Equal Aim and 15x settings show no mismatch');
+        change(get('current_sens_aim'),'','input');change(get('current_sens_15x'),'','input');
+        check(text('current_speed_spread').includes('at least two'),'Fewer than two valid settings clears the comparison');
+        change(get('px_scope'),'1x');change(get('px_sens'),'10','input');
+        eq(text('px_speed'),baselineSpeed,'Current checker does not change matcher settings');
+
+        // Sidebar and numbered navigation follow the user-requested position.
+        const sidebarIds=[...child.querySelectorAll('#app-toolnav [data-open-panel]')].map(b=>b.dataset.openPanel);
+        eq(sidebarIds.join(','),['panel-sensitivity','panel-combat','panel-hit-zone','panel-recoil2','panel-attach','panel-backpack'].join(','),'Hit Zone Explorer appears immediately above Effective Range');
+        // Mobile drawer and all eight navigable tools.
+        get('mobile-nav-toggle').click();
+        check(child.body.classList.contains('sidebar-open'),'Mobile drawer opens');
+        for(const id of ['panel-combat','panel-sensitivity','panel-hit-zone','panel-recoil2','panel-attach','panel-backpack'])await open(id);
+        check(!child.body.classList.contains('sidebar-open'),'Navigation closes drawer');
+        // Combat DB remains a compact text table; illustrations load only on tap.
+        await open('panel-combat');
+        const overview=get('combat-overview-disclosure');
+        check(overview.open,'Combat overview and useful jump links are visible');
+        eq(overview.querySelectorAll('nav.quicknav a').length,2,'Only comparison and armour quick links remain');
+        const armourGuide=get('combat-armour-disclosure');
+        check(armourGuide.tagName==='SECTION','Armour pictures have no disclosure control');
+        eq(armourGuide.querySelectorAll('.visual-armour-key img[src]').length,2,'Armour images are on display');
+        for(const id of ['armor-quick-check','combat-armor-crossover-section','how-thresholds-work','realityCard'])check(get('armor-guide').contains(get(id)),'Armour guidance grouped: '+id);
+        check(!child.querySelector('#combat-pilot-image'),'No automatic M416 hero image above the table');
+        eq(child.querySelectorAll('#wTable img[src]').length,45,'All database pictures are on display');
+        const scrollRegion=get('combat-stats-scroller');
+        eq(scrollRegion.getAttribute('role'),'region','Weapon table has a named scroll region');
+        eq(scrollRegion.getAttribute('aria-describedby'),'combat-table-instructions','Scroll instructions are linked');
+        eq(scrollRegion.tabIndex,0,'Xbox keyboard can focus horizontal weapon statistics');
+        check(scrollRegion.scrollWidth>scrollRegion.clientWidth+100,'Weapon table has additional horizontal statistics');
+        scrollRegion.focus();
+        eq(child.activeElement,scrollRegion,'Controller can focus the wide weapon table');
+        const pinnedBefore=scrollRegion.querySelector('#wTable td:first-child').getBoundingClientRect().left;
+        scrollRegion.scrollLeft=140;
+        check(scrollRegion.scrollLeft>=100,'Focusing the wide table allows horizontal scroll');
+        const pinnedAfter=scrollRegion.querySelector('#wTable td:first-child').getBoundingClientRect().left;
+        check(Math.abs(pinnedAfter-pinnedBefore)<=2,'Weapon names remain pinned while scrolling');
+        scrollRegion.scrollLeft=0;
+        check(child.querySelectorAll('#wTable tr.rowclick').length===45,'Every weapon has a compact row');
+        const mainHeadings=[...child.querySelectorAll('#wTable tr.colheader th')].map(h=>h.textContent.trim());
+        eq(mainHeadings.length,15,'All stats is selected by default');
+        eq(child.querySelector('[data-combat-view=all]').getAttribute('aria-pressed'),'true','All stats button is active on arrival');
+        child.querySelector('[data-combat-view=all]').click();
+        const allHeadings=[...child.querySelectorAll('#wTable tr.colheader th')].map(h=>h.textContent.trim());
+        eq(allHeadings.length,15,'All stats retains every weapon column');
+        check(allHeadings.some(v=>v.includes('Head Dmg'))&&allHeadings.some(v=>v.includes('Chest Dmg')),
+          'Head/Chest damage remain in the main database');
+        check(!mainHeadings.some(v=>v.includes('Helm L3')||v.includes('Vest L3')),
+          'Helmet/vest crossover columns moved below the main database');
+        const armourDetail=get('combat-armor-crossovers');
+        check(armourDetail.getBoundingClientRect().height>0,'Crossover table is visible');
+        const armourTable=get('combatArmorTable');
+        eq(armourTable.querySelectorAll('tbody tr').length,45,'Crossover data includes all 45 weapons');
+        const m416InMain=child.querySelector('#wTable tr.rowclick[data-n="M416"]');
+        const m416InArmor=armourTable.querySelector('tr[data-n="M416"]');
+        check(!!m416InMain&&!!m416InArmor,'Same named gun appears in both databases');
+        eq(m416InMain.cells[13].textContent.trim(),m416InArmor.cells[1].textContent.trim(),'Head damage repeated exactly');
+        eq(m416InMain.cells[14].textContent.trim(),m416InArmor.cells[4].textContent.trim(),'Chest damage repeated exactly');
+        change(get('wSearch'),'M416','input');
+        eq(child.querySelectorAll('#wTable tr.rowclick').length,1,'Search limits main weapon table');
+        eq(armourTable.querySelectorAll('tbody tr').length,1,'Search also limits armour table');
+        change(get('wSearch'),'','input');
+        eq(child.querySelectorAll('#wTable tr.rowclick').length,45,'Search reset restores main table');
+        eq(armourTable.querySelectorAll('tbody tr').length,45,'Search reset restores crossover table');
+        change(get('wSort'),'name-asc');
+        eq(child.querySelector('#wTable tr.rowclick').dataset.n,armourTable.querySelector('tbody tr').dataset.n,
+          'Both tables share selected sort order');
+        change(get('wSort'),'dmg-desc');
+        // These are same-page links to dynamically rendered sections.
+        const combatJumpIds=['compare-weapons','armor-guide'];
+        for(const id of combatJumpIds){
+          const link=child.querySelector('#panel-combat a[href="#'+id+'"]');
+          check(!!link,'Missing quick link '+id);
+          const hashChanged=new Promise(resolve=>child.defaultView.addEventListener('hashchange',resolve,{once:true}));
+          link.click();await hashChanged;
+          eq(child.defaultView.location.hash,'#'+id,'Quick link navigates to its actual section');
+          check(get('panel-combat').classList.contains('active'),
+            'Jump link incorrectly returned to Scope Matcher: '+id);
+          check(get(id).getBoundingClientRect().height>0,'Jump target should be visible');
+        }
+
+        const m416Row=child.querySelector('#wTable tr.rowclick[data-n="M416"]');
+        check(!!m416Row,'M416 row is available');
+        m416Row.click();
+        eq(text('modalTitle'),'M416','Tap M416 row opens details');
+        const modalClose=child.querySelector('#modalBody [data-action="close-modal"]');
+        eq(child.activeElement,modalClose,'Modal opens with focus on the close control');
+        eq(child.querySelector('#modalBody .visual-modal-media img')?.getAttribute('src'),'assets/weapon-m416-field.svg','M416 image appears in popup only');
+        modalClose.dispatchEvent(new child.defaultView.KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true}));
+        eq(child.activeElement,modalClose,'Tab cannot escape the opened modal');
+        modalClose.click();
+        eq(child.activeElement,m416Row,'Close restores focus to the clicked weapon row');
+        const akmRow=child.querySelector('#wTable tr.rowclick[data-n="AKM"]');
+        check(!!akmRow,'AKM row present');
+        akmRow.focus();
+        const enter=new child.defaultView.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true});
+        akmRow.dispatchEvent(enter);
+        eq(text('modalTitle'),'AKM','Keyboard Enter opens weapon details');
+        eq(child.querySelector('#modalBody .visual-modal-media img')?.getAttribute('src'),'assets/weapon-akm-field.svg','AKM artwork belongs only to selected weapon');
+        child.dispatchEvent(new child.defaultView.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+        check(!get('overlay').classList.contains('show'),'Escape dismisses the selected weapon modal');
+        eq(child.activeElement,akmRow,'Escape restores keyboard/controller focus to AKM row');
+        const sksRow=child.querySelector('#wTable tr.rowclick[data-n="SKS"]');
+        sksRow.click();
+        eq(text('modalTitle'),'SKS','Other weapons open their own artwork');
+        eq(child.querySelector('#modalBody .visual-modal-media img')?.getAttribute('src'),'assets/weapon-sks-field.svg','SKS exact-name artwork');
+        child.querySelector('#modalBody [data-action="close-modal"]').click();
+        change(get('wSearch'),'S686','input');
+        eq(child.querySelectorAll('#wTable tr.rowclick').length,1,'Search retains a single matching weapon');
+        eq(child.querySelectorAll('#wTable img').length,1,'Search keeps the matching weapon picture');
+        change(get('wSearch'),'','input');
+        eq(child.querySelectorAll('#wTable tr.rowclick').length,45,'Clearing search restores all text-only rows');
+        eq(child.querySelectorAll('#wTable img').length,45,'Clearing search restores all weapon pictures');
+        // Batch visuals: optics and existing controls still change independently.
+        await open('panel-sensitivity');
+        change(get('px_scope'),'8x');
+        eq(get('visual-scope-image').getAttribute('src'),'assets/optic-8x.svg','Scope art matches selected magnification');
+        eq(text('visual-scope-label'),'8x reference optic','Visible optic label is updated');
+        change(get('px_scope'),'1x');
+        check(!get('visual-one-x-variants').hidden,'1x appearance choices visible');
+        const scopedSpeed=text('px_speed');
+        const holo=child.querySelector('[data-visual-optic="holo"]');
+        holo.focus();
+        eq(child.activeElement,holo,'1x optic style is keyboard-focusable');
+        check(holo.getBoundingClientRect().height>=44,'Sight style button provides a 44px focus target');
+        holo.click();
+        eq(get('visual-scope-image').getAttribute('src'),'assets/optic-holographic.svg','Holographic appearance changes without changing scope');
+        eq(text('px_speed'),scopedSpeed,'Optic appearance cannot change pixel speed');
+        eq(holo.getAttribute('aria-pressed'),'true','Holo button exposed as selected');
+        child.querySelector('[data-visual-optic="iron"]').click();
+        eq(get('visual-scope-image').getAttribute('src'),'assets/optic-iron.svg','Iron sight appearance');
+        child.querySelector('[data-visual-optic="reddot"]').click();
+        eq(get('visual-scope-image').getAttribute('src'),'assets/optic-red-dot.svg','Red Dot appearance');
+        const scopeImage=get('visual-scope-image');
+        scopeImage.dispatchEvent(new child.defaultView.Event('error'));
+        check(scopeImage.hidden,'Broken decorative illustration is hidden');
+        check(!!get('visual-scope-preview').querySelector('.visual-image-unavailable'),'Accessible art fallback is displayed');
+        // A subsequent real image load restores the presentation without touching maths.
+        scopeImage.dispatchEvent(new child.defaultView.Event('load'));
+        check(!scopeImage.hidden,'Recovered image becomes visible again');
+        check(!get('visual-scope-preview').querySelector('.visual-image-unavailable'),'Recovered artwork clears the fallback');
+        change(get('px_scope'),'3x');
+        check(get('visual-one-x-variants').hidden,'1x choices hidden for higher magnifications');
+        await open('panel-range');
+        // Source-backed range regression: shotguns are per-pellet estimates, not
+        // simulated complete pellet patterns or invented TTK observations.
+        change(get('rg_weapon'),'S686');
+        eq(text('rg_htkLabel'),'Minimum shells (all pellets hit)','Shotgun results are explicitly theoretical minimum shells');
+        eq(text('rg_ttk'),'No data','Shotgun TTK remains unknown');
+        check(text('rg_approxNote').includes('all 9 pellets hit'),'Shotgun warning discloses pellet-hit assumption');
+        check(text('rg_chartTitle').includes('Measured base damage per pellet'),'Shotgun chart correctly labels per-pellet damage');
+        check(text('rg_rangeEvidence').includes('measured checkpoints'),'Range source limits stay visible');
+        check(get('rg_range').max==='16','S686 exposes 17 observed checkpoints only');
+        change(get('rg_range'),'16','input');
+        eq(text('rg_rangeLabel'),'80 m','Range slider selects actual last observed distance');
+        eq(text('rg_dmg'),'6.9','Shotgun damage matches final measured per-pellet checkpoint');
+        check(text('rg_brackets').includes('No data'),'Range checkpoint table does not invent shotgun TTK');
+        change(get('rg_weapon'),'AKM');
+        check(!text('rg_chartTitle').includes('per pellet'),'Switching back to an AR updates chart classification');
+        check(!text('rg_htkLabel').includes('Minimum shells'),'AR hit-count label is restored');
+        check(get('visual-range-artwork').tagName==='SECTION','Range pictures have no disclosure control');
+        change(get('rg_weapon'),'AKM');
+        eq(get('visual-range-weapon-image').getAttribute('src'),'assets/weapon-akm-field.svg','Range weapon picture follows the current selection');
+        change(get('rg_weapon'),'SKS');
+        eq(get('visual-range-weapon-image').getAttribute('src'),'assets/weapon-sks-field.svg','Changed weapon picture stays visible');
+        await open('panel-ttk');
+        check(!!text('tk_dmg')&&!!text('tk_htk'),'TTK results are available below the model');
+        check(get('visual-ttk-artwork').tagName==='SECTION','TTK pictures have no disclosure control');
+        check(!!get('visual-compare-a-image').getAttribute('src'),'Comparison weapon pictures are visible');
+        change(get('tk_weapon'),'Kar98k');
+        eq(get('visual-ttk-weapon-image').getAttribute('src'),'assets/weapon-kar98k-field.svg','TTK selected weapon art is exact');
+        change(get('tk_cmpA'),'M416');
+        change(get('tk_cmpB'),'AKM');
+        check(get('visual-compare-a-image').getAttribute('src')==='assets/weapon-m416-field.svg','TTK A thumbnail is M416');
+        check(get('visual-compare-b-image').getAttribute('src')==='assets/weapon-akm-field.svg','TTK B thumbnail is AKM');
+        await open('panel-recoil2');
+        check(get('visual-recoil-artwork').tagName==='SECTION','Recoil pictures are visible without a disclosure');
+        change(get('rc_weapon'),'P90');
+        eq(get('visual-recoil-weapon-image').getAttribute('src'),'assets/weapon-p90-field.svg','Recoil art follows P90');
+                await open('panel-attach');
+        check(!!get('visual-attachment-grid').querySelector('img'),'Attachment art exists');
+        check(!!text('visual-at-muzzle'),'Muzzle label reflects existing selection');
+        change(get('at_sight'),'reddot');
+        eq(get('visual-at-sight-image').getAttribute('src'),'assets/optic-red-dot.svg','Red dot shows correct art');
+        change(get('at_sight'),'holo');
+        eq(get('visual-at-sight-image').getAttribute('src'),'assets/optic-holographic.svg','Holographic shows correct art');
+        change(get('at_sight'),'none');
+        check(get('visual-at-sight-image').hidden,'No optic must not display an equipped sight');
+        eq(get('visual-at-sight-image').getAttribute('src'),null,'Unequipped sight has no image resource');
+        // Attachment art follows equipment select values but never changes values itself.
+        change(get('at_weapon'),'M416');
+        change(get('at_muzzle'),'suppressor');
+        eq(get('visual-at-muzzle-image').getAttribute('src'),'assets/pubg-img-weapons-add-on-muzzle-suppressor-large.svg','M416 uses its catalogue suppressor image');
+        change(get('at_muzzle'),'compensator');
+        eq(get('visual-at-muzzle-image').getAttribute('src'),'assets/gear-compensator.svg','Compensator preview');
+        change(get('at_muzzle'),'none');
+        check(get('visual-at-muzzle-image').hidden,'No muzzle shows no equipped hardware');
+        change(get('at_grip'),'vertical');
+        eq(get('visual-at-grip-image').getAttribute('src'),'assets/gear-vertical-grip.svg','Vertical grip preview');
+        change(get('at_grip'),'half');
+        eq(get('visual-at-grip-image').getAttribute('src'),'assets/gear-grip.svg','Half grip uses its own publisher artwork');
+        change(get('at_grip'),'none');
+        check(get('visual-at-grip-image').hidden,'No grip shows no equipped hardware');
+        change(get('at_stock'),'tactical');
+        eq(get('visual-at-stock-image').getAttribute('src'),'assets/gear-stock.svg','Stock image follows selection');
+        change(get('at_stock'),'none');
+        check(get('visual-at-stock-image').hidden,'No stock shows no equipped hardware');
+        change(get('at_mag'),'extended');
+        eq(get('visual-at-mag-image').getAttribute('src'),'assets/gear-extended-magazine.svg','Extended magazine preview');
+        change(get('at_mag'),'none');
+        check(get('visual-at-mag-image').hidden,'No magazine shows no equipped hardware');
+        get('at_presetClear').click();
+        check(get('visual-at-muzzle-image').hidden,'Preset Clear hides muzzle image');
+        check(get('visual-at-grip-image').hidden,'Preset Clear hides grip image');
+
+        await open('panel-backpack');
+        check(text('visual-pack-label').includes('Level 3'),'Backpack art describes chosen level');
+        change(get('bp_type'),'jammer');
+        eq(get('visual-pack-image').getAttribute('src'),'assets/gear-jammer.svg','Jammer Pack uses its own illustration');
+        change(get('bp_type'),'standard');
+        change(get('bp_level'),'1');
+        eq(get('visual-pack-image').getAttribute('src'),'assets/gear-backpack-l1.svg','Level 1 has distinct art');
+        change(get('bp_level'),'2');
+        eq(get('visual-pack-image').getAttribute('src'),'assets/gear-backpack-l2.svg','Level 2 has distinct art');
+        change(get('bp_level'),'3');
+        eq(get('visual-pack-image').getAttribute('src'),'assets/gear-backpack.svg','Level 3 retains original art');
+        change(get('bp_vest'),'no');
+        eq(text('visual-pack-vest-label'),'Vest: none','Vest art label follows equipment choice');
+        change(get('bp_vest'),'yes');
+        eq(text('visual-pack-vest-label'),'Vest: worn','Vest art label restores equipment choice');
+        check(child.querySelectorAll('#panel-backpack .visual-pack-items img').length===6,'All six backpack categories illustrated');
+        // Inventory steppers must be readable by assistive technology and usable
+        // with finger/controller-sized targets; none may change the underlying math.
+        const backpackRows=[...child.querySelectorAll('#panel-backpack .bp-row')];
+        check(backpackRows.length>=12,'Backpack has a dense inventory list');
+        for(const row of backpackRows){
+          const item=row.querySelector('.bp-name')?.textContent?.trim();
+          const input=row.querySelector('input[data-bp]');
+          check(!!item&&!!input,'Inventory row has a named quantity input');
+          eq(input.getAttribute('aria-label'),'Quantity of '+item,'Inventory input accessible name');
+          check(input.getBoundingClientRect().height>=44,'Inventory quantity has 44px input target');
+          for(const button of row.querySelectorAll('.bp-stepper button')){
+            check(button.getBoundingClientRect().width>=44&&button.getBoundingClientRect().height>=44,
+              'Backpack +/- tap targets are at least 44px');
+            check(button.getAttribute('aria-label')?.includes(item),'Stepper names its own item');
+          }
+        }
+        const firstBackpackRow=backpackRows[0];
+        const addBackpack=firstBackpackRow.querySelector('.bp-stepper button[data-step="1"]');
+        const removeBackpack=firstBackpackRow.querySelector('.bp-stepper button[data-step="-1"]');
+        const firstQty=firstBackpackRow.querySelector('input[data-bp]');
+        const emptyUsed=text('bp_used');
+        addBackpack.click();
+        eq(firstQty.value,'1','Plus adds exactly one inventory item');
+        check(text('bp_used')!==emptyUsed,'Plus updates existing inventory weight math');
+        removeBackpack.click();
+        eq(firstQty.value,'0','Minus removes the selected inventory item');
+        eq(text('bp_used'),emptyUsed,'Round trip preserves original carry total');
+
+        await open('panel-range');check(!!get('visual-range').querySelector('img'),'Range art exists');
+        await open('panel-ttk');check(!!get('visual-ttk').querySelector('img'),'TTK art exists');
+        await open('panel-recoil2');check(!!get('visual-recoil').querySelector('img'),'Recoil parameters art exists');
+        // All thirteen labels render without tapping; helmet and vest work independently.
+        await open('panel-hit-zone');
+        eq(get('active-tool-index').getAttribute('aria-label'),'Tool 3 of 6','Hit Zone Explorer is tool 03 of 08');
+        change(get('hz_weapon'),'M416');
+        change(get('hz_distance'),'0');
+        change(get('hz_helmet'),'0');
+        change(get('hz_vest'),'0');
+        eq(get('hz_weapon').value,'M416','Hit-zone weapon can select M416 after linked tool changes');
+        eq(child.querySelectorAll('#hz_body [data-hit-zone]').length,13,'All body-zone shapes exist');
+        eq(child.querySelectorAll('#hz_body [data-hz-value]').length,13,'All hit-zone values shown simultaneously');
+        const hzValue=id=>child.querySelector('[data-hz-value="'+id+'"]').textContent.trim();
+        eq(hzValue('chest'),'44.0','M416 chest unarmoured at 0m');
+        eq(hzValue('head'),'94.0','M416 head unarmoured at 0m');
+        const bareThigh=hzValue('thigh');
+        change(get('hz_helmet'),'3');
+        eq(hzValue('head'),'42.3','Level 3 helmet reduces head');
+        eq(hzValue('chest'),'44.0','Helmet does not change chest');
+        change(get('hz_vest'),'2');
+        eq(hzValue('chest'),'26.4','Level 2 vest reduces chest');
+        eq(hzValue('head'),'42.3','Vest does not change head');
+        eq(hzValue('thigh'),bareThigh,'Vest cannot protect thigh');
+        change(get('hz_mode'),'htk');
+        eq(hzValue('chest'),'4 hits','HTK display labels hits unambiguously');
+        check(text('hz_status').includes('100 HP'),'HTK explains the 100 HP single-zone assumption');
+        eq(child.querySelector('[data-hit-zone="chest"]').getAttribute('aria-label'),'Chest: 4 hits','Keyboard label describes hits instead of a multiplier');
+        change(get('hz_mode'),'ttk');
+        eq(hzValue('chest'),'0.26 s','Model TTK uses the existing four-hit M416 timing');
+        check(text('hz_status').includes('excludes reloads'),'Model TTK explains what timing includes');
+        change(get('hz_mode'),'heatmap');
+        check(!!child.querySelector('[data-hit-zone="chest"]').style.fill,'Heatmap colours computed zone');
+        change(get('hz_weapon'),'DBS');
+        eq(hzValue('chest'),'No data','Pellet shotgun must not imply whole-shell damage');
+        check(text('hz_status').includes('per pellet'),'Shotgun missing-data warning remains');
+        const idealOption=child.querySelector('#hz_mode option[value="ideal-shells"]');
+        check(!idealOption.disabled,'Theoretical minimum-shell mode only opens for pellet shotguns');
+        change(get('hz_mode'),'ideal-shells');
+        eq(hzValue('chest'),'1 shell*','DBS lower-bound count is rendered as shells, not damage');
+        check(text('hz_status').includes('THEORETICAL MINIMUM'),'Ideal-shell warning prominent');
+        check(text('hz_detail').includes('THEORETICAL LOWER BOUND'),'Ideal-shell detail explicitly avoids claiming a real hit count');
+        change(get('hz_weapon'),'S12K');
+        change(get('hz_distance'),'25');
+        eq(hzValue('chest'),'2 shells*','S12K 25m level 2 vest idealized shell floor');
+        eq(hzValue('thigh'),'2 shells*','S12K theoretical result available for unarmoured limb');
+        change(get('hz_weapon'),'O12');
+        eq(get('hz_mode').value,'damage','Switching to slug automatically restores real-damage mode');
+        check(idealOption.disabled,'Theoretical shell mode is disabled for slug weapons');
+        eq(get('hz_distance').value,'25','O12 preserves a shared published 25m checkpoint');
+        check(hzValue('chest')!=='No data','O12 slug is supported at its recorded 25m');
+        change(get('hz_weapon'),'DBS');
+        change(get('hz_distance'),'0');
+        change(get('hz_weapon'),'O12');
+        eq(get('hz_distance').value,'2','O12 starts at 2m when previous 0m is unsupported');
+        check(hzValue('chest')!=='No data','O12 slug is supported at its first recorded 2m');
+        change(get('hz_weapon'),'M416');
+        change(get('hz_distance'),'100');
+        check(hzValue('chest')!=='No data','Published 100m damage available');
+        get('hz_body').querySelector('[data-hit-zone="calf"]').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+        check(text('hz_detail').includes('Calf'),'Optional region detail responds to clicks');
+        check(get('hz_detail').closest('details').open,'Selecting a body region reveals its calculation');
+        eq(get('hz_body').querySelector('[data-hit-zone="calf"]').getAttribute('aria-pressed'),'true','Pointer-selected zone exposes state');
+        eq(get('hz_body').querySelector('[data-hit-zone="chest"]').getAttribute('aria-pressed'),'false','Other zones are not selected');
+        const keyboardZone=get('hz_body').querySelector('[data-hit-zone="head"]');
+        keyboardZone.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+        check(text('hz_detail').includes('Head:'),'Keyboard Enter opens the optional zone breakdown');
+        check(keyboardZone.getAttribute('aria-label').includes('Head:'),'Keyboard target announces zone and value');
+        eq(keyboardZone.getAttribute('aria-controls'),'hz_detail','Keyboard targets connect to the detail panel');
+        eq(keyboardZone.getAttribute('aria-pressed'),'true','Keyboard-selected zone exposes state');
+        eq(get('hz_body').querySelector('[data-hit-zone="calf"]').getAttribute('aria-pressed'),'false','Keyboard selection clears old zone');
+        eq(child.querySelectorAll('#hz_rows tr').length,13,'Accessible table includes all body regions');
+        check(!!child.querySelector('#panel-hit-zone table caption'),'Table has a descriptive accessibility caption');
+        eq(child.querySelectorAll('#panel-hit-zone .hz-results thead th[scope="col"]').length,3,'Result headings declare column scope');
+        // All 45 combat weapons must render 13 consistent readouts and safe
+        // no-data states without leaking NaN, Infinity, or per-pellet damage.
+        const hitZoneWeaponNames=[...get('hz_weapon').options].map(o=>o.value).filter(Boolean);
+        eq(hitZoneWeaponNames.length,45,'Hit-zone selector includes all 45 toolkit weapons');
+        const pelletNames=new Set(['DBS','S686','S12K','Sawn-off']);
+        change(get('hz_mode'),'damage');
+        for(const gun of hitZoneWeaponNames){
+          change(get('hz_weapon'),gun);
+          const hasCheckpoint=!get('hz_distance').disabled;
+          const isPellet=pelletNames.has(gun);
+          eq(child.querySelectorAll('#hz_rows tr').length,13,gun+' all-zone table updates');
+          const chips=[...child.querySelectorAll('#hz_body [data-hz-value]')].map(el=>el.textContent.trim());
+          eq(chips.length,13,gun+' all regions have simultaneous values');
+          for(const chip of chips){
+            check(chip==='No data'||/^\d+(?:\.\d+)?$/.test(chip),
+              gun+' must show measured damage or No data (got '+chip+')');
+          }
+          if(isPellet){
+            check(chips.every(v=>v==='No data'),gun+' actual shell totals remain unknown');
+            check(!idealOption.disabled,gun+' theoretical mode enabled');
+            if(hasCheckpoint){
+              change(get('hz_mode'),'ideal-shells');
+              const idealChips=[...child.querySelectorAll('#hz_body [data-hz-value]')].map(el=>el.textContent.trim());
+              check(idealChips.every(v=>/^[1-9]\d* shells?\*$/.test(v)),
+                gun+' all thirteen zones show a labelled theoretical lower bound');
+              change(get('hz_mode'),'damage');
+            }
+          }else{
+            check(idealOption.disabled,gun+' theoretical pellet mode unavailable');
+            check(chips.every(v=>hasCheckpoint ? /^\d+(?:\.\d+)?$/.test(v) : v==='No data'),
+              gun+' must not show inconsistent source status between zones');
+          }
+        }
+        change(get('hz_weapon'),'M416');
+        change(get('hz_distance'),'0');
+        change(get('hz_helmet'),'0');
+        change(get('hz_vest'),'0');
+        eq(hzValue('chest'),'44.0','Weapon sweep leaves selector usable at the unarmoured 0m checkpoint');
+        // Linked combat scenario: same weapon, exact checkpoint and distinct gear.
+        change(get('hz_weapon'),'AKM');
+        change(get('hz_distance'),'100');
+        change(get('hz_helmet'),'3');
+        change(get('hz_vest'),'2');
+        eq(get('rg_weapon').value,'AKM','Range follows selected weapon');
+        eq(get('tk_weapon').value,'AKM','TTK follows selected weapon');
+        eq(get('tk_distance').value,'100','TTK follows exact recorded distance');
+        eq(text('rg_rangeLabel'),'100 m','Range follows exact recorded distance');
+        child.querySelector('#hz_body [data-hit-zone="head"]').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+        eq(get('tk_hitbox').value,'head','Body selection carries exact head region');
+        eq(get('tk_armor').value,'3','Head uses helmet level');
+        child.querySelector('#hz_body [data-hit-zone="chest"]').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+        eq(get('rg_armor').value,'2','Chest uses independent vest level');
+        eq(Number(text('tk_dmg')),Number(hzValue('chest')),'TTK and body agree at same checkpoint');
+        change(get('tk_distance'),'25');
+        eq(get('hz_distance').value,'25','TTK checkpoint changes flow back to body');
+        change(get('hz_distance'),'0');
+        change(get('hz_weapon'),'O12');
+        eq(get('tk_distance').value,get('hz_distance').value,'One valid recorded distance is shared after a weapon switch');
+        check(get('tk_distance').value!=='0','No invented 0m O12 reading');
+        change(get('hz_weapon'),'M416');
+        change(get('hz_distance'),'0');
+        change(get('hz_helmet'),'0');change(get('hz_vest'),'0');
+        const modeButtons=child.querySelectorAll('[aria-label="Damage display"] button');
+        eq(modeButtons.length,5,'Display modes are discoverable buttons');
+        check(modeButtons[4].disabled,'Shotgun-only mode disabled for rifle');
+        const picker=get('panel-hit-zone').querySelector('.workspace-picker');
+
+        const search=picker.querySelector('input[type=search]');search.value='AKM';search.dispatchEvent(new Event('input'));
+        eq(picker.querySelectorAll('.workspace-weapon-list button').length,1,'Weapon browser filters names');
+        eq(picker.querySelectorAll('img').length,1,'Matching weapon picture is visible without a toggle');
+        picker.querySelector('.workspace-weapon-list button').click();
+        eq(get('hz_weapon').value,'AKM','Search result selects weapon');
+        check(picker.getBoundingClientRect().height>0,'Weapon gallery stays visible after selection');
+        change(get('hz_weapon'),'M416');
+        // Weapon presentation and threshold finder preserve the source records.
+        await open('panel-combat');
+        const crate=get('wCrates');crate.checked=false;crate.dispatchEvent(new Event('change',{bubbles:true}));
+        check(!child.querySelector('#wTable .tag.crate'),'Crate filter removes crate rows');
+        check(child.querySelectorAll('#wTable tr.rowclick').length<45,'Crate filter affects list');
+        crate.checked=true;crate.dispatchEvent(new Event('change',{bubbles:true}));
+        eq(child.querySelectorAll('#wTable tr.rowclick').length,45,'Restoring crate filter restores all weapons');
+        check(child.querySelector('#wTable .tt-mini-bar'),'Numeric comparison bars render');
+        const cards=get('combat-browser');
+        eq(child.querySelectorAll('#combat-cards article').length,45,'Optional weapon cards cover registry');
+        eq(child.querySelectorAll('#combat-cards img').length,45,'Every weapon card shows its picture');
+        check(!child.getElementById('combat-card-art')&&!child.getElementById('combat-card-switch'),'No picture hiding controls');
+        change(get('aq_weapon'),'AKM');change(get('aq_gear'),'vest');change(get('aq_tier'),'3');change(get('aq_durability'),'1','input');
+        check(text('aq_verdict').includes('Replace with the fresh Level 2'),'Vest threshold resolves low durability');
+        change(get('aq_gear'),'helmet');
+        check(text('aq_verdict').includes('Keep the current Level 3'),'Helmet uses its independent threshold');
+        change(get('aq_weapon'),'RPD');check(text('aq_verdict').includes('No crossover record'),'Missing crossover stays unknown');
+        change(get('aq_durability'),'','input');check(text('aq_verdict').includes('Enter a non-negative'),'Empty durability is not treated as zero');
+
+        await open('panel-range');
+        change(get('rg_weapon'),'O12');change(get('rg_compare'),'M416');
+        const rows=[...get('rg_compareTable').querySelectorAll('tbody tr')];
+        const zero=rows.find(row=>row.cells[0].textContent==='0 m');
+        eq(zero.cells[1].textContent,'No data','Comparison does not invent an O12 muzzle checkpoint');
+        change(get('rg_weapon'),'S686');
+        check(text('rg_compareNote').includes('Mixed units'),'Pellet and player damage are distinguished');
+        check(get('rg_compareChart').hidden,'Mixed-unit data cannot produce an overlay');
+        eq(child.defaultView.getComputedStyle(get('rg_compareChart')).display,'none','Mixed-unit chart is actually hidden');
+        change(get('rg_weapon'),'AKM');change(get('rg_compare'),'M416');
+        get('rg_comparison').open=true;get('rg_comparison').dispatchEvent(new Event('toggle'));
+        check(!get('rg_compareChart').hidden,'Same-unit comparison exposes recorded checkpoint overlay');
+        get('rg_comparison').open=false;
+
+        await open('panel-attach');change(get('at_weapon'),'M416');
+        const slot=child.querySelector('[data-slot="at_grip"]');slot.open=true;slot.dispatchEvent(new Event('toggle'));
+        eq(slot.querySelectorAll('button').length,get('at_grip').options.length,'Slot chooser only exposes compatible native choices');
+        slot.querySelectorAll('button')[1].click();
+        eq(get('at_grip').selectedIndex,1,'Slot button updates existing calculator');
+        check(slot.tagName==='SECTION','Attachment picture choices stay on display');
+        check(slot.querySelectorAll('img').length>0,'Compatible attachment choices include their pictures');
+        const attachPicker=get('panel-attach').querySelector('.workspace-picker');
+        attachPicker.open=true;attachPicker.dispatchEvent(new Event('toggle'));
+        await new Promise(resolve=>setTimeout(resolve,0));
+        [...attachPicker.querySelectorAll('.tt-class-pills button')].find(b=>b.textContent==='SMG').click();
+        const shownNames=[...attachPicker.querySelectorAll('.workspace-weapon-list button')].filter(b=>!b.hidden).map(b=>b.textContent.trim());
+        check(shownNames.includes('Vector')&&!shownNames.includes('M416'),'Class filter uses weapon registry');
+        attachPicker.open=false;
+
+
+        await open('panel-backpack');get('bp_clear').click();
+        const bagAmmo=child.querySelector('input[data-bp="556"]');bagAmmo.value='20';bagAmmo.dispatchEvent(new Event('input',{bubbles:true}));
+        await new Promise(resolve=>setTimeout(resolve,0));
+        const usedBefore=text('bp_used');
+        const itemSearch=child.querySelector('.tt-inventory-tools input');itemSearch.value='Smoke';itemSearch.dispatchEvent(new Event('input'));
+        eq(text('bp_used'),usedBefore,'Filtering items never excludes packed ammo from totals');
+        get('bp_packed').open=true;
+        check(text('bp_packed').includes('5.56mm'),'Packed items list includes hidden-category ammo');
+        get('bp_packed').querySelector('button').click();
+        await new Promise(resolve=>setTimeout(resolve,0));
+        eq(text('bp_used'),'0.0','Remove packed item updates actual total');
+        itemSearch.value='';itemSearch.dispatchEvent(new Event('input'));
+        get('bp_packed').open=false;
+        await open('panel-recoil2');
+        eq(child.querySelectorAll('.tt-recoil-parameters>div').length,get('rc_table').querySelectorAll('tbody tr').length,'Recoil cards match recorded parameter rows');
+
+        // Return to unchanged core calculator regression path.
+        await open('panel-range');
+        change(get('rg_weapon'),'S686');
+        check(text('rg_htk')!=='No data','Shotgun minimum shells available');
+        check(text('rg_approxNote').includes('all'),'Shotgun pellet limitation shown');
+        change(get('rg_weapon'),'M416');
+        check(text('rg_dmg')!=='No data','Rifle checkpoint damage appears');
+
+        await open('panel-ttk');
+        check(text('tk_htk')!=='No data','TTK initializes');
+        change(get('tk_weapon'),'M416');
+        check(text('tk_pure')!=='No data','Weapon switch updates TTK');
+
+        await open('panel-recoil2');
+        change(get('rc_weapon'),'RPD');
+        check(text('rc_missing').includes('reference curves available'),'RPD uses its accepted reference curves');
+
+        await open('panel-attach');
+        change(get('at_weapon'),'MK14 EBR');
+        change(get('at_mag'),'extended');
+        eq(text('at_capNew'),'22','Mk14 DMR/SR extended rounds');
+        change(get('at_mag'),'extended_ar');
+        eq(text('at_capNew'),'20','Mk14 AR/DMR extended rounds');
+        change(get('at_weapon'),'SLR');
+        check(Array.from(get('at_mag').options).some(o=>o.value==='extended_ar'),'SLR supports second magazine family');
+        change(get('at_mag'),'extended_ar');
+        eq(text('at_capNew'),'20','SLR AR magazine rounds');
+        change(get('at_weapon'),'ACE 32');
+        eq(get('at_mag').value,'none','Incompatible dual magazine must reset');
+        change(get('at_mag'),'extended');
+        eq(text('at_capNew'),'42','ACE Extended rounds, cross-source mapping');
+        change(get('at_mag'),'extquick');
+        eq(text('at_capNew'),'40','ACE Extended QuickDraw rounds');
+        change(get('at_weapon'),'SVD Dragunov');
+        change(get('at_mag'),'extended');
+        eq(text('at_capNew'),'No data','Dragunov unresolved magazine-family capacity');
+
+        // Exercise every weapon in the actual dropdown, including unknown
+        // magazines. No numeric output may be NaN or a fractional round.
+        const gunNames=Array.from(get('at_weapon').options).map(o=>o.value).filter(Boolean);
+        eq(gunNames.length,45,'All 45 weapons selectable in Attachments');
+        for(const gun of gunNames){
+          change(get('at_weapon'),gun);
+          const magazine=get('at_mag');
+          if(magazine.disabled){
+            eq(magazine.value,'none',gun+' has no magazine attachment slot');
+            continue;
+          }
+          const optionIds=Array.from(magazine.options).map(o=>o.value);
+          check(optionIds.includes('extended') && optionIds.includes('extquick'),
+            gun+' must offer known magazine item types');
+          let maxCap=null,quickCap=null;
+          for(const id of ['extended','extquick']){
+            change(magazine,id);
+            const raw=text('at_capNew');
+            check(raw==='No data'||/^[1-9][0-9]*$/.test(raw),
+              gun+' '+id+' must show a valid integer or No data (got '+raw+')');
+            if(raw!=='No data' && id==='extended') maxCap=Number(raw);
+            if(raw!=='No data' && id==='extquick') quickCap=Number(raw);
+          }
+          if(maxCap!==null&&quickCap!==null)
+            check(quickCap<=maxCap,gun+' Extended QuickDraw cannot exceed Extended');
+        }
+        change(get('at_weapon'),'SVD Dragunov');
+        for(const kind of ['extended','extquick','extended_ar','extquick_ar']){
+          change(get('at_mag'),kind);
+          eq(text('at_capNew'),'No data','Unresolved Dragunov '+kind+' stays unknown');
+        }
+        change(get('at_weapon'),'ACE 32');
+        change(get('at_mag'),'extended');
+        eq(text('at_capNew'),'42','ACE Extended maximum capacity');
+        change(get('at_mag'),'extquick');
+        eq(text('at_capNew'),'40','ACE Extended QuickDraw capacity');
+
+        // Complete reference coverage, plus honest missing-curve states for other guns.
+        await open('panel-recoil2');
+        const recoilNames=Object.keys(child.defaultView.HELP_RECOIL_REFERENCE.weapons);
+        eq(recoilNames.length,27,'All 27 reference curve sets are included');
+        for(const gun of gunNames){
+          change(get('rc_weapon'),gun);
+          const supported=recoilNames.includes(gun);
+          eq(get('rc_analyzer').hidden,!supported,gun+' curve coverage');
+          if(supported){
+            eq(get('rc_stage_table').querySelectorAll('tbody tr').length,3,gun+' three fixed stages');
+            eq(get('rc_shot_table').querySelectorAll('tbody tr').length,30,gun+' all 30 shot values');
+            check(!/NaN|undefined|Infinity/.test(text('rc_analyzer')),gun+' finite outputs');
+          }else check(text('rc_missing').includes('No reference curve data'),gun+' missing curve disclosure');
+        }
+        change(get('rc_class'),'SMG');
+        const smgNames=new Set([...child.querySelectorAll('#wTable tr.rowclick')].filter(row=>row.cells[1].textContent.trim()==='SMG').map(row=>row.dataset.n));
+        check([...get('rc_weapon').options].every(o=>smgNames.has(o.value)),'Class selector filters actual registry');
+        change(get('rc_class'),'all');change(get('rc_weapon'),'M416');change(get('rc_stance'),'standing');
+        for(const [slot,value] of [['muzzle','compensator'],['grip','vertical'],['stock','heavy']]){
+          const button=child.querySelector('[data-rc-slot="'+slot+'"][data-value="'+value+'"]');
+          check(!!button,'Recoil choice '+slot);button.click();
+        }
+        check(text('rc_build_summary').includes('vertical 40% lower'),'Build uses existing additive HELP effects');
+        check(text('rc_build_summary').includes('horizontal 20% lower'),'Horizontal build multiplier matches existing attachments');
+        const firstShot=get('rc_shot_table').querySelector('tbody tr');
+        eq(Number(firstShot.cells[3].textContent),.216,'M416 initial .36 kick with 40% reduction');
+        get('rc_animate').checked=false;get('rc_animate').dispatchEvent(new Event('change'));
+        for(let i=0;i<5;i++)get('rc_fire').click();
+        check(text('rc_sim_count').includes('5 / 5'),'Five independent spray overlays');
+        get('rc_fire').click();check(text('rc_sim_count').includes('1 / 5'),'Sixth spray starts a fresh set');
+        get('rc_reset').click();eq(text('rc_sim_count'),'0 / 5 sprays','Reset clears overlays');
+        change(get('rc_stance'),'crouched');
+        check(text('rc_build_summary').includes('stance ×0.84'),'Existing crouch multiplier is retained');
+        change(get('rc_weapon'),'MG3');
+        eq(get('rc_rate').value,'700','MG3 retains the disputed extracted default');
+        check(text('rc_rate_note').includes('MG3 rate disputed'),'MG3 uncertainty is visible beside its rate');
+        for(const [name,rpm] of [['MP5K',901],['Vector',1101]]){
+          change(get('rc_weapon'),name);
+          check(text('rc_metadata').includes(rpm+' RPM'),'Extracted '+name+' rate reaches analyzer');
+          check(text('rc_rate_note').includes('Extracted reference rate'),'Extracted rate provenance is visible');
+        }
+        change(get('rc_weapon'),'MG3');
+        check(!get('rc_rate_field').hidden,'MG3 alternate rate selector is available');
+        change(get('rc_rate'),'990');
+        check(text('rc_metadata').includes('990 RPM'),'Alternate MG3 rate updates metadata');
+        const shotTwo=get('rc_shot_table').querySelectorAll('tbody tr')[1];
+        check(Math.abs(Number(shotTwo.cells[1].textContent)-60/990)<.00001,'Alternate cadence resamples the curves');
+        change(get('rc_shots'),'10');
+        get('rc_animate').checked=true;get('rc_animate').dispatchEvent(new Event('change'));get('rc_fire').click();
+        check(get('rc_fire').disabled,'Fire is disabled during active cadence animation');
+        await new Promise(resolve=>setTimeout(resolve,750));
+        check(!get('rc_fire').disabled&&text('rc_sim_count').includes('1 / 5'),'Elapsed-time animation completes the 10-shot fast spray');
+        change(get('rc_weapon'),'AWM');
+        check(get('rc_analyzer').hidden,'Unsupported weapon hides model tools');
+        change(get('rc_weapon'),'AKM');
+
+        await open('panel-hit-zone');
+        const guideLink=child.querySelector('#panel-hit-zone a[href="#dg_weapon_class"]');
+        guideLink.click();await new Promise(resolve=>setTimeout(resolve,30));
+        check(get('panel-hit-zone').classList.contains('active'),'Guide jump stays in Combat Lab');
+        check(child.defaultView.location.hash==='#dg_weapon_class','Guide jump has a shareable fragment');
+        const guideTop=get('dg_weapon_class').getBoundingClientRect().top;
+        check(guideTop>=0&&guideTop<child.defaultView.innerHeight,'Guide jump reaches its diagrams immediately');
+        eq(get('dg_class_models').children.length,7,'Seven class models are visible');
+        eq(get('dg_combined_models').children.length,7,'Seven combined models are visible');
+        eq(get('damage-guide').querySelectorAll('svg image').length,15,'Every guide uses the neutral training mannequin');
+        eq(get('dg_combined_models').querySelectorAll('[data-guide-value]').length,91,'All thirteen values on each combined model');
+        change(get('dg_helmet'),'0');
+        eq(get('dg_combined_models').querySelector('[data-guide-class="AR"] [data-guide-value="head"]').textContent,'235%','Helmet affects combined head factor');
+        eq(get('dg_combined_models').querySelector('[data-guide-class="AR"] [data-guide-value="chest"]').textContent,'66%','Helmet does not affect chest factor');
+        change(get('dg_vest'),'0');
+        eq(get('dg_combined_models').querySelector('[data-guide-class="AR"] [data-guide-value="chest"]').textContent,'110%','Vest affects combined chest factor');
+        change(get('hz_weapon'),'M416');change(get('hz_distance'),'100');change(get('hz_helmet'),'2');change(get('hz_vest'),'2');
+        get('hz_body').querySelector('[data-hit-zone="chest"]').dispatchEvent(new child.defaultView.MouseEvent('click',{bubbles:true}));
+        await Promise.resolve();eq(text('dg_actual_damage'),'25.74','Worked formula follows actual selected checkpoint and region');
+        get('dg_copy_gear').click();eq(get('dg_helmet').value,'2','Copy gear takes helmet from Combat Lab');eq(get('dg_vest').value,'2','Copy gear takes vest from Combat Lab');
+        await Promise.all([...get('damage-guide').querySelectorAll('svg image')].map(el=>new Promise((resolve,reject)=>{
+          const probe=new child.defaultView.Image();probe.onload=()=>probe.naturalWidth===500&&probe.naturalHeight===750?resolve():reject(Error('Guide mannequin dimensions'));probe.onerror=()=>reject(Error('Guide mannequin decode'));probe.src=new URL(el.getAttribute('href'),child.location.href).href;
+        })));
+
+        await open('panel-backpack');
+        change(get('bp_type'),'jammer');
+        change(get('bp_level'),'1');
+        change(get('bp_vest'),'no');
+        eq(text('bp_cap'),'220','Jammer level 1 without vest');
+        change(get('bp_vest'),'yes');
+        eq(text('bp_cap'),'270','Jammer level 1 with vest');
+        const ammo=child.querySelector('input[data-bp="556"]');
+        change(ammo,'100','input');
+        eq(text('bp_used'),'50.0','100 rounds 5.56 inventory weight');
+        eq(text('bp_rem'),'220.0','Remaining carry capacity');
+        get('bp_clear').click();
+        eq(text('bp_used'),'0.0','Backpack Clear button');
+
+        // Decode the asset through real Chromium so an SVG typo/404 cannot pass
+        // solely through static-manifest checks.
+        // Verify the complete shipped weapon illustration catalogue decodes at 960x320.
+        const catalog=child.defaultView.HELP_VISUAL_WEAPONS;
+        check(!!catalog && Object.keys(catalog).length===45,'All 45 exact-name weapon illustrations');
+        // Probe every manifest image in real Chromium, not just new/weapon artwork.
+        // Manifest is already verified by node tests against actual shipped files.
+        const registryRequest=fetch(new URL('assets/visual-manifest.json',child.location.href))
+          .then(res=>{if(!res.ok)throw Error('Asset manifest HTTP '+res.status);return res.json();});
+        registryRequest.then(manifest=>{
+          const fileList=manifest.assets.map(({path,width,height})=>({
+            filename:path.replace(/^assets\//,''),width,height
+          }));
+          return Promise.all(fileList.map(({filename,width,height})=>new Promise((resolve,reject)=>{
+            const probe=new child.defaultView.Image();
+            probe.onload=()=>{
+              if(probe.naturalWidth!==width || probe.naturalHeight!==height){
+                reject(new Error('Wrong decoded artwork dimensions for '+filename));
+              }else resolve();
+            };
+            probe.onerror=()=>reject(new Error('Art failed HTTP/decode: '+filename));
+            probe.src=new URL('assets/'+filename,child.location.href).href;
+          }))).then(()=>fileList.length);
+        }).then(count=>{
+          document.body.dataset.smokeStatus='pass';
+          output.textContent='PASS: eight tools, '+count+' decoded local illustrations including Model 2, calculator regressions';
+        }).catch(error=>{
+          document.body.dataset.smokeStatus='fail';
+          output.textContent='FAIL: '+(error&&error.stack||error);
+        });
+      }catch(e){
+        document.body.dataset.smokeStatus='fail';
+        output.textContent='FAIL: '+(e && e.stack || e);
+      }
+    },100);
+  });
+  setTimeout(()=>{
+    if(document.body.dataset.smokeStatus==='pending'){
+      document.body.dataset.smokeStatus='fail';
+      output.textContent='FAIL: Toolkit iframe never became ready';
+    }
+  },7000);
+})();
+</script>
+</body>
+</html>

@@ -139,3 +139,30 @@ Existing Discord /interactions & /api/sync --> shared rate-limited PUBG data col
 ```
 
 Ordinary website reads use saved Supabase data and never spend PUBG API capacity. Explicit **Refresh from PUBG** requests run through a server-side Vercel function, an additional web cooldown and the same atomic shared PUBG request limit as Discord. Unknown gamertags are checked on Xbox and PSN once; known account IDs and platforms are reused. No 2D replays will be built.
+
+
+## HELP Clan training toolkit merger (4 November 2026)
+
+Target: one PUBG Command Centre web address. Keep source modular: official
+player/match statistics stay in the existing Supabase/Discord server, while
+weapon, sensitivity, hit-zone, recoil and backpack tools run as standalone
+client-side pages under /training/.
+
+- [x] Confirm original HELP-Clan-PUBG-Toolkit GitHub repository is public and user-owned.
+- [x] Pin its public source to a stable commit without modifying creator-built maths or using additional API keys.
+- [x] Import all 267 training files, including creator source sections, publisher artwork, asset credits, research and original tests, into the namespaced /training/ directory.
+- [x] Add accessible navigation to Training from the Command Centre sidebar and overview and back to player stats/match replays.
+- [x] Use static Vercel routing within the existing project, with no increase beyond 12 serverless functions.
+- [x] Verify 198/198 original source tests and the original real-Chrome eight-tool core smoke before applying namespaced navigation.
+- [x] Validate preserved assets, source attribution, redirect/route configuration and 12-function cap.
+- [x] Verify combined GitHub PR branch with standard Node and real desktop/mobile Chromium smoke checks (run 41753197183).
+- [ ] Verify the combined /training/ route on a READY Vercel production deployment matching the merge commit, including its asset URLs.
+- [ ] Inspect trainer↔statistics navigation, original calculation examples and responsive layout on production Chrome, Android and physical Xbox Edge.
+- [ ] Resolve the inherited optional 320px hit-zone preview failure, which currently cannot load the neutral mannequin. Original calculator data remains unchanged.
+- [ ] Check 2026 weapon/attachment data freshness against its source methodology before implying exact current-patch values; retain provenance and "unknown" distinctions.
+- [ ] Reassess branding/cosmetic consistency and a possible old-domain redirect only after production acceptance. Keep the old HELP repository and Vercel address available for rollback; do not delete without a separate explicit request.
+
+The toolkit contains creator-derived sensitivity/recoil/TTK models. They are
+not official API stat measurements and must not be silently blended with
+saved PUBG lifetime/season/player records. Publisher artwork attribution
+and empirical-model disclosure remain available in training documents.

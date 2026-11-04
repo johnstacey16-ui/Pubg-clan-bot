@@ -1,0 +1,179 @@
+<!-- Hit Zone Explorer: canonical front-view markup; keep embedded index.html version synchronized. -->
+<div id="panel-hit-zone" class="hub-main" aria-hidden="true">
+  <div class="wrap">
+    <div class="eyebrow">Combat · Hit Zone Damage</div>
+    <h1>Hit Zone Damage Explorer</h1>
+    <p class="sub">Choose a weapon, helmet, vest and measured distance. Damage for every body zone is visible at once. Select a zone only for more detail.</p>
+    <div class="hz-workspace">
+      <div class="hz-tools">
+    <div class="card">
+      <div class="toolbar" aria-label="Damage explorer controls">
+        <div class="field"><label for="hz_weapon">Weapon</label><select id="hz_weapon"></select></div>
+        <div class="field"><label for="hz_distance">Recorded distance</label><select id="hz_distance"></select></div>
+        <div class="field"><label for="hz_helmet">Helmet</label><select id="hz_helmet">
+          <option value="0">None</option><option value="1">Level 1</option>
+          <option value="2">Level 2</option><option value="3">Level 3</option>
+        </select></div>
+        <div class="field"><label for="hz_vest">Vest</label><select id="hz_vest">
+          <option value="0">None</option><option value="1">Level 1</option>
+          <option value="2">Level 2</option><option value="3">Level 3</option>
+        </select></div>
+        <div class="field"><label for="hz_mode">Display</label><select id="hz_mode">
+          <option value="damage">Damage</option><option value="htk">Hits to kill</option>
+          <option value="heatmap">Heatmap + damage</option>
+          <option value="ideal-shells">Shotgun: theoretical minimum shells (all pellets hit)</option>
+        </select></div>
+      </div>
+      <p id="hz_status" class="note" role="status" aria-live="polite">Explorer preview: select a weapon and equipment after integration.</p>
+    </div>
+    <section class="card hz-results" aria-label="Text equivalent of all hit-zone values">
+      <div class="section-h">All zone results</div>
+      <div class="hz-table-scroll"><table><caption>All thirteen hit zones for the selected weapon and armour. Select a body zone for the optional multiplier breakdown.</caption><thead><tr><th scope="col">Hit zone</th><th scope="col">Value</th><th scope="col">Protection</th></tr></thead>
+      <tbody id="hz_rows"></tbody></table></div>
+    </section>
+      <details class="card hz-detail-card" aria-label="Damage calculations">
+        <summary>Selected zone — calculation details</summary>
+        <div id="hz_summary" aria-live="polite">Choose a loadout to see every hit-zone value.</div>
+        <div id="hz_detail">Select any body region to inspect the calculation.</div>
+      </details>
+      </div>
+      <section class="card hz-figure-card" aria-label="Front-view hit zone map">
+        <div class="section-h">Front view — all zones</div>
+        <svg id="hz_body" viewBox="0 0 500 760" role="group" aria-labelledby="hz_bodyTitle hz_bodyDesc" xmlns="http://www.w3.org/2000/svg">
+          <title id="hz_bodyTitle">Front view of PUBG damage hit zones</title>
+          <desc id="hz_bodyDesc">Thirteen anatomically separated hit zones with mirrored limbs. Damage for every zone is always visible in surrounding callouts. Keyboard or touch selection reveals optional detail.</desc>
+          <defs>
+            <linearGradient id="hz-skin" x1="0" y1="0" x2=".75" y2="1">
+              <stop stop-color="#385365"/><stop offset=".50" stop-color="#213845"/><stop offset="1" stop-color="#112532"/>
+            </linearGradient>
+            <linearGradient id="hz-vest-shell" x1="0" x2="1"><stop stop-color="#f5b54d"/><stop offset=".5" stop-color="#fce19a"/><stop offset="1" stop-color="#bd803a"/></linearGradient>
+            <radialGradient id="hz-reticle-glow"><stop stop-color="#168cae" stop-opacity=".16"/><stop offset="1" stop-color="#168cae" stop-opacity="0"/></radialGradient>
+            <pattern id="hz-grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#2a4a59" stroke-opacity=".36" stroke-width=".6"/></pattern>
+          </defs>
+          <rect width="500" height="760" rx="12" fill="#0a151e"/>
+          <rect width="500" height="760" rx="12" fill="url(#hz-grid)"/>
+          <circle cx="250" cy="354" r="253" fill="url(#hz-reticle-glow)"/>
+          <g class="hz-target-grid" stroke="#2f6677" stroke-opacity=".23" fill="none" pointer-events="none">
+            <circle cx="250" cy="335" r="112"/><circle cx="250" cy="335" r="192"/>
+            <path d="M250 20V742M150 335H350M240 31h20M240 738h20"/>
+          </g>
+          <!-- Neutral training mannequin: vector geometry matches the interactive regions. -->
+          <image class="hz-model" href="/assets/damage-training-mannequin.svg" x="0" y="5" width="500" height="750" preserveAspectRatio="xMidYMid meet" aria-hidden="true" pointer-events="none"/>
+          <g class="hz-figure-outline" fill="transparent" stroke="#61c8e2" stroke-opacity=".26" stroke-width="1.8" stroke-linejoin="round">
+            <g data-hit-zone="head" role="button" tabindex="0" aria-label="Head" aria-controls="hz_detail" aria-pressed="false"><ellipse cx="251" cy="76" rx="43" ry="48"/></g>
+            <g data-hit-zone="neck" role="button" tabindex="0" aria-label="Neck" aria-controls="hz_detail" aria-pressed="false"><path d="M231 117 Q251 129 270 118 L273 153 Q250 159 229 153Z"/></g>
+            <g data-hit-zone="clavicle" role="button" tabindex="0" aria-label="Clavicle" aria-controls="hz_detail" aria-pressed="false"><path d="M227 149 L271 149 Q308 154 328 178 L305 199 Q278 181 251 183 Q219 181 196 199 L173 179 Q190 158 227 149Z"/></g>
+            <g data-hit-zone="chest" role="button" tabindex="0" aria-label="Chest" aria-controls="hz_detail" aria-pressed="false"><path d="M196 198 Q219 181 251 183 Q279 181 305 198 L298 268 Q282 284 251 282 Q216 284 207 267Z"/></g>
+            <g data-hit-zone="upperStomach" role="button" tabindex="0" aria-label="Upper stomach" aria-controls="hz_detail" aria-pressed="false"><path d="M207 266 Q228 281 251 281 Q280 281 298 266 L292 310 Q273 320 251 320 Q226 320 213 310Z"/></g>
+            <g data-hit-zone="lowerStomach" role="button" tabindex="0" aria-label="Lower stomach" aria-controls="hz_detail" aria-pressed="false"><path d="M213 310 Q252 324 292 310 L302 357 Q251 369 202 357Z"/></g>
+            <g data-hit-zone="pelvis" role="button" tabindex="0" aria-label="Pelvis" aria-controls="hz_detail" aria-pressed="false"><path d="M202 357 Q249 368 302 357 L316 393 Q302 412 279 409 L251 400 L222 410 Q198 413 187 391Z"/></g>
+            <g data-hit-zone="upperArm" role="button" tabindex="0" aria-label="Upper arm" aria-controls="hz_detail" aria-pressed="false"><path d="M191 170 Q169 156 155 177 Q148 196 145 231 L129 276 Q145 293 171 290 L190 230 Q204 193 191 170Z"/><path d="M309 170 Q331 156 345 177 Q352 196 355 231 L371 276 Q355 293 329 290 L310 230 Q296 193 309 170Z"/></g>
+            <g data-hit-zone="forearm" role="button" tabindex="0" aria-label="Forearm" aria-controls="hz_detail" aria-pressed="false"><path d="M129 276 Q147 291 171 290 L158 349 Q152 378 145 398 L114 389 Q121 350 120 322Z"/><path d="M371 276 Q353 291 329 290 L342 349 Q348 378 355 398 L386 389 Q379 350 380 322Z"/></g>
+            <g data-hit-zone="hand" role="button" tabindex="0" aria-label="Hand" aria-controls="hz_detail" aria-pressed="false"><path d="M114 389 Q130 398 145 398 L150 419 Q151 435 140 443 Q126 448 120 430 L110 419 Q104 410 110 400Z"/><path d="M386 389 Q370 398 355 398 L350 419 Q349 435 360 443 Q374 448 380 430 L390 419 Q396 410 390 400Z"/></g>
+            <g data-hit-zone="thigh" role="button" tabindex="0" aria-label="Thigh" aria-controls="hz_detail" aria-pressed="false"><path d="M222 409 Q249 397 251 401 L248 476 L238 538 Q224 547 209 541 Q190 528 183 499 L183 438 Q185 408 222 409Z"/><path d="M278 409 Q251 397 249 401 L252 476 L262 538 Q276 547 291 541 Q310 528 317 499 L317 438 Q315 408 278 409Z"/></g>
+            <g data-hit-zone="calf" role="button" tabindex="0" aria-label="Calf" aria-controls="hz_detail" aria-pressed="false"><path d="M209 541 Q223 548 238 538 L232 621 L234 697 Q222 714 207 696 L196 618 L192 570Z"/><path d="M291 541 Q277 548 262 538 L268 621 L266 697 Q278 714 293 696 L304 618 L308 570Z"/></g>
+            <g data-hit-zone="foot" role="button" tabindex="0" aria-label="Foot" aria-controls="hz_detail" aria-pressed="false"><path d="M207 696 Q223 712 234 697 L238 720 L240 739 Q214 751 195 744 Q186 736 198 718Z"/><path d="M293 696 Q277 712 266 697 L262 720 L260 739 Q286 751 305 744 Q314 736 302 718Z"/></g>
+          </g>
+          <!-- Coverage aligns to the damage zones; these are not armour's physical dimensions. -->
+          <g class="hz-coverage" data-armour="helmet" aria-hidden="true" pointer-events="none"><ellipse cx="251" cy="76" rx="43" ry="48"/><path d="M231 117 Q251 129 270 118 L273 153 Q250 159 229 153Z"/></g>
+          <g class="hz-coverage" data-armour="vest" aria-hidden="true" pointer-events="none"><path d="M227 149 L271 149 Q308 154 328 178 L305 199 Q278 181 251 183 Q219 181 196 199 L173 179 Q190 158 227 149Z"/><path d="M196 198 Q219 181 251 183 Q279 181 305 198 L298 268 Q282 284 251 282 Q216 284 207 267Z"/><path d="M207 266 Q228 281 251 281 Q280 281 298 266 L292 310 Q273 320 251 320 Q226 320 213 310Z"/><path d="M213 310 Q252 324 292 310 L302 357 Q251 369 202 357Z"/><path d="M202 357 Q249 368 302 357 L316 393 Q302 412 279 409 L251 400 L222 410 Q198 413 187 391Z"/></g>
+          <g class="hz-callouts" aria-hidden="true">
+            <g class="hz-zone-card" data-hz-callout="head" transform="translate(356 47)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-68 32"/>
+              <circle class="hz-leader-dot" cx="-68" cy="32" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Head</text>
+              <text class="hz-chip-value" data-hz-value="head" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="neck" transform="translate(8 120)">
+              <path class="hz-leader" d="M137 18 L142 18 L225 14"/>
+              <circle class="hz-leader-dot" cx="225" cy="14" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Neck</text>
+              <text class="hz-chip-value" data-hz-value="neck" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="clavicle" transform="translate(356 147)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-54 23"/>
+              <circle class="hz-leader-dot" cx="-54" cy="23" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Clavicle</text>
+              <text class="hz-chip-value" data-hz-value="clavicle" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="chest" transform="translate(8 190)">
+              <path class="hz-leader" d="M137 18 L142 18 L204 22"/>
+              <circle class="hz-leader-dot" cx="204" cy="22" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Chest</text>
+              <text class="hz-chip-value" data-hz-value="chest" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="upperArm" transform="translate(8 230)">
+              <path class="hz-leader" d="M137 18 L142 18 L147 13"/>
+              <circle class="hz-leader-dot" cx="147" cy="13" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Upper arm</text>
+              <text class="hz-chip-value" data-hz-value="upperArm" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="upperStomach" transform="translate(356 252)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-70 18"/>
+              <circle class="hz-leader-dot" cx="-70" cy="18" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Upper stomach</text>
+              <text class="hz-chip-value" data-hz-value="upperStomach" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="lowerStomach" transform="translate(8 300)">
+              <path class="hz-leader" d="M137 18 L142 18 L206 16"/>
+              <circle class="hz-leader-dot" cx="206" cy="16" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Lower stomach</text>
+              <text class="hz-chip-value" data-hz-value="lowerStomach" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="forearm" transform="translate(356 315)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-3 18"/>
+              <circle class="hz-leader-dot" cx="-3" cy="18" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Forearm</text>
+              <text class="hz-chip-value" data-hz-value="forearm" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="pelvis" transform="translate(356 365)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-69 4"/>
+              <circle class="hz-leader-dot" cx="-69" cy="4" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Pelvis</text>
+              <text class="hz-chip-value" data-hz-value="pelvis" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="hand" transform="translate(8 406)">
+              <path class="hz-leader" d="M137 18 L142 18 L126 0"/>
+              <circle class="hz-leader-dot" cx="126" cy="0" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Hand</text>
+              <text class="hz-chip-value" data-hz-value="hand" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="thigh" transform="translate(356 456)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-64 19"/>
+              <circle class="hz-leader-dot" cx="-64" cy="19" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Thigh</text>
+              <text class="hz-chip-value" data-hz-value="thigh" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="calf" transform="translate(8 571)">
+              <path class="hz-leader" d="M137 18 L142 18 L191 9"/>
+              <circle class="hz-leader-dot" cx="191" cy="9" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Calf</text>
+              <text class="hz-chip-value" data-hz-value="calf" x="11" y="32">—</text>
+            </g>
+          <g class="hz-zone-card" data-hz-callout="foot" transform="translate(356 685)">
+              <path class="hz-leader" d="M-1 18 L-6 18 L-56 16"/>
+              <circle class="hz-leader-dot" cx="-56" cy="16" r="3"/>
+              <rect class="hz-chip-frame" width="137" height="38" rx="6"/>
+              <text class="hz-chip-name" x="11" y="14">Foot</text>
+              <text class="hz-chip-value" data-hz-value="foot" x="11" y="32">—</text>
+            </g>
+          </g>
+          <text class="hz-plate-caption" x="250" y="749" text-anchor="middle">HELP CLAN / FRONT-ONLY HIT-ZONE REFERENCE</text>
+        </svg>
+        <p class="hz-caption">Both left and right limbs use the same hit-zone values. Coverage tints mark modeled protected hit zones, not the physical dimensions of equipment. Damage values are from published distance checkpoints.</p>
+      </section>
+    </div>
+  </div>
+</div>

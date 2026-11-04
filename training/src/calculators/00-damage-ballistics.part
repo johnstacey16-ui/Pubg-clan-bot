@@ -1,0 +1,394 @@
+
+// ==================================================================
+// EXTENSION PANELS: Range, TTK, Recoil Analyzer, Attachments, Backpack, Data
+// ==================================================================
+(function(){
+// Only PT.WEAPONS and PT.WBYNAME (exposed by the Combat & Armor Intelligence script above) are used
+// here — everything else in this script is self-contained.
+// ==================================================================
+
+/* ---------------- shared damage model ---------------- */
+// Per-class hit-area × class-multiplier system, reverse-engineered from pubgstatistics.com's published
+// "Damage multipliers" tables and cross-checked exactly (every body part, to the decimal) against the
+// AKM, M416, M16A4, Vector, UMP, M249, RPD, VSS, and M24 weapon pages on 2026-09-10.
+// Full 13-body-part table — Pelvis is its own class-multiplier bucket, distinct from the other torso
+// parts, since LMG's pelvis multiplier (100%) differs from its chest/clavicle/stomach multiplier (105%).
+// "armored" marks whether the selected armor level applies: helmets cover head/neck, vests cover
+// clavicle/chest/upper+lower stomach/pelvis, nothing covers the arms or legs.
+const BODY_PARTS = {
+  head:         {label:"Head",          hitArea:1.00, bucket:"head",  armored:true},
+  neck:         {label:"Neck",          hitArea:0.75, bucket:"head",  armored:true},
+  clavicle:     {label:"Clavicle",      hitArea:1.00, bucket:"torso", armored:true},
+  chest:        {label:"Chest",         hitArea:1.10, bucket:"torso", armored:true},
+  upperStomach: {label:"Upper stomach", hitArea:1.00, bucket:"torso", armored:true},
+  lowerStomach: {label:"Lower stomach", hitArea:0.95, bucket:"torso", armored:true},
+  pelvis:       {label:"Pelvis",        hitArea:1.00, bucket:"pelvis",armored:true},
+  upperArm:     {label:"Upper arm",     hitArea:0.60, bucket:"limb",  armored:false},
+  forearm:      {label:"Forearm",       hitArea:0.50, bucket:"limb",  armored:false},
+  hand:         {label:"Hand",          hitArea:0.30, bucket:"limb",  armored:false},
+  thigh:        {label:"Thigh",         hitArea:0.60, bucket:"limb",  armored:false},
+  calf:         {label:"Calf",          hitArea:0.50, bucket:"limb",  armored:false},
+  foot:         {label:"Foot",          hitArea:0.30, bucket:"limb",  armored:false},
+  limb:         {label:"Limbs (avg.)",  hitArea:0.60, bucket:"limb",  armored:false}, // simple-mode alias = upper arm/thigh figure
+};
+const SIMPLE_PARTS = ["head","chest","limb"];
+const DETAILED_PARTS = ["head","neck","clavicle","chest","upperStomach","lowerStomach","pelvis","upperArm","forearm","hand","thigh","calf","foot"];
+const CLASS_MULT_DETAILED = {
+  AR:     {head:2.35, torso:1.00, pelvis:1.00, limb:0.90},
+  DMR:    {head:2.35, torso:1.05, pelvis:1.05, limb:0.95},
+  SR:     {head:2.50, torso:1.30, pelvis:1.30, limb:0.95},
+  MG:     {head:2.30, torso:1.05, pelvis:1.00, limb:0.90}, // "LMG" on the site; MG is this toolkit's existing class label
+  SMG:    {head:2.10, torso:1.05, pelvis:1.05, limb:1.30},
+  Pistol: {head:2.10, torso:1.00, pelvis:1.00, limb:1.05}, // site's "Handgun" class
+  SG:     {head:1.50, torso:0.90, pelvis:0.90, limb:1.05}, // site's "Shotgun" class — shotguns' pellet mechanic isn't modeled here regardless
+};
+// Per-weapon head-multiplier overrides. pubgstatistics.com's Dragunov page lists a 2.80 head multiplier
+// (53 base -> 148.4 unarmoured headshot at 0m) instead of the 2.35 DMR class value; its Mk12 and Mk14 pages
+// show the normal 2.35. Only weapons whose page was checked are listed — other weapons' multiplier columns
+// have not been individually re-verified. Applies to head and neck (both use the head bucket).
+const WEAPON_HEAD_MULT = {"SVD Dragunov":2.80};
+// Real per-weapon falloff tables [distance_m, baseDamage], sourced directly from each weapon's
+// pubgstatistics.com page (fetched 2026-09-10, patch 42.3 data unless the page said otherwise). Every
+// distances outside published checkpoints are deliberately unknown; there is no generic falloff.
+const FALLOFF_TABLES = {
+  "AWM":  [[0,105.0],[100,105.0],[150,104.9],[200,104.2],[250,103.1],[300,101.9],[400,99.4],[500,97.0]],
+  "AKM":  [[0,48.0],[25,48.0],[50,48.0],[100,45.5],[150,42.4],[200,39.3],[250,37.0],[300,36.0],[400,36.0],[500,36.0]],
+  "M416": [[0,40.0],[25,40.0],[50,40.0],[100,39.0],[150,37.5],[200,35.8],[250,34.1],[300,32.5],[400,30.3],[450,30.0]],
+  "M16A4":[[0,43.0],[25,43.0],[50,43.0],[100,42.8],[150,41.6],[200,39.9],[250,37.8],[300,35.8],[400,32.7],[500,32.3]],
+  "Vector":[[0,31.0],[25,28.1],[50,24.5],[100,20.4],[150,18.9],[200,18.6],[250,18.6],[275,18.6]],
+  "UMP9": [[0,42.0],[25,41.5],[50,39.8],[100,34.5],[150,30.8],[200,29.5],[250,29.4]],
+  "M249": [[0,41.0],[25,41.0],[50,41.0],[100,40.4],[150,39.0],[200,37.3],[250,35.7],[300,34.3],[400,32.8],[500,32.8]],
+  "RPD":  [[0,43.0],[25,43.0],[50,42.9],[100,41.8],[150,40.6],[200,39.3],[250,38.1],[300,36.9],[400,34.6],[500,34.4]],
+  "VSS Vintorez":[[0,45.0],[25,45.0],[50,45.0],[100,44.1],[150,42.7],[200,41.3],[250,40.5],[300,40.5],[400,40.5],[500,40.5]],
+  "M24":  [[0,75.0],[25,75.0],[50,75.0],[100,75.0],[150,74.8],[200,74.4],[250,74.0],[300,73.6],[400,72.8],[500,72.0]],
+  "O12":  [[2,98.7],[25,92.2],[50,88.8]],
+  "Kar98k":[[0,79.0],[25,79.0],[50,79.0],[100,79.0],[150,78.5],[200,78.0],[250,77.5],[300,77.0],[400,76.0],[500,75.1]],
+  "R1895":[[0,64.0],[25,63.4],[50,62.9],[100,61.8]],
+  "Desert Eagle":[[0,62.0],[25,62.0],[45,60.1]],
+  "MK47 Mutant":[[0,49.0],[25,49.0],[50,49.0],[100,48.2],[150,45.8],[200,43.2],[250,40.8],[300,38.7],[400,36.8],[450,36.8]],
+  "Groza":[[0,47.0],[25,47.0],[50,47.0],[100,46.5],[150,45.0],[200,43.2]],
+  "SLR":  [[0,49.0],[25,49.0],[50,49.0],[100,49.0],[150,47.9],[200,46.4],[250,44.9],[300,43.4],[400,40.5],[500,38.2]],
+  "SKS":  [[0,47.0],[25,47.0],[50,47.0],[100,46.9],[150,45.7],[200,44.3],[250,43.0],[300,41.7],[400,39.0],[500,37.6]],
+  "Beryl M762":[[0,44.0],[25,44.0],[50,44.0],[100,41.7],[150,38.9],[200,36.0],[250,33.9],[300,33.0],[350,33.0]],
+  "ACE 32":[[0,43.0],[25,43.0],[50,43.0],[100,40.8],[150,38.0],[200,35.2],[250,33.2],[300,32.3],[350,32.3]],
+  "SCAR-L":[[0,42.0],[25,42.0],[50,42.0],[100,41.3],[150,40.0],[200,38.4],[250,36.7],[300,35.3],[350,33.8]],
+  "QBZ95":[[0,42.0],[25,42.0],[50,42.0],[100,40.4],[150,38.5],[200,36.8],[250,35.4],[300,34.0],[400,32.1]],
+  "Mini 14":[[0,42.0],[25,42.0],[50,42.0],[100,41.7],[150,40.3],[200,38.9],[250,37.5],[300,36.0],[400,33.2],[500,33.2]],
+  "MG3":  [[0,42.0],[25,42.0],[50,42.0],[100,40.8],[150,39.6],[200,38.4],[250,37.2],[300,36.1],[400,33.9]],
+  "K2":   [[0,41.0],[25,41.0],[50,41.0],[100,40.3],[150,38.8],[200,37.3],[250,35.3],[275,34.3]],
+  "G36C": [[0,41.0],[25,41.0],[50,41.0],[100,40.3],[150,38.9],[200,37.3],[250,35.6]],
+  "AUG A3":[[0,40.0],[25,40.0],[50,40.0],[100,39.1],[150,37.6],[200,35.9],[250,34.2],[300,32.6],[400,30.4]],
+  "FAMAS":[[0,39.0],[25,39.0],[50,39.0],[100,38.8],[150,37.6],[200,36.1],[225,35.5]],
+  "Tommy Gun":[[0,40.0],[25,39.3],[50,37.7],[100,33.4],[150,29.8],[160,29.2]],
+  "JS9":  [[0,32.0],[25,31.9],[50,31.4],[100,27.4],[150,22.1],[200,19.7],[250,19.4],[275,19.2]],
+  "MP5K": [[0,32.0],[25,31.4],[50,29.5],[100,24.9],[150,21.0],[200,19.2],[250,19.2],[275,19.2]],
+  "P90":  [[0,35.0],[25,35.0],[50,35.0],[100,33.3],[150,31.6],[200,29.9]],
+  "MP9":  [[0,31.0],[25,28.6],[50,25.3],[100,21.1],[120,20.2]],
+  "Micro Uzi":[[0,26.0],[25,23.9],[50,21.2],[100,17.6],[120,16.9]],
+  // Added 2026-10-22 from each weapon's pubgstatistics.com page (patch 43.1/43.2). Beyond the last point the
+  // site says damage is unknown; no values are now generated past the last measured checkpoint.
+  "Mk12":[[0,43.0],[25,43.0],[50,42.9],[100,41.7],[150,40.4],[200,39.2],[250,37.9],[300,36.6],[400,34.1],[500,34.0]],
+  "MK14 EBR":[[0,54.0],[25,54.0],[50,54.0],[100,54.0],[150,53.5],[200,52.3],[250,50.9],[300,49.5],[400,47.0],[500,45.9]],
+  "SVD Dragunov":[[0,53.0],[25,53.0],[50,53.0],[100,51.9],[150,49.8],[200,47.8],[250,45.8],[300,43.8],[400,39.8],[500,39.8]],
+  "Lynx AMR":[[2,118.0],[25,118.0],[50,118.0],[100,118.0],[150,117.9],[200,117.1],[250,115.8],[300,114.5],[350,113.1]],
+  "G18C":[[0,23.0],[25,21.6],[50,20.4],[60,20.1]],
+  "P92":[[0,34.0],[25,33.0],[50,32.0],[90,30.4]],
+  "Skorpion":[[0,22.0],[25,22.0],[50,21.0],[90,18.4]],
+};
+// Strict evidence policy: numerical range results require an actual source checkpoint.
+function measuredValueAt(rows, range){
+  if(!rows || !Number.isFinite(range)) return null;
+  const point = rows.find(([metres]) => metres === range);
+  return point ? point[1] : null;
+}
+function sourcedRangeRows(w){
+  return FALLOFF_TABLES[w.name] || PELLET_FALLOFF[w.name] || null;
+}
+// Bullet drop, sourced from winnermeta.win telemetry-based flight-time estimates (2026 snapshots).
+// WinnerMeta computes estimated gravity displacement using 1/2*g*t^2, not measured bullet impacts,
+// aim-point deviation, sight zero, or scope holdover. The 200/400/600 keys are the START of
+// 200–250/400–450/600–650m aggregate buckets, not observations precisely at their start.
+// 0m is a mathematical zero; no interpolation or extension between or beyond published buckets.
+// This is beta telemetry from a rolling 14-day sample, not a fixed-patch official figure.
+const DROP_TABLES = {
+  "AUG A3": [[0,0],[200,35.2],[400,177.6]],
+  "AKM":    [[0,0],[200,66.0],[400,341.6]],
+  "M416":   [[0,0],[200,36.0],[400,187.7]],
+  "AWM":    [[0,0],[200,27.1],[400,123.0],[600,290.1]],
+  "Kar98k": [[0,0],[200,44.1],[400,172.3],[600,404.0]],
+  "Vector": [[0,0],[200,198.2],[400,1595.5]],
+  "M24":    [[0,0],[200,40.4],[400,168.8],[600,429.3]],
+  "Beryl M762":[[0,0],[200,55.0],[400,291.7]],
+  "SCAR-L": [[0,0],[200,36.8],[400,197.6]],
+  "M249":   [[0,0],[200,35.2],[400,172.9],[600,504.8]],
+  "UMP9":   [[0,0],[200,218.0],[400,961.8]],
+  "Groza":  [[0,0],[200,55.0]],
+  "Mini 14":[[0,0],[200,27.8],[400,145.0],[600,446.0]],
+  "SKS":    [[0,0],[200,44.4],[400,198.2],[600,563.6]],
+  "K2":     [[0,0],[200,43.8]],
+  "QBZ95":  [[0,0],[200,34.9],[400,176.7]],
+  // Added 2026-10-22 from winnermeta.win weapon pages (14-day rolling windows, Jul-Sep 2026 snapshots).
+  "MG3":    [[0,0],[200,44.1],[400,179.9]],
+  "Mk12":   [[0,0],[200,35.2],[400,178.2],[600,561.0]],
+  "VSS Vintorez":[[0,0],[200,139.7],[400,525.9],[600,1231.0]],
+  "MP9":    [[0,0],[200,197.6]],
+  "G36C":   [[0,0],[200,35.6]],
+  // Added 2026-10-25: WinnerMeta telemetry-derived 50m distance-bin gravity estimates.
+  // Integer keys (200,400,600) are BUCKET STARTS, not exact-distance measurements.
+  "RPD":    [[0,0],[200,45.9],[400,203.2]],
+  "ACE 32": [[0,0],[200,58.7],[400,317.1]],
+  "M16A4":  [[0,0],[200,35.2],[400,177.0]],
+  "MK14 EBR":[[0,0],[200,35.2],[400,158.6]],
+  "SVD Dragunov":[[0,0],[200,44.1],[400,183.5],[600,512.8]],
+  "MK47 Mutant":[[0,0],[200,54.7],[400,265.4]],
+  "P90":    [[0,0],[200,66.4]],
+  "MP5K":   [[0,0],[200,219.3]],
+  "FAMAS":  [[0,0],[200,34.9]],
+};
+// WinnerMeta's own independently-measured muzzle velocity, for comparison against this toolkit's supplied
+// value — shown as a secondary reference, not used to override the supplied WEAPONS velocity anywhere.
+const MEASURED_MUZZLE_VEL = {"AUG A3":927, "AKM":762, "M416":921, "AWM":1009, "Kar98k":823, "Vector":389, "M24":860, "Beryl M762":786, "SCAR-L":916, "M249":953, "UMP9":368, "Groza":764, "Mini 14":1057, "SKS":845, "K2":924, "QBZ95":962, "MG3":860, "Mk12":955, "VSS Vintorez":440, "MP9":405, "G36C":927};
+// PUBG 43.2 extracted muzzle velocity: separate from WinnerMeta's derived gravity estimates.
+const GAME_MUZZLE_VEL_43_2 = {
+  "Lynx AMR":1200, "AWM":945, "O12":625, "Kar98k":760, "M24":790,
+  "R1895":330, "Desert Eagle":450, "MK14 EBR":853, "SVD Dragunov":830,
+  "MK47 Mutant":780, "SLR":870, "AKM":715, "Groza":715, "SKS":800,
+  "VSS Vintorez":430, "Beryl M762":715, "M16A4":900, "ACE 32":720,
+  "Mk12":900, "SCAR-L":870, "QBZ95":870, "Mini 14":990, "UMP9":400,
+  "MG3":820, "K2":880, "G36C":870, "M249":915, "M416":880,
+  "AUG A3":890, "Tommy Gun":280, "FAMAS":925, "P90":716, "P92":380,
+  "MP5K":400, "JS9":400, "MP9":400, "DBS":360, "Micro Uzi":350,
+  "S686":370, "S12K":350, "G18C":375, "Skorpion":350,
+  "Sawn-off":330, "RPD":735
+};
+function knownMuzzleVelocity(w){
+  return GAME_MUZZLE_VEL_43_2[w.name] ?? MEASURED_MUZZLE_VEL[w.name] ?? null;
+}
+// Physical lower bound for a projectile fired toward a range marker:
+// the projectile cannot arrive quicker than straight-line distance at its
+// initial muzzle speed if air drag slows it. This is *not* in-game flight
+// time, not a drag simulation, and does not fill unpublished gravity-estimate checkpoints.
+function minimumIdealFlightTime(w,range){
+  const speed=knownMuzzleVelocity(w);
+  return Number.isFinite(range) && range>=0 && Number.isFinite(speed) && speed>0
+    ? range/speed : null;
+}
+function hasDropData(w){ return DROP_TABLES[w.name] != null; }
+function dropAtRange(w, range){
+  return measuredValueAt(DROP_TABLES[w.name], range);
+}
+function hasExactFalloff(w){ return FALLOFF_TABLES[w.name] != null; }
+// Shotguns fire multiple pellets per trigger pull; the WEAPONS array's dmg field for these four is a
+// single pellet's damage (matches pubgstatistics.com's per-pellet figure), not the shot's total output.
+// Counts/per-pellet damage sourced from pubgstatistics.com's "X-Y base damage (one pellet up to the full
+// pattern)" wording, fetched 2026-09-10: DBS 28-252, S686 26-234, S12K 23-207, Sawn-off 21-168.
+// Current 43.2 game-file extract says Sawn-off fires NINE pellets per shell.
+// The pubgstatistics.com 21–168 display implies eight; that headline range
+// conflicts with the newer raw gun-file pellet count, so use the game-file
+// count of 9 without fabricating pellet-hit distribution. Older wikis also
+// describe an eight-pellet historical setup. O12 fires a slug, not pellets.
+const SHOTGUN_PELLETS = {
+  "DBS":{count:9, dmgPerPellet:28},
+  "S686":{count:9, dmgPerPellet:26},
+  "S12K":{count:9, dmgPerPellet:23},
+  "Sawn-off":{count:9, dmgPerPellet:21},
+};
+// Per-PELLET damage falloff [distance_m, damagePerPellet] from each shotgun's pubgstatistics.com page
+// (patch 43.1/43.2, fetched 2026-10-22; "Shotgun values are per pellet"). Measured range only: DBS to 70m,
+// S686 to 80m, S12K to 70m, Sawn-off to 50m — the site states damage past that is unknown. Per-pellet damage
+// really does fall hard with range (S12K 23.0 -> 9.8 by 25m), which the earlier model ignored: it applied
+// only a spread-based hit fraction to flat full-pattern damage.
+const PELLET_FALLOFF = {
+  "DBS":     [[0,28.0],[5,27.9],[10,26.4],[15,24.4],[20,22.3],[25,20.3],[30,18.5],[35,16.9],[40,16.2],[45,15.7],[50,15.0],[55,14.4],[60,13.8],[65,13.4],[70,13.0]],
+  "S686":    [[0,26.0],[5,26.0],[10,23.3],[15,19.3],[20,17.8],[25,16.4],[30,15.2],[35,14.2],[40,13.2],[45,12.3],[50,11.5],[55,10.7],[60,9.8],[65,9.1],[70,8.4],[75,7.7],[80,6.9]],
+  "S12K":    [[0,23.0],[5,21.7],[10,18.6],[15,15.1],[20,11.7],[25,9.8],[30,8.4],[35,7.8],[40,7.4],[45,7.1],[50,6.8],[55,6.4],[60,6.0],[65,5.7],[70,5.4]],
+  "Sawn-off":[[0,21.0],[2,21.0],[4,20.9],[6,20.4],[8,19.3],[10,17.9],[12,16.6],[14,15.0],[16,13.6],[18,12.3],[20,11.5],[22,11.2],[24,10.9],[26,10.7],[28,10.4],[30,10.2],[32,10.0],[34,9.7],[36,9.5],[38,9.3],[40,9.0],[42,8.8],[44,8.5],[46,8.3],[48,8.2],[50,8.0]],
+};
+// Historical spread estimates were retired. Old cone-angle tables and assumed
+// target widths do not verify how many shotgun pellets actually hit a player.
+function baseDamageAtRange(w, range){
+  // Per-pellet damage is not actual whole-shot damage.
+  if(SHOTGUN_PELLETS[w.name]) return null;
+  return measuredValueAt(FALLOFF_TABLES[w.name], range);
+}
+function armorMultFor(part, level){
+  if(!part.armored) return 1.00;
+  return {0:1.00,1:0.70,2:0.60,3:0.45}[level] ?? 1.00;
+}
+function finalDamageAt(w, range, hitbox, armorLevel, stance){
+  const base = baseDamageAtRange(w, range, stance);
+  if(base == null) return null;
+  const part = BODY_PARTS[hitbox] || BODY_PARTS.chest;
+  const cm = CLASS_MULT_DETAILED[w.cls] || CLASS_MULT_DETAILED.AR;
+  const classMult = (part.bucket==="head" && WEAPON_HEAD_MULT[w.name]) || cm[part.bucket];
+  const beforeArmor = base * part.hitArea * classMult;
+  return beforeArmor * armorMultFor(part, armorLevel);
+}
+// Minimum shells needed in the idealized case that EVERY pellet connects
+// with the selected hitbox. This is a mathematical lower bound, not an
+// in-match prediction: hit probability and pellet spread are NOT modelled.
+// Only available at published per-pellet damage checkpoints.
+function shotgunMinShellsAt(w,range,hitbox,armorLevel){
+  const config=SHOTGUN_PELLETS[w.name];
+  const perPellet=measuredValueAt(PELLET_FALLOFF[w.name],range);
+  if(!config || perPellet==null || !Number.isInteger(config.count) || config.count<=0) return null;
+  const part=BODY_PARTS[hitbox] || BODY_PARTS.chest;
+  const multipliers=CLASS_MULT_DETAILED[w.cls];
+  if(!part || !multipliers) return null;
+  const classMult=(part.bucket==="head" && WEAPON_HEAD_MULT[w.name]) || multipliers[part.bucket];
+  if(!Number.isFinite(classMult) || !Number.isFinite(part.hitArea)) return null;
+  const damageIfAllConnect=perPellet*config.count*part.hitArea*classMult*armorMultFor(part,armorLevel);
+  return htkFor(damageIfAllConnect);
+}
+function htkFor(dmg){ return dmg == null ? null : (dmg>0 ? Math.ceil(100/dmg) : null); }
+function pureTtk(htk, rpm){ return htk == null ? null : (htk>1 ? (htk-1)/(rpm/60) : 0); }
+
+// ================= HIT ZONE EXPLORER DATA ADAPTER =================
+// Pure, side-effect-free bridge between the established damage functions and
+// the forthcoming all-at-once front-view body map. No UI/DOM references.
+// Standard helmet and vest levels independently cover their documented zones.
+// Intact equipment only; no armour-durability simulation.
+function hitZoneEquipmentType(part){
+  if(!part.armored) return "None";
+  return part.bucket==="head" ? "Helmet" : "Vest";
+}
+function armorLevelForHitZone(part, helmetLevel, vestLevel){
+  const gear=hitZoneEquipmentType(part);
+  return gear==="Helmet" ? helmetLevel : (gear==="Vest" ? vestLevel : 0);
+}
+function getAllZoneDamageForWeapon(w, distance, helmetLevel, vestLevel){
+  // A malformed selection must never silently display unarmoured damage.
+  for(const [key,level] of [["helmet",helmetLevel],["vest",vestLevel]]){
+    if(!Number.isInteger(level) || level<0 || level>3)
+      throw new RangeError(key+" level must be an integer from 0 to 3");
+  }
+  if(!w || typeof w.name!=="string" || !CLASS_MULT_DETAILED[w.cls])
+    throw new TypeError("A known weapon class and name are required");
+
+  const checkpoint=measuredValueAt(sourcedRangeRows(w),distance);
+  const isPelletShotgun=Boolean(SHOTGUN_PELLETS[w.name]);
+  // A shotgun's published value is *per pellet*; actual total pellet
+  // connections, whole-shell damage, and HTK are unknown.
+  const sourceStatus=checkpoint==null ? "no-data" :
+    (isPelletShotgun ? "per-pellet-only" : "measured-checkpoint");
+  const classBuckets=CLASS_MULT_DETAILED[w.cls];
+  return DETAILED_PARTS.map(id=>{
+    const part=BODY_PARTS[id];
+    const gear=hitZoneEquipmentType(part);
+    const armorLevel=armorLevelForHitZone(part,helmetLevel,vestLevel);
+    const classMultiplier=(part.bucket==="head" && WEAPON_HEAD_MULT[w.name]) ||
+      classBuckets[part.bucket];
+    const damage=sourceStatus==="measured-checkpoint"
+      ? finalDamageAt(w,distance,id,armorLevel) : null;
+    return {
+      id, label:part.label,
+      damage, htk:damage==null ? null : htkFor(damage),
+      // Separately labelled lower bound; all pellets must hit this exact zone
+      // for every shell. Never a prediction of real shotgun damage/HTK.
+      idealMinShells:isPelletShotgun && sourceStatus==="per-pellet-only"
+        ? shotgunMinShellsAt(w,distance,id,armorLevel) : null,
+      hitAreaMultiplier:part.hitArea,
+      classMultiplier,
+      armorMultiplier:armorMultFor(part,armorLevel),
+      armorLevel,
+      armorSource:armorLevel>0 ? gear : "None",
+      armorSlot:gear,
+      sourceStatus
+    };
+  });
+}
+
+// PUBG's 2026 Dev Letter explicitly publishes *post-42.3* base reloads:
+// RPD 5.2s, M249 5.962s. These values already reflect the LMG balance
+// changes, so NEVER apply the patch's approximate extra -25% to them.
+// MG3 animation duration was not separately verified: no precise TTK with
+// reload is claimed for MG3. Leave the original w.reload entries untouched
+// for provenance / rollback; calculation uses the override below.
+const LMG_RELOAD_2026 = Object.freeze({"RPD":5.2,"M249":5.962,"MG3":null});
+function reloadSecondsForWeapon(w){
+  if(Object.prototype.hasOwnProperty.call(LMG_RELOAD_2026,w.name))
+    return LMG_RELOAD_2026[w.name];
+  return Number.isFinite(w.reload) && w.reload>0 ? w.reload : null;
+}
+function debounce(fn, ms){
+  let t;
+  return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), ms); };
+}
+function setBar(id, value, max){
+  const bar = document.getElementById(id+"_bar");
+  if(!bar) return;
+  const pct = max>0 ? Math.min(100, Math.max(0, (value/max)*100)) : 0;
+  bar.style.width = (isFinite(pct)?pct:0)+"%";
+}
+function fillWeaponSelect(sel, def){
+  sel.innerHTML = PT.WEAPONS.map(w=>`<option ${w.name===def?'selected':''}>${w.name}</option>`).join("");
+}
+function fillHitboxSelect(sel, detailed, keepValue){
+  const ids = detailed ? DETAILED_PARTS : SIMPLE_PARTS;
+  const prev = keepValue || sel.value;
+  sel.innerHTML = ids.map(id=>`<option value="${id}">${BODY_PARTS[id].label}</option>`).join("");
+  sel.value = ids.includes(prev) ? prev : (detailed ? "chest" : "chest");
+}
+function drawLineChart(canvas, series, opts={}){
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height, pad = 36;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = "#0f161d"; ctx.fillRect(0,0,W,H);
+  const allY = series.flatMap(s=>s.data.map(p=>p.y));
+  const minY = Math.min(0,...allY), maxY = Math.max(...allY,1);
+  const allX = series.flatMap(s=>s.data.map(p=>p.x));
+  const minX = Math.min(...allX), maxX = Math.max(...allX);
+  const xAt = x => pad + (W-2*pad) * ((x-minX)/(maxX-minX||1));
+  const yAt = y => H-pad - (H-2*pad) * ((y-minY)/(maxY-minY||1));
+  ctx.strokeStyle = "#223140"; ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){
+    const gy = pad + (H-2*pad)*i/4;
+    ctx.beginPath(); ctx.moveTo(pad,gy); ctx.lineTo(W-pad,gy); ctx.stroke();
+  }
+  series.forEach(s=>{
+    if(opts.pointsOnly){
+      // Separate markers denote actual published checkpoints; do not draw a
+      // connecting line that visually implies measured intermediate values.
+      ctx.fillStyle = s.color;
+      s.data.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(xAt(p.x),yAt(p.y),3.5,0,Math.PI*2);
+        ctx.fill();
+      });
+    } else {
+      ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.beginPath();
+      s.data.forEach((p,i)=>{ const x=xAt(p.x), y=yAt(p.y); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+      ctx.stroke();
+    }
+  });
+  ctx.fillStyle = "#71899b"; ctx.font = "10px ui-monospace,monospace";
+  ctx.fillText(String(Math.round(minX)), pad, H-14);
+  ctx.fillText(String(Math.round(maxX)), W-pad-24, H-14);
+  let lx = pad;
+  series.forEach(s=>{
+    ctx.fillStyle = s.color; ctx.fillRect(lx, 10, 8, 8);
+    ctx.fillStyle = "#eef4f8"; ctx.fillText(s.label, lx+12, 18);
+    lx += ctx.measureText(s.label).width + 34;
+  });
+}
+
+// Read-only presentation adapter: all numbers reuse the established damage engine.
+PT.DAMAGE_GUIDE=Object.freeze({
+  parts:Object.freeze(DETAILED_PARTS.map(id=>Object.freeze({id,...BODY_PARTS[id]}))),
+  classes:Object.freeze(Object.keys(CLASS_MULT_DETAILED)),
+  rows(cls,helmet=2,vest=2){
+    if(!CLASS_MULT_DETAILED[cls])throw new RangeError('Unknown weapon class');
+    for(const level of [helmet,vest])if(!Number.isInteger(level)||level<0||level>3)throw new RangeError('Invalid gear level');
+    return DETAILED_PARTS.map(id=>{
+      const p=BODY_PARTS[id],level=armorLevelForHitZone(p,helmet,vest),classMultiplier=CLASS_MULT_DETAILED[cls][p.bucket],gear=armorMultFor(p,level);
+      return {id,label:p.label,hitArea:p.hitArea,classMultiplier,gear,combined:p.hitArea*classMultiplier*gear};
+    });
+  },
+  breakdown(w,distance,zone,helmet,vest){
+    const rows=getAllZoneDamageForWeapon(w,distance,helmet,vest),row=rows.find(r=>r.id===zone);
+    if(!row)throw new RangeError('Unknown hit zone');
+    const atRange=baseDamageAtRange(w,distance);
+    return {...row,base:w.dmg,distanceFactor:atRange==null?null:atRange/w.dmg,atRange,
+      pellet:Boolean(SHOTGUN_PELLETS[w.name]),damage:row.damage};
+  }
+});

@@ -465,3 +465,31 @@ GitHub Actions now runs a separate real Google Chrome smoke job with pinned Play
 ### Browser-discovered sidebar and Content Security Policy fixes
 
 A real Chrome smoke test found that the long desktop sidebar could overflow outside the visible sticky viewport. The sidebar is now independently vertically scrollable above mobile breakpoint, so all navigation tabs remain reachable. Chrome also surfaced CSP violations from chart-bar HTML style attributes. Mode and weapon bar dimensions are now applied through DOM CSSOM properties after rendering, preserving the strict script/style policy rather than adding unsafe-inline. The browser smoke test checks that a real chart bar has a rendered height and does not accept uncaught browser console errors.
+
+
+## Unified HELP Clan training toolkit
+
+The single PUBG Bot Vercel address will also serve the full public HELP Clan
+PUBG Toolkit under /training/, with links from the Command Centre overview
+and sidebar. The training website includes a return-navigation bridge to
+player statistics and match replays.
+
+The user-owned training repository is copied as a pinned source snapshot,
+preserving creator-built scope sensitivity maths, recoil models, damage
+and equipment calculators, original source parts, artwork credits, audit
+documentation, and regression tests. These static features do not call
+the PUBG API or Supabase and do not add new Vercel serverless functions.
+
+Source: https://github.com/johnstacey16-ui/HELP-Clan-PUBG-Toolkit
+Pin and import procedure: scripts/vendor-help-toolkit.sh
+The original HELP website and GitHub repository are retained. Custom
+empirical damage/ADS/sensitivity/recoil assumptions are not silently
+merged into official API measurements.
+
+
+### Toolkit test compatibility during migration
+
+The upstream HELP tests deliberately assert exact original DOM, SVG resource paths and original .github workflow file. The import checks its untouched pinned source with the original generated-build, all calculator tests and Chrome layout smoke checks first. After inserting a namespaced static back-navigation bridge and correcting the mannequin asset path, separate integration tests validate the hosted copy. This prevents rewriting the creator's source tests or disguising differences as passes.
+
+
+The original pinned HELP repository passes its 198 source/unit checks and its core real-Chrome eight-tool smoke in the import runner. Its separate legacy 320px hit-zone screenshot preview currently fails to find the neutral mannequin (a pre-existing optional preview check). The importer does not change core damage maths to hide this issue. That standalone visual acceptance remains an explicit follow-up and is not claimed to have passed.

@@ -1,0 +1,133 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Seven-tool media layout QA</title>
+<style>html,body{margin:0;padding:0;background:#111b24;color:#fff}iframe{display:block;width:100%;height:830px;border:0}#result{font:12px monospace;padding:5px}</style></head>
+<body data-visual-layout-status="pending"><div id="result">Validating...</div><iframe id="app" src="../index.html" title="App layout under test"></iframe>
+<script>
+(()=>{'use strict';
+const frame=document.getElementById('app'),out=document.getElementById('result');
+function assertion(v,t){if(!v)throw Error(t);}
+function fail(err){document.body.dataset.visualLayoutStatus='fail';out.textContent='FAIL: '+(err.stack||err);}
+frame.addEventListener('load',()=>{
+ setTimeout(()=>{
+ try{
+ const doc=frame.contentDocument;assertion(doc,'App document missing');
+ const viewport=frame.contentWindow.innerWidth;
+ const checks=[
+ ['panel-sensitivity',['#visual-scope-preview']],
+ ['panel-hit-zone',['#damage-guide','.dg-formula','.dg-area-layout','#dg_class_models','#dg_combined_models','.dg-gear-controls']],
+ ['panel-combat',['#combat-database .toolbar','#combat-database .combat-choose-hint','#wTable tr.rowclick .combat-weapon-cell']],
+ ['panel-range',['#visual-range','#visual-range-weapon']],
+ ['panel-ttk',['#visual-ttk','#visual-ttk-weapon','#visual-ttk-comparisons']],
+ ['panel-recoil2',['#visual-recoil','#visual-recoil-weapon']],
+ ['panel-attach',['#visual-attachment-grid','#visual-attach-weapon','#visual-at-stock']],
+ ['panel-backpack',['.visual-backpack-row']]
+ ];
+ for(const [panelId,selectors] of checks){
+  const parent=['panel-range','panel-ttk'].includes(panelId)?'panel-hit-zone':panelId;
+  const tab=doc.querySelector('[data-open-panel="'+parent+'"]');
+  assertion(tab,'No button for '+panelId);tab.click();
+  const panel=doc.getElementById(panelId);
+  assertion(doc.getElementById(parent).classList.contains('active'),'Panel not opened: '+panelId);
+  const appearance=frame.contentWindow.getComputedStyle(panel);
+  assertion(appearance.animationName==='none','Panel must not fade: '+panelId);
+  assertion(appearance.opacity==='1','Panel must have full opacity: '+panelId);
+  assertion(appearance.transform==='none','Panel must not shift position: '+panelId);
+  if(panelId==='panel-sensitivity'){
+   const controls=[...panel.querySelectorAll('#tabs a')];
+   assertion(controls.length===3,'Three sensitivity sub-tabs required');
+   for(const tabButton of controls){
+     const rect=tabButton.getBoundingClientRect();
+     assertion(rect.height>=44,'Scope sub-tab requires at least 44px touch height');
+     assertion(tabButton.tagName==='A','Scope sub-tabs must be focusable buttons');
+   }
+  }
+  if(panelId==='panel-hit-zone'){
+   const cards=[...panel.querySelectorAll('.dg-model-card')];
+   assertion(cards.length===14,'All class and combined cards visible');
+   for(const card of cards){const r=card.getBoundingClientRect();assertion(r.width>240&&r.left>=-2&&r.right<=viewport+2,'Guide card overflow');}
+  }
+  if(panelId==='panel-combat'){
+   assertion(panel.querySelectorAll('#wTable img').length===45,'All database weapons show their pictures');
+   assertion(panel.querySelectorAll('#wTable tr.colheader th').length===15,'All stats table is shown by default');
+   panel.querySelector('[data-combat-view=all]').click();
+   assertion(panel.querySelectorAll('#wTable tr.colheader th').length===15,'All stats retains 15 columns');
+   const primaryHeaders=[...panel.querySelectorAll('#wTable tr.colheader th')].map(th=>th.textContent);
+   assertion(primaryHeaders.some(x=>x.includes('Head Dmg'))&&primaryHeaders.some(x=>x.includes('Chest Dmg')),
+     'Head and Chest damage must stay in the main table');
+   const armor=panel.querySelector('#combat-armor-crossovers');
+   assertion(!!armor&&armor.getBoundingClientRect().height>0,'Protection crossovers should be visible');
+   assertion(panel.querySelectorAll('#combatArmorTable tbody tr').length===45,'Crossover values missing');
+   assertion(panel.querySelectorAll('#combatArmorTable thead tr:last-child th').length===7,'Secondary protection table must have 7 columns');
+   const armorRect=panel.querySelector('.combat-armor-scroller').getBoundingClientRect();
+   assertion(armorRect.right<=viewport+3,'Protection table exceeds viewport horizontally');
+   armor.open=false;
+
+   const scrollRegion=panel.querySelector('#combat-stats-scroller');
+   if(viewport>=1280){
+     const extraWidth=Math.max(0,scrollRegion.scrollWidth-scrollRegion.clientWidth);
+     assertion(extraWidth<=scrollRegion.clientWidth*0.25,
+       'Main table still requires too much desktop sideways scrolling: '+extraWidth+
+       'px extra for '+scrollRegion.clientWidth+'px visible');
+   }
+
+   assertion(!!scrollRegion && scrollRegion.tabIndex===0,'Weapon table must be keyboard-scrollable');
+   assertion(scrollRegion.getAttribute('aria-describedby')==='combat-table-instructions','Missing weapon scroll guidance');
+   if(viewport<=390){
+     assertion(scrollRegion.scrollWidth>scrollRegion.clientWidth+100,'Weapon statistics must extend horizontally');
+     const before=panel.querySelector('#wTable tr.rowclick td:first-child').getBoundingClientRect().left;
+     scrollRegion.scrollLeft=130;
+     const after=panel.querySelector('#wTable tr.rowclick td:first-child').getBoundingClientRect().left;
+     assertion(scrollRegion.scrollLeft>=80,'Weapon table refuses horizontal movement');
+     assertion(Math.abs(after-before)<=2,'Weapon name must stay sticky on horizontal scroll');
+     scrollRegion.scrollLeft=0;
+   }
+
+   assertion(!panel.querySelector('.combat-visual-pilot'),'No unsolicited weapon pilot art');
+   const overview=panel.querySelector('#combat-overview-disclosure');
+   assertion(!!overview,'Mobile Combat overview is missing');
+   assertion(overview.open,'Combat overview remains visible');
+   const guide=panel.querySelector('#combat-armour-disclosure');
+   assertion(guide.tagName==='SECTION','Armour artwork is always visible');
+   assertion(panel.querySelector('#armor-guide').contains(guide),'Armour guide grouped with crossover tools');
+  }
+  if(panelId==='panel-recoil2'){
+   for(const id of ['rc_class','rc_weapon','rc_stance','rc_shots','rc_metadata','rc_attachment_choices','rc_curve_canvas','rc_sim_canvas']){
+    const element=doc.getElementById(id),rect=element.getBoundingClientRect();
+    assertion(rect.width>20&&rect.height>10,id+' must be visible');
+    assertion(rect.left>=-2&&rect.right<=viewport+2,id+' overflows at '+viewport+'px');
+   }
+   assertion(doc.getElementById('rc_fire').getBoundingClientRect().height>=44,'Simulator button tap target');
+   assertion(doc.getElementById('rc_stage_table').closest('.recoil-table-scroll').scrollWidth>=doc.getElementById('rc_stage_table').closest('.recoil-table-scroll').clientWidth,'Stage values remain scrollable');
+  }
+  if(panelId==='panel-backpack'){
+   const buttons=[...panel.querySelectorAll('.bp-stepper button')];
+   assertion(buttons.length>=20,'Backpack steppers missing');
+   for(const button of buttons){
+     const rect=button.getBoundingClientRect();
+     assertion(rect.width>=44&&rect.height>=44,'Backpack stepper tap target too small: '+rect.width+'x'+rect.height);
+     assertion(!!button.getAttribute('aria-label'),'Backpack stepper missing accessible name');
+   }
+  }
+  if(['panel-range','panel-ttk','panel-recoil2'].includes(panelId)){
+   const sections=[...panel.querySelectorAll('section.visual-art-panel')];
+   assertion(sections.length===(panelId==='panel-ttk'?2:1),'Expected visible artwork sections '+panelId);
+   for(const item of sections)assertion(item.getBoundingClientRect().height>0,'Artwork must be visible');
+  }
+  for(const selector of selectors){
+   const el=panel.querySelector(selector);assertion(el,'Missing '+selector);
+   const rect=el.getBoundingClientRect();
+   assertion(rect.width>=24 && rect.height>=10,selector+' collapsed: '+rect.width+'x'+rect.height);
+   assertion(rect.left>=-2 && rect.right<=viewport+2,
+     selector+' horizontal overflow at '+viewport+'px (left '+rect.left+', right '+rect.right+')');
+  }
+  if(['panel-range','panel-ttk','panel-recoil2'].includes(panelId)){
+   // Artwork has no collapsing controls.
+  }
+ }
+ out.textContent='PASS: seven illustrated tool layouts fit viewport '+viewport+'px';
+ document.body.dataset.visualLayoutStatus='pass';
+ }catch(error){fail(error);}
+ },150);
+});
+setTimeout(()=>{if(document.body.dataset.visualLayoutStatus==='pending')fail(Error('Layout app iframe did not load'));},9000);
+})();
+</script></body></html>

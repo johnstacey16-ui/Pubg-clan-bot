@@ -1,0 +1,111 @@
+/* HELP toolkit: original data presentation inspired by compact reference tools. */
+.tt-toggle {display:flex;align-items:center;gap:8px;color:#c6d4dc;font:12px/1.4 system-ui;min-height:36px}
+.tt-toggle input {width:17px!important;min-height:17px!important;accent-color:#e8bd79}
+.tt-disclosure>summary,.tt-packed>summary,.tt-slot-picker>summary {cursor:pointer;min-height:44px;padding:10px 0;color:#ecca92;font:600 13px/1.5 system-ui}
+.tt-disclosure {margin-top:10px}
+.tt-disclosure:focus-within,.tt-slot-picker:focus-within {outline-offset:3px}
+.tt-leaders {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:8px 0}
+.tt-leaders>div,.tt-recoil-parameters>div {border:1px solid #344956;background:#101e29;padding:12px;border-radius:7px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.tt-leaders span,.tt-recoil-parameters span {font:11px/1.4 system-ui;color:#bacdd8}
+.tt-leaders strong {font:700 24px/1.2 ui-monospace,monospace;color:#f0c784}
+.tt-leaders small {font:12px/1.4 system-ui;color:#dae4eb}
+#panel-combat #wTable .tt-mini-bar {display:block;min-width:18px;max-width:54px;width:100%;height:3px;margin-top:4px;border-radius:3px;background:linear-gradient(to right,#deb366 var(--stat-fill),#253541 var(--stat-fill))}
+#panel-combat #wTable .tt-rpm {background:linear-gradient(to right,#b995e3 var(--stat-fill),#253541 var(--stat-fill))}
+#panel-combat #wTable .tt-vel {background:linear-gradient(to right,#6cbcdc var(--stat-fill),#253541 var(--stat-fill))}
+#panel-combat #wTable .tt-dps {background:linear-gradient(to right,#85c9a3 var(--stat-fill),#253541 var(--stat-fill))}
+.tt-weapon-cards {display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:8px 0;max-height:590px;overflow:auto}
+#panel-combat .tt-weapon-card {border:1px solid #3d515f;border-radius:7px;padding:12px;background:#0e1b25;min-width:0}
+#panel-combat .tt-weapon-card h3 {font:700 19px/1.3 system-ui;margin:0 0 6px;color:#eef5f8}
+.tt-weapon-card p {font:12px/1.6 system-ui;color:#b7cbd7}
+.tt-weapon-card img {object-fit:contain;width:100%;height:75px}
+.tt-weapon-card button,.tt-slot-options button,.tt-class-pills button,.tt-packed button {border:1px solid #425768;border-radius:5px;background:#132430;color:#e1ebf0;font:600 12px/1.4 system-ui;min-height:44px;padding:7px 10px;cursor:pointer}
+.tt-weapon-card button {margin:3px 5px 0 0}
+.tt-class-pills {display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.tt-class-pills button[aria-pressed=true],.tt-slot-options button[aria-pressed=true] {background:#3c3b2b;border-color:#e9bb71;color:#ffe0aa}
+.tt-class-pills button:focus-visible,.tt-weapon-card button:focus-visible,.tt-slot-options button:focus-visible,.tt-packed button:focus-visible,summary:focus-visible {outline:2px solid #f3c677;outline-offset:3px}
+.workspace-weapon-list button[hidden],#panel-backpack .bp-row[hidden],#panel-backpack .card[hidden] {display:none!important}
+.tt-verdict {border:1px solid #526674;border-left-width:4px;padding:13px;border-radius:6px;color:#d9e7ee;font:14px/1.6 system-ui}
+.tt-verdict.tt-keep {border-left-color:#83cda2}
+.tt-verdict.tt-swap {border-left-color:#f0bd73}
+#armor-quick-check input[type=number] {width:100%;min-height:44px;background:#101d28;border:1px solid #526674;border-radius:5px;color:#eef5fa;padding:9px}
+:is(#panel-range,#panel-ttk,#panel-attach) .wrap.tt-calculator {display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:12px 16px;align-items:start}
+:is(#panel-range,#panel-ttk,#panel-attach) .wrap.tt-calculator>* {grid-column:1/-1;min-width:0;margin-top:0;margin-bottom:0}
+:is(#panel-range,#panel-ttk,#panel-attach) .wrap.tt-calculator>.tt-setup {grid-column:1}
+:is(#panel-range,#panel-ttk,#panel-attach) .wrap.tt-calculator>.tt-primary-results {grid-column:2}
+#panel-attach .tt-setup .toolbar {display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+#panel-attach .tt-setup .toolbar>.field {min-width:0}
+#panel-attach .tt-setup .visual-gear-grid {grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+#panel-attach .tt-setup .visual-gear-tile {padding:6px 2px}
+#panel-attach .tt-setup .visual-gear-tile img {height:38px;width:60px;max-width:100%}
+#panel-attach .tt-setup .visual-selected-weapon img {max-width:120px}
+.tt-slot-picker {margin-top:4px}
+.tt-slot-picker>summary {font-size:11px;line-height:1.5;color:#d6be96;overflow-wrap:anywhere}
+.tt-slot-options {display:grid;grid-template-columns:1fr;gap:5px;max-height:300px;overflow:auto;padding:3px}
+.tt-slot-options button {white-space:normal;text-align:left;overflow-wrap:anywhere}
+.tt-slot-options button:disabled {opacity:.5}
+#rg_comparison canvas {width:100%;min-width:0!important;max-width:100%;height:auto}
+.tt-table-scroll {max-width:100%;overflow:auto}
+.tt-table-scroll table {min-width:400px}
+#rg_compareTable caption {font:12px/1.5 system-ui;text-align:left;color:#c3d6df;padding:8px 0}
+.tt-selected-checkpoint {background:rgba(221,181,116,.12)}
+.tt-recoil-parameters {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.tt-recoil-parameters strong {font:700 23px/1.3 ui-monospace,monospace;color:#e7c58f}
+.tt-inventory-tools {margin:12px 0}
+.tt-inventory-tools input[type=search] {width:100%;min-height:44px;border:1px solid #4a6171;background:#0f1e29;color:#eaf4fa;border-radius:6px;padding:10px;font:14px system-ui}
+.tt-capacity {font:700 14px/1.5 ui-monospace,monospace;padding:10px 12px;color:#d5e9df;background:#102821;border:1px solid #36594c;border-radius:7px 7px 0 0}
+.tt-capacity-meter {height:8px;background:#253b3e;margin-bottom:10px;border-radius:0 0 6px 6px;overflow:hidden}
+.tt-capacity-meter i {height:100%;display:block;background:#84cda1}
+.tt-over {color:#ffd9b4;border-color:#bd7949}
+.tt-capacity-meter.tt-over i {background:#ef9f67}
+#panel-backpack .tt-packed {overflow-x:auto}
+.tt-packed table {font:12px/1.5 system-ui;width:100%;border-collapse:collapse}
+.tt-packed th,.tt-packed td {padding:8px 6px;border-bottom:1px solid #3b5262;text-align:left}
+.tt-packed caption {padding:8px;text-align:left;color:#c5d8e1}
+@media(max-width:1000px){
+ :is(#panel-range,#panel-ttk,#panel-attach) .wrap.tt-calculator {display:block}
+ :is(#panel-range,#panel-ttk,#panel-attach) .wrap.tt-calculator>.card {margin-bottom:12px}
+ :is(#panel-range,#panel-ttk,#panel-attach) .wrap.tt-calculator>.sub {margin-bottom:14px}
+}
+@media(max-width:700px){
+ .tt-leaders {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tt-weapon-cards {grid-template-columns:1fr}
+ .tt-recoil-parameters {grid-template-columns:repeat(2,minmax(0,1fr))}
+ #panel-attach .tt-setup .visual-gear-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #panel-attach .tt-setup .toolbar {grid-template-columns:1fr}
+ #panel-combat #combat-database .toolbar {gap:6px}
+ #panel-combat #combat-database .tt-toggle {font-size:11px;min-height:32px}
+ .workspace-picker .tt-class-pills button {min-height:38px;padding:6px 9px}
+}
+#rg_comparison canvas[hidden] {display:none!important}
+#panel-attach .wrap>h1 {font-size:30px;line-height:1.15}
+:is(#panel-range,#panel-ttk,#panel-attach) .tt-primary-results>.grid4,
+:is(#panel-range,#panel-ttk,#panel-attach) .tt-primary-results>.grid3 {grid-template-columns:repeat(2,minmax(0,1fr))}
+#panel-range #rg_flight {font-size:clamp(20px,2.1vw,28px);white-space:nowrap}
+#panel-attach .tt-setup #visual-attachment-grid {margin-top:16px}
+@media(min-width:901px){
+ #panel-combat .combat-overview-content {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center}
+ #panel-combat .combat-overview-content>.sub {grid-column:1;margin:0;font-size:13px;line-height:1.5}
+ #panel-combat .combat-overview-content>.hero-stats {grid-column:2;margin:0}
+ #panel-combat .combat-overview-content>.hero-hint {display:none}
+ #panel-combat .combat-overview-content>.quicknav {grid-column:1/-1;margin:0;gap:6px}
+ #panel-combat header.hero h1 {margin-bottom:10px}
+ #panel-combat .hero-stats div {padding:6px 9px;min-width:75px}
+ #panel-combat #combat-armour-disclosure {margin-top:8px}
+}
+.tt-view-tools {display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:5px 0 8px}
+#panel-combat .tt-view-tools #combat-view-status {flex:1;min-width:140px;margin:0;font-size:11px}
+.tt-view-tools button {min-height:44px;border:1px solid #435869;border-radius:5px;padding:6px 10px;background:#132430;color:#e7cfaa;font:600 11px/1.3 system-ui;cursor:pointer}
+.tt-view-tools button[aria-expanded=true] {border-color:#e8bd78;background:#383b2d}
+#combat-browser:not([open]),#combat-insights:not([open]),#combat-stats-scroller[hidden] {display:none!important}
+#panel-combat #combat-table-instructions {margin-bottom:8px}
+@media(max-width:700px){
+ #panel-combat #combat-database>.tt-db-filters {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center}
+ #panel-combat #combat-database>.tt-db-filters>input {grid-column:1/-1;width:100%;min-width:0}
+ #panel-combat #combat-database>.tt-db-filters>select {width:100%;min-width:0;padding-inline:7px;font-size:11px}
+ #panel-combat #combat-database>.tt-db-filters>.tt-toggle {min-width:0;overflow-wrap:anywhere}
+ .tt-view-tools {display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:5px}
+ #panel-combat .tt-view-tools #combat-view-status {min-width:0;font:10px/1.3 system-ui}
+ .tt-view-tools button {padding-inline:8px}
+}
+#panel-backpack .pubg-inventory-icon {display:inline-block;vertical-align:middle;width:28px;height:28px;object-fit:contain;margin-right:6px}
+.workspace-equipment img[hidden] {display:none!important}

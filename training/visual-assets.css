@@ -1,0 +1,329 @@
+/* HELP Clan visual-media primitives; deliberately separate from gameplay CSS. */
+.visual-media-kicker { font:700 10px/1.4 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.12em;color:#91d9df; }
+#panel-combat .visual-modal-media { max-width:100%;margin:14px 0 20px;padding:10px;background:#0e1d27;border:1px solid rgba(156,199,207,.2);border-radius:9px; }
+#panel-combat .visual-modal-media img { display:block;width:100%;height:auto;max-height:145px;object-fit:contain; }
+#panel-combat .visual-modal-media figcaption,#panel-combat .visual-modal-unavailable { color:#b1c1cc;font:11px/1.5 "IBM Plex Mono",ui-monospace,monospace; }
+#panel-combat .visual-modal-media figcaption { margin-top:6px; }
+
+/* Visual artwork never overlays values, canvases or input controls. */
+.visual-inline-preview,.visual-reference-banner,.visual-backpack-row{min-width:0;border:1px solid rgba(144,206,217,.24);background:linear-gradient(125deg,rgba(16,39,53,.92),rgba(9,24,36,.95));border-radius:13px;}
+.visual-inline-preview,.visual-reference-banner{display:flex;gap:16px;align-items:center;padding:12px 16px;margin:13px 0 17px;}
+.visual-inline-preview img{width:150px;max-width:38%;height:90px;object-fit:contain;flex:none;}
+.visual-inline-preview>div,.visual-reference-banner figcaption{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.visual-inline-preview strong,.visual-reference-banner strong,.visual-pack-lead strong{font:700 clamp(18px,3vw,25px)/1.2 "Barlow Condensed",sans-serif;color:#f0d0a0;}
+.visual-inline-preview small,.visual-reference-banner span,.visual-pack-lead small{color:#b6c9d3;font:12px/1.5 "Manrope",sans-serif;}
+.visual-reference-banner img{width:150px;max-width:39%;height:85px;object-fit:contain;flex:none;}
+.visual-gear-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0;}
+.visual-gear-tile{min-width:0;display:flex;flex-direction:column;gap:4px;align-items:center;padding:9px 5px;background:#132635;border:1px solid rgba(153,207,213,.22);border-radius:10px;text-align:center;}
+.visual-gear-tile img{width:100%;max-width:124px;height:68px;object-fit:contain;}
+.visual-gear-tile strong{color:#f0d0a0;font:700 14px/1.2 "Barlow Condensed",sans-serif;}
+.visual-gear-tile small{color:#bed0d9;font:11px/1.4 "Manrope",sans-serif;overflow-wrap:anywhere;}
+.visual-art-disclaimer{color:#b8cbd4;font:11px/1.5 "Manrope",sans-serif;margin:2px 0 12px;}
+.visual-backpack-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:15px;align-items:center;padding:12px;margin:13px 0 17px;}
+.visual-pack-lead{display:flex;align-items:center;gap:10px;min-width:0;}
+.visual-pack-lead img{width:100px;height:88px;object-fit:contain;flex:none;}
+.visual-pack-lead>div{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.visual-pack-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+.visual-pack-items span{display:flex;flex-direction:column;align-items:center;gap:3px;color:#bed0d9;font:11px/1.2 "Manrope",sans-serif;}
+.visual-pack-items img{width:100%;height:61px;max-width:80px;object-fit:contain;}
+@media(max-width:660px){.visual-gear-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.visual-backpack-row{grid-template-columns:1fr;}.visual-inline-preview img,.visual-reference-banner img{width:112px;}}
+@media(max-width:365px){.visual-inline-preview,.visual-reference-banner{gap:8px;padding:8px;}.visual-inline-preview img,.visual-reference-banner img{width:92px;height:71px;}}
+
+/* Weapon artwork shared by Range / TTK / Recoil / Attachments. All panels stay data-first. */
+.visual-selected-weapon { display:flex;align-items:center;gap:12px;min-width:0;margin:9px 0 14px;padding:10px 14px;border:1px solid rgba(143,200,210,.22);border-radius:12px;background:linear-gradient(130deg,#132835,#0d1e2a); }
+.visual-selected-weapon img { display:block;flex:0 1 185px;width:185px;max-width:42%;height:68px;object-fit:contain; }
+.visual-selected-weapon img[hidden],.visual-compare-tile img[hidden] { display:none; }
+.visual-selected-weapon>div { display:flex;flex-direction:column;gap:4px;min-width:0; }
+.visual-selected-weapon strong,.visual-compare-tile strong { color:#f0d3a4;font:700 19px/1.2 "Barlow Condensed",sans-serif;overflow-wrap:anywhere; }
+.visual-selected-weapon small,.visual-compare-tile small { font:11px/1.5 "Manrope",sans-serif;color:#b8cbd1;overflow-wrap:anywhere; }
+.visual-weapon-comparisons { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0; }
+.visual-compare-tile { min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:10px 7px;border:1px solid rgba(153,201,210,.23);border-radius:11px;background:#102635; }
+.visual-compare-tile img { width:100%;max-width:215px;height:74px;object-fit:contain; }
+.visual-compare-tile strong { font-size:16px; }
+@media(max-width:640px) { .visual-weapon-comparisons { grid-template-columns:1fr; } .visual-compare-tile { flex-direction:row;min-height:58px;gap:9px;align-items:center;text-align:left;flex-wrap:wrap; } .visual-compare-tile img { max-width:28%;height:49px; } .visual-compare-tile small { flex:1 1 120px; } .visual-selected-weapon img { max-width:40%;height:61px; } }
+
+/* Dense mobile weapon table. Artwork appears only after opening a weapon. */
+#panel-combat #wTable td.combat-weapon-cell { min-width:0;white-space:nowrap; }
+#panel-combat #wTable tr.rowclick { cursor:pointer; }
+#panel-combat #wTable tr.rowclick:focus-visible { outline:2px solid #a5e8f1;outline-offset:-2px; }
+#panel-combat .combat-choose-hint { color:#b9d5dd;font:12px/1.5 "Manrope",sans-serif;margin:4px 0 13px; }
+@media(max-width:700px) {
+ #panel-combat #wTable td.combat-weapon-cell { padding-left:10px;padding-right:8px; }
+ #panel-combat .combat-choose-hint { margin:2px 0 10px; }
+}
+
+/* Illustrated body protection key + complete backpack/category silhouettes. */
+#panel-combat .visual-armour-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 2px}
+#panel-combat .visual-armour-key>div{display:flex;align-items:center;gap:10px;min-width:0;padding:8px 13px;border:1px solid rgba(152,204,216,.2);background:rgba(14,35,46,.88);border-radius:11px}
+#panel-combat .visual-armour-key img{display:block;width:96px;max-width:38%;height:74px;object-fit:contain}
+#panel-combat .visual-armour-key span{display:flex;flex-direction:column;gap:4px;min-width:0}
+#panel-combat .visual-armour-key strong{color:#f1d3a5;font:700 18px/1.25 "Barlow Condensed",sans-serif}
+#panel-combat .visual-armour-key small{color:#b6cbd1;font:11px/1.45 "Manrope",sans-serif}
+#panel-backpack .visual-pack-items{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:10px}
+#panel-backpack .visual-pack-items span{min-width:0;overflow-wrap:anywhere}
+#panel-backpack .visual-pack-items small{font:11px/1.3 "Manrope",sans-serif;text-align:center}
+#panel-backpack #visual-pack-image[hidden]{display:none}
+@media(max-width:650px){#panel-combat .visual-armour-key{grid-template-columns:1fr}}
+@media(max-width:350px){#panel-backpack .visual-pack-items img{height:53px}#panel-combat .visual-armour-key img{width:76px;height:60px}}
+
+/* Sight variants never change or compete with sensitivity calculations. */
+#panel-sensitivity .visual-one-x-variants { margin:9px 0 14px;padding:12px;border:1px solid rgba(148,202,214,.26);border-radius:10px;min-width:0; }
+#panel-sensitivity .visual-one-x-variants[hidden] { display:none; }
+#panel-sensitivity .visual-one-x-variants legend { padding:0 6px;color:#bbd3da;font:12px/1.4 "Manrope",sans-serif; }
+#panel-sensitivity .visual-optic-variant { min-height:44px;margin:3px 5px 3px 0;padding:8px 12px;border-radius:7px;border:1px solid rgba(153,205,215,.36);color:#d4e7e9;background:#132e3c;cursor:pointer;font:600 12px/1.4 "Manrope",sans-serif; }
+#panel-sensitivity .visual-optic-variant[aria-pressed="true"] { color:#ffdfac;border-color:#e4bd82;background:#2c3942; }
+#panel-sensitivity .visual-optic-variant:focus-visible { outline:3px solid #9cdae8;outline-offset:2px; }
+.visual-gear-tile img[hidden],.visual-inline-preview img[hidden],.visual-reference-banner img[hidden],.visual-pack-items img[hidden],.visual-armour-key img[hidden] { display:none; }
+.visual-image-unavailable { display:block;min-width:0;max-width:100%;color:#f4d2a1;font:11px/1.5 "Manrope",sans-serif; }
+@media(max-width:365px) { #panel-sensitivity .visual-one-x-variants{padding:8px} #panel-sensitivity .visual-optic-variant{margin-right:2px;padding:8px 9px} }
+
+/* Final illustration polish: consistent material depth without obscuring any data. */
+#panel-sensitivity .visual-inline-preview img,
+#panel-attach .visual-gear-tile img,
+#panel-backpack .visual-pack-items img,
+#panel-backpack .visual-pack-lead img,
+#panel-combat .visual-armour-key img { filter:drop-shadow(0 5px 9px rgba(0,0,0,.38)); }
+.visual-gear-tile,.visual-compare-tile { background-image:radial-gradient(ellipse at 50% 30%,rgba(78,134,146,.13),transparent 74%);background-color:#112634; }
+#panel-sensitivity .visual-optic-variant { touch-action:manipulation; }
+#panel-sensitivity .visual-optic-variant:hover { background:#294453; }
+#panel-sensitivity .visual-optic-variant[aria-pressed="true"]:hover { background:#374951; }
+@media(prefers-contrast:more) {
+  .visual-inline-preview,.visual-reference-banner,.visual-gear-tile,
+  .visual-selected-weapon,.visual-armour-key>div,.visual-backpack-row,.visual-compare-tile {
+    border-color:currentColor;box-shadow:none;
+  }
+  .visual-gear-tile small,.visual-selected-weapon small,.visual-art-disclaimer { color:#f1f4f5; }
+}
+@media(forced-colors:active){
+  #panel-sensitivity .visual-optic-variant[aria-pressed="true"] { outline:2px solid Highlight;outline-offset:1px; }
+  .visual-image-unavailable { color:CanvasText; }
+}
+@media(prefers-reduced-motion:reduce){
+  .visual-gear-tile,.visual-compare-tile,.visual-optic-variant { animation:none!important;transition:none!important; }
+}
+
+/* Five compact selector-driven equipment cards; no illustrated "equipped" state for None. */
+#panel-attach .visual-gear-grid { grid-template-columns:repeat(5,minmax(0,1fr)); }
+#panel-attach .visual-gear-tile img[hidden] { display:none; }
+#panel-attach .visual-gear-tile { min-height:108px;justify-content:center; }
+#panel-attach .visual-gear-tile small { max-width:100%; }
+@media(max-width:850px) {
+ #panel-attach .visual-gear-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:450px) {
+ #panel-attach .visual-gear-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ #panel-attach .visual-gear-tile { min-height:95px; }
+}
+
+/* Controller/keyboard modal: reachable close control without stealing table width. */
+#panel-combat .overlay.show .modal .close { min-width:44px;min-height:44px;touch-action:manipulation; }
+#panel-combat .overlay.show .modal .close:focus-visible { outline:3px solid #ffe0a9;outline-offset:3px; }
+
+/* Mobile and Xbox Edge backpack steppers: reliable 44 px hit areas and focus. */
+#panel-backpack .bp-row .bp-stepper button {
+  min-width:44px;
+  width:44px;
+  min-height:44px;
+  height:44px;
+  flex:0 0 44px;
+  touch-action:manipulation;
+}
+#panel-backpack .bp-row .bp-stepper input[data-bp] {
+  min-height:44px;
+  height:44px;
+  min-width:54px;
+}
+#panel-backpack .bp-row .bp-stepper button:focus-visible,
+#panel-backpack .bp-row .bp-stepper input[data-bp]:focus-visible {
+  outline:3px solid #ffe0a9;
+  outline-offset:2px;
+}
+@media(max-width:390px) {
+  #panel-backpack .bp-row .bp-stepper { max-width:100%; }
+  #panel-backpack .bp-row .bp-stepper button { min-width:44px; }
+}
+
+/* Data-first tools: optional images follow numerical results and remain closed by default. */
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art {
+ margin:12px 0 18px;min-width:0;border:1px solid rgba(143,200,210,.32);
+ border-radius:12px;background:linear-gradient(125deg,rgba(15,35,48,.91),rgba(8,23,34,.95));
+}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art>summary {
+ min-height:48px;display:flex;flex-wrap:wrap;gap:5px 12px;align-items:center;
+ padding:12px 16px;cursor:pointer;color:#f4d6a4;font:700 13px/1.5 "Manrope",sans-serif;
+ list-style:none;touch-action:manipulation;
+}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art>summary::-webkit-details-marker{display:none}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art>summary::before{content:"+";min-width:14px;font-size:20px;line-height:1}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art[open]>summary::before{content:"−"}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art>summary:focus-visible{outline:3px solid #a5e8f1;outline-offset:3px;border-radius:10px}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-art-summary-note{color:#b8cbd5;font:11px/1.3 "Manrope",sans-serif;letter-spacing:0}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-art-content{padding:0 12px 12px;min-width:0}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-art-content .visual-reference-banner{margin:0 0 10px}
+:is(#panel-range,#panel-ttk,#panel-recoil2) .visual-art-content .visual-selected-weapon{margin:0}
+#panel-ttk .visual-compare-art{margin:12px 0 2px}
+@media(max-width:390px) {
+ :is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art>summary{padding:12px}
+ :is(#panel-range,#panel-ttk,#panel-recoil2) .visual-art-content{padding:0 8px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+ :is(#panel-range,#panel-ttk,#panel-recoil2) .visual-opt-in-art *{transition:none!important;animation:none!important}
+}
+
+/* Scope Matcher keyboard / Xbox Edge tab controls. No change to formulas. */
+#panel-sensitivity #tabs [role="tab"] {
+  appearance:none;
+  min-height:48px;
+  text-align:left;
+  touch-action:manipulation;
+}
+#panel-sensitivity #tabs [role="tab"]:focus-visible {
+  outline:3px solid #a5e8f1;
+  outline-offset:2px;
+  position:relative;
+  z-index:1;
+}
+@media(forced-colors:active) {
+  #panel-sensitivity #tabs [role="tab"][aria-selected="true"] {
+    outline:2px solid Highlight;
+    outline-offset:-2px;
+  }
+}
+
+/* Keep the Scope results fully legible immediately after tab navigation.
+   The old opacity-based .panel.active entrance could be captured mid-fade,
+   and reduced readability on slower/virtual-timed Xbox Edge renders. */
+#panel-sensitivity .panel.active {
+  animation: none;
+  opacity: 1;
+}
+
+/* Combat mobile density: table-first and optional armour images. */
+#panel-combat .combat-armour-disclosure {
+ margin-top:13px;min-width:0;border:1px solid rgba(152,204,216,.28);
+ border-radius:11px;background:rgba(10,29,40,.56);
+}
+#panel-combat .combat-armour-disclosure>summary {
+ display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;
+ cursor:pointer;min-height:46px;padding:10px 14px;
+ color:#f1d3a5;font:700 13px/1.45 "Manrope",sans-serif;
+ list-style:none;touch-action:manipulation;
+}
+#panel-combat .combat-armour-disclosure>summary::-webkit-details-marker{display:none}
+#panel-combat .combat-armour-disclosure>summary::before{content:"+";font:700 19px/1 "Manrope",sans-serif}
+#panel-combat .combat-armour-disclosure[open]>summary::before{content:"−"}
+#panel-combat .combat-armour-disclosure>summary:focus-visible{outline:3px solid #a5e8f1;outline-offset:3px;border-radius:9px}
+#panel-combat .combat-armour-optional{color:#b7cbd5;font:11px/1.4 "Manrope",sans-serif}
+#panel-combat .combat-armour-disclosure .visual-armour-key{margin:0;padding:0 10px 10px}
+@media(max-width:700px){
+ #panel-combat header.hero{padding:17px 16px 15px;margin-bottom:12px}
+ #panel-combat header.hero h1{font-size:clamp(29px,8vw,35px);line-height:1.03;margin:8px 0 10px}
+ #panel-combat header.hero .sub{font-size:12px;line-height:1.55}
+ #panel-combat .hero-stats{margin-top:12px;gap:6px}
+ #panel-combat .hero-stats div{padding:9px 7px}
+ #panel-combat .hero-hint{margin-top:9px;font-size:10px}
+ #panel-combat .quicknav{margin-top:10px;gap:7px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #panel-combat .quicknav a{min-width:0;min-height:44px;padding:8px 9px;font-size:10.5px}
+ #panel-combat .quicknav a:first-child{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){#panel-combat .combat-armour-disclosure *{animation:none!important;transition:none!important}}
+
+/* Follow-up: full Combat overview remains expanded on desktop, compact on phones. */
+#panel-combat .combat-overview-disclosure{min-width:0}
+#panel-combat .combat-overview-disclosure>summary{
+ display:none;
+}
+@media(max-width:700px) {
+ #panel-combat .combat-overview-disclosure{margin-top:12px}
+ #panel-combat .combat-overview-disclosure>summary{
+  display:flex;align-items:center;gap:10px;min-height:46px;padding:10px 12px;
+  background:rgba(10,29,40,.56);border:1px solid rgba(152,204,216,.28);
+  border-radius:10px;cursor:pointer;color:#f1d3a5;
+  font:700 12px/1.4 "Manrope",sans-serif;list-style:none;
+  touch-action:manipulation;
+ }
+ #panel-combat .combat-overview-disclosure>summary::-webkit-details-marker{display:none}
+ #panel-combat .combat-overview-disclosure>summary::before{
+  content:"+";font:700 19px/1 "Manrope",sans-serif;min-width:13px;
+ }
+ #panel-combat .combat-overview-disclosure[open]>summary::before{content:"−"}
+ #panel-combat .combat-overview-disclosure>summary:focus-visible{
+  outline:3px solid #a5e8f1;outline-offset:3px;
+ }
+ #panel-combat .combat-overview-content{padding-top:10px}
+ #panel-combat .combat-armour-disclosure{margin-top:8px}
+ #panel-combat header.hero{padding-bottom:13px}
+}
+
+/* Mobile Combat table: readable text and controller-accessible horizontal scroll. */
+#panel-combat .combat-stats-scroller {
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:visible;
+  overscroll-behavior-x:contain;
+  scrollbar-color:#829fa9 #162a39;
+  -webkit-overflow-scrolling:touch;
+}
+#panel-combat .combat-stats-scroller:focus-visible {
+  outline:3px solid #b5e6f0;
+  outline-offset:3px;
+  border-radius:4px;
+}
+#panel-combat .combat-stats-scroller #wTable th:first-child,
+#panel-combat .combat-stats-scroller #wTable td:first-child {
+  position:sticky;
+  left:0;
+}
+@media(max-width:700px) {
+  #panel-combat .combat-stats-scroller #wTable { font-size:13px; }
+  #panel-combat .combat-stats-scroller #wTable tr.colheader th { font-size:11px; }
+  #panel-combat #combat-table-instructions { font-size:11px;line-height:1.4; }
+}
+
+/* Shorter main table. Four armour threshold columns have their own expander. */
+@media(min-width:1000px){
+  #panel-combat #wTable th,#panel-combat #wTable td { padding-left:4px;padding-right:4px; }
+  #panel-combat #wTable th { letter-spacing:0; }
+}
+#panel-combat .combat-crossover-card { margin-top:16px;min-width:0; }
+#panel-combat #combat-armor-crossovers>summary {
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;
+  min-height:48px;padding:12px 4px;cursor:pointer;list-style:none;
+  color:#f2d19c;font:700 15px/1.4 "Manrope",sans-serif;touch-action:manipulation;
+}
+#panel-combat #combat-armor-crossovers>summary::-webkit-details-marker { display:none; }
+#panel-combat #combat-armor-crossovers>summary::before { content:"+";min-width:16px;font-size:23px;line-height:1; }
+#panel-combat #combat-armor-crossovers[open]>summary::before { content:"−"; }
+#panel-combat #combat-armor-crossovers>summary:focus-visible { outline:3px solid #a5e8f1;outline-offset:2px;border-radius:6px; }
+#panel-combat .combat-crossover-hint { color:#b7cbd5;font:11px/1.4 "Manrope",sans-serif; }
+#panel-combat .combat-crossover-body { padding-top:10px; }
+#panel-combat .combat-armor-scroller { overflow-x:auto;max-width:100%;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch; }
+#panel-combat .combat-armor-scroller:focus-visible { outline:3px solid #a5e8f1;outline-offset:3px; }
+#panel-combat #combatArmorTable { min-width:625px; }
+#panel-combat #combatArmorTable caption { text-align:left;caption-side:top;padding:0 0 10px;color:#b8cdd7;font:11px/1.5 "Manrope",sans-serif; }
+#panel-combat #combatArmorTable td:first-child,#panel-combat #combatArmorTable th:first-child { position:sticky;left:0;background:#1b2b3a;z-index:1; }
+#panel-combat #combatArmorTable tr.armor-crossover-row { cursor:pointer; }
+#panel-combat #combatArmorTable tr.armor-crossover-row:hover td { background:#23394a; }
+#panel-combat #combatArmorTable tr.armor-crossover-row:focus-visible { outline:3px solid #a5e8f1;outline-offset:-3px; }
+#panel-combat #combatArmorTable thead th { font-size:10.5px;white-space:nowrap;cursor:default; }
+#panel-combat #combatArmorTable tbody td { font-size:12px; }
+#panel-combat :is(#combat-database,#compare-weapons,#how-thresholds-work) { scroll-margin-top:110px; }
+
+/* Phone TTK: place Hitbox and Armour side-by-side without hiding settings. */
+@media(max-width:700px) {
+  #panel-ttk .wrap > p.sub { margin-bottom:17px; }
+  #panel-ttk .wrap > p.sub + .card { padding:16px; margin-bottom:13px; }
+  #panel-ttk .wrap > p.sub + .card .section-h { margin-bottom:13px; }
+  #panel-ttk .wrap > p.sub + .card .toolbar {
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:11px 10px;align-items:start;
+  }
+  #panel-ttk .wrap > p.sub + .card .toolbar > .field {min-width:0;max-width:100%;margin:0;}
+  #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(1) {grid-column:1/-1;grid-row:1;}
+  #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(2) {grid-column:1;grid-row:2;}
+  #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(4) {grid-column:2;grid-row:2;}
+  #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(3) {
+    grid-column:1/-1;grid-row:3;justify-content:flex-start!important;min-height:32px;
+  }
+  #panel-ttk .wrap > p.sub + .card .toolbar select {width:100%;min-width:0;}
+}

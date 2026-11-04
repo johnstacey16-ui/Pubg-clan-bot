@@ -1,0 +1,87 @@
+/* Compact combat workspaces; loaded after the established HELP theme. */
+.workspace-segments {display:flex;flex-wrap:wrap;gap:5px;margin:6px 0;align-items:center}
+.workspace-segments button,.workspace-weapon-list button {font:600 12px/1.35 system-ui,sans-serif;min-height:44px;padding:7px 10px;color:#cad8df;background:#101e29;border:1px solid #405465;border-radius:5px;cursor:pointer}
+.workspace-segments button[aria-pressed=true],.workspace-weapon-list button[aria-pressed=true] {background:#35402e;border-color:#efc078;color:#ffe1a6}
+.workspace-segments button:disabled {opacity:.45;cursor:default}
+.workspace-segments button:focus-visible,.workspace-picker summary:focus-visible,.workspace-weapon-list button:focus-visible,.workspace-links a:focus-visible {outline:2px solid #ffca79;outline-offset:3px}
+.workspace-equipment img {object-fit:contain}
+.workspace-picker {margin-top:4px;font:12px/1.5 system-ui,sans-serif;color:#d2dfe5}
+.workspace-picker summary {min-height:32px;cursor:pointer;color:#f3c578;padding:5px 0}
+.workspace-picker[open] {border:1px solid #3c5361;padding:8px;border-radius:5px;background:#101b25}
+.workspace-picker input[type=search] {width:100%;min-height:44px;background:#09131d;color:#edf5fa;border:1px solid #526775;border-radius:4px;padding:8px;font:14px system-ui}
+.workspace-art-toggle {display:flex!important;align-items:center;gap:8px;font:12px system-ui!important;color:#c8d7df!important;min-height:40px;letter-spacing:0!important;text-transform:none!important}
+.workspace-art-toggle input {width:18px!important;min-height:18px!important;accent-color:#e8b969}
+.workspace-weapon-list {display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:6px;max-height:235px;overflow:auto;padding:3px}
+.workspace-weapon-list button {display:flex;align-items:center;gap:6px;flex-direction:column;justify-content:center}
+.workspace-weapon-list img {object-fit:contain}
+.workspace-picker-count {margin:4px 0;font-size:12px}
+.workspace-links {display:flex;gap:6px;margin:0 0 8px;flex-wrap:wrap}
+.workspace-links a {color:#c8d8e3;text-decoration:none;padding:8px 13px;min-height:36px;border:1px solid #354958;border-radius:5px;font:600 12px system-ui}
+.workspace-links a[aria-current] {color:#f5ce91;border-color:#ba935a}
+.workspace-context {font:12px/1.45 system-ui;color:#c7d8df;margin:0 0 10px}
+.workspace-context:empty {display:none}
+#panel-hit-zone .wrap {padding-top:14px}
+#panel-hit-zone h1 {font-size:26px}
+#panel-hit-zone .sub {margin:6px 0 12px}
+#panel-hit-zone .hz-workspace {grid-template-columns:minmax(290px,1fr) minmax(350px,1.05fr);align-items:start;gap:12px}
+#panel-hit-zone .hz-tools {min-width:0}
+#panel-hit-zone .hz-tools .toolbar {grid-template-columns:1fr 1fr;gap:8px}
+#panel-hit-zone .hz-tools .field:last-child {grid-column:1/-1}
+#panel-hit-zone .hz-tools .card {padding:10px;margin-bottom:10px}
+#panel-hit-zone #hz_status {margin:8px 0 0;padding:7px 9px;line-height:1.4}
+#panel-hit-zone #hz_body {max-width:400px;margin:0 auto}
+#panel-hit-zone .hz-figure-card {padding:10px;margin:0;order:-1}
+#panel-hit-zone .section-h {font-size:17px;margin:0 0 8px}
+#panel-hit-zone .hz-caption {margin:6px 0 0;font-size:11px;line-height:1.4}
+#panel-hit-zone .hz-results th,#panel-hit-zone .hz-results td {padding:5px 6px;font-size:11px}
+#panel-hit-zone .hz-results caption {font:11px/1.4 system-ui;padding-bottom:6px}
+#panel-hit-zone .hz-detail-card summary {min-height:34px;cursor:pointer;color:#f3ca8a;font:600 13px/1.5 system-ui}
+#panel-hit-zone .workspace-equipment {gap:4px;margin:0}
+#panel-hit-zone .workspace-equipment button {font-size:11px;padding:5px 7px}
+#panel-hit-zone .workspace-equipment img {width:28px;height:32px}
+#panel-combat header.hero {padding:15px 18px;margin-bottom:12px;border-radius:10px}
+#panel-combat header.hero h1 {font-size:clamp(25px,3vw,34px);margin:3px 0}
+#panel-combat .hero-stats {margin-top:8px}
+#panel-combat .hero-stats div {padding:6px 14px}
+#panel-combat .hero-stats b {font-size:22px}
+#panel-combat #combat-database {padding:14px}
+#panel-combat #combat-database .toolbar {margin-bottom:8px}
+#panel-combat #combat-view-status {margin:5px 0 8px}
+#panel-combat #wTable {min-width:0}
+#panel-range .wrap > h1,#panel-ttk .wrap > h1 {font-size:30px;margin:6px 0}
+#panel-range .wrap > .sub,#panel-ttk .wrap > .sub {margin:8px 0 14px}
+#panel-range .card,#panel-ttk .card {padding:16px}
+@media(max-width:1100px){
+ #panel-hit-zone .hz-workspace {grid-template-columns:minmax(250px,1fr) minmax(290px,1fr)}
+ #panel-hit-zone .workspace-equipment img {display:none}
+}
+@media(max-width:780px){
+ #panel-hit-zone .hz-workspace {grid-template-columns:1fr}
+ #panel-hit-zone .hz-tools {display:contents}
+ #panel-hit-zone .hz-tools > .card:first-child {order:0}
+ #panel-hit-zone .hz-figure-card {order:1}
+ #panel-hit-zone .hz-results {order:2}
+ #panel-hit-zone .hz-detail-card {order:3}
+ #panel-hit-zone #hz_body {max-width:400px}
+ #panel-hit-zone .workspace-equipment img {display:block}
+ #panel-hit-zone .hz-results th,#panel-hit-zone .hz-results td {padding:8px 6px;font-size:12px}
+}
+@media(max-width:400px){
+ #panel-hit-zone .workspace-equipment img {display:none}
+ #panel-hit-zone h1 {font-size:24px}
+}
+@media(max-width:700px){
+ #panel-combat header.hero h1 {font-size:26px;line-height:1.05}
+ #panel-combat #combat-database .combat-choose-hint {margin:2px 0 7px}
+ #panel-combat #combat-view-status {font-size:11px;line-height:1.3;margin:3px 0 6px}
+ #panel-combat #combat-database .panel-coord {margin-bottom:6px}
+}
+@media(max-width:700px){
+ #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(1) {grid-column:1;grid-row:1}
+ #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(2) {grid-column:2;grid-row:1}
+ #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(3) {grid-column:1;grid-row:2;min-height:0}
+ #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(4) {grid-column:1/-1;grid-row:3}
+ #panel-ttk .wrap > p.sub + .card .toolbar > .field:nth-child(5) {grid-column:2;grid-row:2}
+}
+#panel-hit-zone .workspace-equipment button {min-width:32px}
+#panel-hit-zone .workspace-equipment button[hidden] {display:none}

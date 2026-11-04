@@ -204,3 +204,9 @@
   .sidebar nav{flex-shrink:0}
   .side-bottom{flex-shrink:0}
 }
+
+/* Unified site: direct, accessible cross-links to the static HELP training lab. */
+.sidebar .toolkit-nav-link{margin-top:9px;border:1px solid #396b70;color:#c8fff4;background:#112b35}
+.sidebar .toolkit-nav-link:hover{border-color:var(--mint);color:#fff;background:#194145}
+.hero-actions .toolkit-hero-link{display:inline-flex;align-items:center;justify-content:center}
+@media(max-width:700px){.hero-actions .toolkit-hero-link{flex:1 1 100%}}
