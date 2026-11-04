@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<base href="/training/">
+<script src="/training/legacy-dashboard-hashes.js"></script>
 <link rel="stylesheet" href="command-centre-bridge.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -413,9 +415,9 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
 </head>
 <body>
 <nav class="command-centre-bridge" aria-label="PUBG Command Centre cross navigation">
-  <a href="/" aria-label="Return to PUBG player statistics">← Player statistics</a>
-  <strong>PUBG COMMAND CENTRE <span>/ TRAINING</span></strong>
-  <a href="/#matches">Matches &amp; replays →</a>
+  <a href="/dashboard/" aria-label="Open HELP Clan dashboard">← Clan Dashboard</a>
+  <strong>HELP CLAN <span>/ FIELD TOOLKIT</span></strong>
+  <a href="/dashboard/#matches">Matches &amp; replays →</a>
 </nav>
 <div id="app-shell">
   <aside id="app-sidebar" aria-label="Toolkit navigation">
@@ -433,6 +435,11 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
       <nav id="app-toolnav" aria-label="Toolkit tools">
         <div class="nav-tool-group">
   <div class="nav-group-label"><span>01</span>ALL TOOLS</div>
+  <a class="nav-tool unified-clan-entry" href="/dashboard/" aria-label="Open Clan Dashboard">
+    <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+    <span class="nav-tool-name">Clan Dashboard</span>
+    <svg class="nav-tool-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </a>
   <button class="nav-tool active" type="button" data-open-panel="panel-sensitivity" aria-controls="panel-sensitivity" aria-current="page">
     <span class="nav-tool-icon"><svg class="nav-tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5" fill="#111f2c"/><circle cx="16" cy="17" r="2.5" fill="#111f2c"/></svg></span>
     <span class="nav-tool-name">Sensitivity Studio</span>

@@ -57,11 +57,11 @@ async function main(){
    });
    const entry=await page.goto(base+'/training/',{waitUntil:'domcontentloaded'});
    assert.equal(entry.status(),200);
-   await page.waitForSelector('.command-centre-bridge a[href="/"]');
+   await page.waitForSelector('.command-centre-bridge a[href="/dashboard/"]');
    assert.match(await page.title(),/HELP/);
    assert.equal(await page.locator('#app-toolnav [data-open-panel]').count(),6);
    assert.match(await page.locator('.command-centre-bridge').innerText(),
-    /PUBG COMMAND CENTRE/);
+    /HELP CLAN/);
    for(const id of panels){
     await page.evaluate(panel=>{
      const btn=document.querySelector('#app-toolnav [data-open-panel="'+panel+'"]');
@@ -78,8 +78,9 @@ async function main(){
    assert.equal(script.status(),200);
    const stylesheet=await page.request.get(base+'/training/command-centre-bridge.css');
    assert.equal(stylesheet.status(),200);
-   const mainLink=await page.locator('.command-centre-bridge a[href="/"]').getAttribute('href');
-   assert.equal(mainLink,'/');
+   const mainLink=await page.locator('.command-centre-bridge a[href="/dashboard/"]').getAttribute('href');
+   assert.equal(mainLink,'/dashboard/');
+   assert.equal(await page.locator('#app-toolnav .unified-clan-entry').getAttribute('href'),'/dashboard/');
    assert.deepEqual(notFound,[],'Unresolved training assets at '+width+'px');
    assert.deepEqual(errors,[],'JavaScript errors at '+width+'px');
    console.log('MERGED HELP CHROME PASS: '+width+'px; 6 tool workspaces, static assets, cross-navigation');

@@ -52,7 +52,7 @@ const server=http.createServer(async(req,res)=>{
  if(uri.pathname.startsWith('/api/'))return reply(res,200,{
   schemaVersion:1,items:[],matches:[],rows:[],entries:[],error:'No synthetic records'
  });
- const uriPath=uri.pathname==='/'?'/index.html':path.posix.normalize(uri.pathname);
+ const uriPath=(uri.pathname==='/'||uri.pathname==='/dashboard/')?'/index.html':path.posix.normalize(uri.pathname);
  if(uriPath.includes('..')||!(/^\/(?:assets|design)\/[\w./-]+$/.test(uriPath)||
    uriPath==='/index.html'))return reply(res,404,{error:'Invalid asset'});
  try{
@@ -78,7 +78,7 @@ async function run(){
    const errors=[],page=await browser.newPage({viewport:{width,height:850}});
    page.on('pageerror',e=>errors.push(e.message));
    page.on('console',e=>{if(e.type()==='error')errors.push(e.text());});
-   const response=await page.goto('http://127.0.0.1:'+server.address().port+'/',{
+   const response=await page.goto('http://127.0.0.1:'+server.address().port+'/dashboard/',{
     waitUntil:'networkidle'});
    assert.equal(response.status(),200);
    await page.locator('#notice').waitFor({state:'hidden',timeout:12000});

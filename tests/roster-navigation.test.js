@@ -42,7 +42,7 @@ async function app(stored={}) {
   const document={getElementById:get,querySelectorAll(){return [];},
     addEventListener(event,handler){events[event]=handler;}};
   const context={document,window:{localStorage:storage,scrollTo(){},prompt(){}},
-    location:{hash:'',origin:'https://pubg-clan-bot.vercel.app'},
+    location:{hash:'',origin:'https://pubg-help-clan.vercel.app'},
     history:{replaceState(){},pushState(){}},navigator:{clipboard:{}},
     fetch:async url=>{
       assert.equal(url,'/api/public-stats');

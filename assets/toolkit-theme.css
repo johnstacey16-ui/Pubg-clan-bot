@@ -1,0 +1,87 @@
+/* HELP Clan visual language for the console dashboard.
+   Retains every existing dashboard component and its accessibility semantics. */
+:root {
+  --bg:#0a1019; --panel:#111c29; --panel2:#0e1722; --stroke:rgba(181,202,222,.16);
+  --text:#f7f3eb; --muted:#a9b6c5; --mint:#e9bc77; --gold:#e9bc77;
+  --blue:#7fb8cb; --violet:#b0a0d4;
+  color-scheme:dark;
+  font-family:Manrope,"Segoe UI",system-ui,sans-serif;
+}
+html{scroll-padding-top:100px}
+body{background:radial-gradient(ellipse at 88% 8%,rgba(65,110,148,.105),transparent 50%),#0a1019;color:var(--text)}
+a:hover{color:#f9d89d}
+:focus-visible{outline:2px solid #e9bc77;outline-offset:3px}
+.layout{grid-template-columns:282px minmax(0,1fr)}
+.sidebar{padding:0;gap:0;background:linear-gradient(160deg,rgba(27,43,57,.45),transparent 45%),#0e1722;border-right:1px solid rgba(176,194,210,.13);box-shadow:8px 0 40px rgba(0,0,0,.13);overflow-y:auto;scrollbar-width:thin}
+.sidebar::before{content:"";position:absolute;top:0;bottom:0;left:0;width:3px;background:linear-gradient(180deg,#e9bc77,transparent 48%);pointer-events:none}
+.brand{margin:0;min-height:118px;flex:0 0 auto;padding:24px 21px 24px 23px;gap:12px;border-bottom:1px solid var(--stroke)}
+.suite-mark{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;background:#e9bc77;color:#101b27;border:1px solid rgba(255,255,255,.28);border-radius:13px;box-shadow:0 9px 30px rgba(233,188,119,.12);font:900 30px/1 Impact,"Arial Narrow",sans-serif}
+.brand b{color:#fffaf2;font:800 24px/1 "Arial Narrow",Impact,sans-serif;letter-spacing:.06em}
+.brand .mint{color:#e9bc77}
+.brand small{margin-top:6px;font:600 9px/1.45 ui-monospace,monospace;letter-spacing:.08em;color:#dfb783}
+.sidebar .nav-label{color:#8194a8;font:600 10px/1.5 ui-monospace,monospace;letter-spacing:.12em;margin:25px 16px 9px;padding:0}
+.sidebar .suite-label{color:#e9bc77;margin-top:23px}
+.sidebar nav{gap:3px;padding:0 13px;flex-shrink:0}
+.sidebar .nav-link{position:relative;min-height:47px;padding:10px 12px;border:1px solid transparent;border-radius:11px;color:#aebdca;font:600 12px/1.35 Manrope,"Segoe UI",sans-serif;letter-spacing:0;gap:12px;transition:background .18s,border-color .18s,color .18s}
+.sidebar .nav-link span{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border:1px solid rgba(179,199,219,.1);background:rgba(121,152,174,.075);border-radius:9px;color:#b2c5d6;font-size:17px}
+.sidebar .nav-link:hover{color:#f4f7f9;background:rgba(255,255,255,.055)}
+.sidebar .nav-link.active,.sidebar .nav-link.suite-current{color:#fff4df;background:linear-gradient(105deg,rgba(225,172,102,.155),rgba(225,172,102,.038));border-color:rgba(235,189,125,.22);box-shadow:inset 2px 0 0 #e9bc77}
+.sidebar .nav-link.active span,.sidebar .nav-link.suite-current span{color:#f5d4a3;background:rgba(233,188,119,.16);border-color:rgba(233,188,119,.2)}
+.sidebar .suite-current{margin-bottom:12px}
+.sidebar .clan-pages{padding-bottom:15px}
+.sidebar .toolkit-nav-link{border-color:rgba(233,188,119,.2);background:rgba(233,188,119,.06);color:#f1d4a7}
+.side-bottom{margin:22px 17px 24px;border:1px solid var(--stroke);background:rgba(6,11,18,.28);border-radius:10px;padding:15px}
+.side-bottom b{color:#c1d4cd}
+.dot{background:#86d2ac;box-shadow:0 0 0 4px rgba(134,210,172,.10)}
+.main-area{background:radial-gradient(circle at 85% 0%,rgba(57,94,120,.10),transparent 540px),#0a111b;min-width:0}
+.topbar{position:sticky;top:0;z-index:70;min-height:86px;height:auto;background:rgba(11,19,30,.94);backdrop-filter:blur(22px);border-color:var(--stroke);color:#8299ac;padding:15px clamp(22px,3vw,46px);font:600 11px/1.6 ui-monospace,monospace}
+.topbar b{font:800 20px/1 "Arial Narrow",Impact,sans-serif;letter-spacing:.025em;text-transform:uppercase;color:#f4efe7}
+.topbar .live{color:#a4b9c5;font:600 10px/1.5 ui-monospace,monospace}
+main{max-width:1500px;padding:37px clamp(22px,3vw,46px) 24px}
+.hero{background:radial-gradient(circle at 93% 20%,rgba(209,164,98,.16),transparent 36%),radial-gradient(circle at 80% 110%,rgba(65,132,157,.16),transparent 53%),linear-gradient(120deg,#192633,#1b3041 55%,#111f2e);border:1px solid rgba(232,192,140,.22);border-radius:24px;box-shadow:0 24px 65px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04)}
+.hero h1,.page-head h1{font-family:"Arial Narrow",Impact,"Segoe UI",sans-serif;font-stretch:condensed;font-size:clamp(40px,5vw,68px);font-weight:850;letter-spacing:.005em;text-transform:uppercase}
+.hero h1 em,.page-head h1 em{color:#e9bc77}
+.hero p:not(.eyebrow){color:#c4d0db}
+.hero-mark b,.metric strong,.profile-stat strong{font-family:"Arial Narrow",Impact,ui-monospace,monospace}
+.hero-mark .ring{border-color:rgba(233,188,119,.3);box-shadow:0 0 0 22px rgba(233,188,119,.06),0 0 0 45px rgba(112,159,174,.055)}
+.hero-mark b{color:#f5d3a1;text-shadow:0 0 34px rgba(233,188,119,.2)}
+.hero-mark b span{color:#e9bc77}
+.card,.profile-stat{border:1px solid rgba(176,194,210,.16);border-radius:12px;background:linear-gradient(145deg,rgba(23,36,50,.94),rgba(13,24,36,.98));box-shadow:0 11px 32px rgba(0,0,0,.12)}
+.metric-title,.eyebrow,.nav-label,th{font-family:ui-monospace,"SFMono-Regular",monospace;letter-spacing:.11em;text-transform:uppercase}
+.metric strong{color:#f1cc99;font-size:clamp(30px,3.3vw,43px)}
+.metric small,.metric-title{color:#a9b6c5}
+.primary{border-radius:7px;border:1px solid #e9bc77;background:#e9bc77;color:#141b24}
+.primary:hover{background:#f9d59b}
+.secondary,.filters select,.filters input,.compare-controls select,.console-search-form input,.console-search-form select{background:#111d2b;border:1px solid #3c5264;border-radius:7px;color:#e7edf3}
+.secondary:hover{background:#203346;border-color:#ccaa75}
+.chip,.badge{border-radius:5px}
+.notice{background:#142230;border:1px solid #496072;border-radius:9px;color:#d9e5ee}
+.progress{background:#263645}.progress div,.bar-actual{background:linear-gradient(90deg,#a27b46,#e9bc77);box-shadow:none}
+.rank{border-radius:7px;background:#2c3540;color:#f1cc99}
+.text-button,.player-button:hover,.links a{color:#e9bc77}
+.table-scroll,.scroll-table{scrollbar-color:#596c7d transparent}
+th{color:#c6b18c;border-bottom-color:#495663}
+td{color:#c5d0dd;border-bottom-color:#263746}tr:hover td{background:rgba(231,188,119,.055)}
+dialog{border:1px solid #617181;border-radius:13px;background:#0f1c29;color:#f7f3eb}
+.profile-heading{border-bottom-color:rgba(181,202,222,.16)}
+footer{color:#8599ab;border-top-color:rgba(181,202,222,.14)}
+@media(max-width:1150px){.layout{grid-template-columns:245px minmax(0,1fr)}}
+@media(max-width:740px){
+ .layout{display:block}
+ .sidebar{position:relative;height:auto;max-height:none;overflow:visible;padding:0 0 12px;gap:0;border-right:0;border-bottom:1px solid var(--stroke)}
+ .sidebar::before{bottom:auto;height:3px;width:100%;background:linear-gradient(90deg,#e9bc77,transparent 52%)}
+ .brand{min-height:74px;padding:15px 17px}
+ .suite-mark{width:40px;height:40px;flex-basis:40px;font-size:25px}
+ .brand b{font-size:21px}
+ .sidebar .nav-label{margin:12px 16px 7px}
+ .sidebar nav{display:flex;flex-direction:row;gap:5px;overflow-x:auto;overscroll-behavior-inline:contain;padding:0 12px 7px;scrollbar-width:thin}
+ .sidebar .nav-link{flex:0 0 auto;min-height:44px;white-space:nowrap;padding:7px 12px;font-size:12px}
+ .sidebar .nav-link span{display:none}
+ .sidebar .suite-current{margin:0}
+ .side-bottom{display:none}
+ .topbar{min-height:63px;padding:9px 15px}
+ .topbar b{font-size:16px}
+ main{padding:22px 15px}
+ .hero{padding:25px 22px}
+ .hero h1,.page-head h1{font-size:40px}
+}

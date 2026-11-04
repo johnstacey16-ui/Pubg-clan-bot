@@ -12,10 +12,12 @@ function verify(){
  assert.match(main,/href="\/training\/"/);
  assert.match(main,/Explore training tools/);
  assert.match(toolkit,/command-centre-bridge/);
- assert.match(toolkit,/href="\/"/);
+ assert.match(toolkit,/href="\/dashboard\/"/);
  assert.match(toolkit,/\/training\/assets\/damage-training-mannequin\.svg/);
  assert.doesNotMatch(toolkit,/\bsrc="\/assets\//);
  assert.match(source,/a836606c896069b342fe9a1dbf3fb05934284342/);
+ assert.equal(v.routes.find(r=>r.src==='/')?.dest,'/training/index.html');
+ assert.equal(v.routes.find(r=>r.src==='/dashboard/')?.dest,'/index.html');
  assert.ok(v.builds.some(b=>b.src==='training/**'&&b.use==='@vercel/static'));
  assert.ok(v.routes.some(r=>r.src==='/training/'&&r.dest==='/training/index.html'));
  assert.ok(v.routes.some(r=>r.src==='/training/(.*)'&&r.dest==='/training/$1'));
