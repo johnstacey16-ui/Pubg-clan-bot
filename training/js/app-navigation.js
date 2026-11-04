@@ -4,6 +4,10 @@
   'use strict';
   const panelIds = ["panel-sensitivity","panel-combat","panel-hit-zone","panel-recoil2","panel-attach","panel-backpack"];
   const navButtons = Array.from(document.querySelectorAll('#app-toolnav [data-open-panel]'));
+  // The first navigation entry is Clan Dashboard, which uses /dashboard/.
+  // The six calculator workspaces follow it in the shared HELP Clan tool count.
+  const externalToolCount = document.querySelectorAll('#app-toolnav .unified-clan-entry').length;
+  const toolCount = panelIds.length + externalToolCount;
   const toggle = document.getElementById('mobile-nav-toggle');
   const scrim = document.getElementById('sidebar-scrim');
   const title = document.getElementById('active-tool-heading');
@@ -53,9 +57,9 @@
     });
     const button = navButtons.find(item=>item.dataset.openPanel===id);
     title.textContent = button ? button.querySelector('.nav-tool-name').textContent.trim() : '';
-    const currentIndex = panelIds.indexOf(id)+1;
-    index.innerHTML = String(currentIndex).padStart(2,'0')+' <i>/</i> '+String(panelIds.length).padStart(2,'0');
-    index.setAttribute('aria-label','Tool '+currentIndex+' of '+panelIds.length);
+    const currentIndex = panelIds.indexOf(id)+1+externalToolCount;
+    index.innerHTML = String(currentIndex).padStart(2,'0')+' <i>/</i> '+String(toolCount).padStart(2,'0');
+    index.setAttribute('aria-label','Tool '+currentIndex+' of '+toolCount);
     if(options.updateHistory && location.hash !== '#'+id) history.pushState({panel:id},'', '#'+id);
     if(options.scroll && changed) window.scrollTo({top:0,behavior:'auto'});
     const wasOpen = root.classList.contains('sidebar-open');

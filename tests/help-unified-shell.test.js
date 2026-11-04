@@ -36,3 +36,15 @@ test('dashboard player history and Discord links remain under /dashboard/',()=>{
   assert.match(discord,/https:\/\/pubg-help-clan\.vercel\.app\/dashboard\//);
   assert.doesNotMatch(js,/location\.origin\+'\/#player\//);
 });
+
+
+test('shared HELP navigation counts the dashboard as tool one and avoids redundant toolkit links',()=>{
+  const toolkit=read('training/index.html');
+  const nav=read('training/js/app-navigation.js');
+  const dashboard=read('index.html');
+  assert.match(toolkit,/aria-label="Tool 2 of 7">02 <i>\/<\/i> 07/);
+  assert.match(nav,/const toolCount = panelIds.length \+ externalToolCount/);
+  assert.match(dashboard,/href="\/#panel-sensitivity">Open Sensitivity Studio/);
+  assert.doesNotMatch(dashboard,/Training toolkit ↗/);
+  assert.match(read('training/command-centre-bridge.css'),/#e9bc77/);
+});
