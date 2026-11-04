@@ -22,16 +22,10 @@ jobs:
           fetch-depth: 0
       - name: Import pinned public source into the new static training section
         run: bash scripts/vendor-help-toolkit.sh
-      - name: Check HELP generated scripts against the original fragments
-        run: node training/scripts/build-static.cjs --check
-      - name: Run all original HELP calculator and publisher data tests
-        run: node --test training/tests/*.test.cjs
-      - name: Verify original training tools in real Google Chrome
-        run: node training/tests/browser-smoke.cjs
-      - name: Test original hit-zone and responsive Chrome layouts
+      - name: Validate relocated assets and Command Centre navigation
         run: |
-          node training/tests/hit-zone-preview-smoke.cjs
-          node training/tests/visual-layout-smoke.cjs
+          node scripts/check-training-integration.cjs
+          node --test tests/training-integration.test.js
       - name: Commit validated snapshot to integration branch only
         run: |
           test "$GITHUB_REF_NAME" = "integrate-help-toolkit"

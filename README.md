@@ -485,3 +485,8 @@ Pin and import procedure: scripts/vendor-help-toolkit.sh
 The original HELP website and GitHub repository are retained. Custom
 empirical damage/ADS/sensitivity/recoil assumptions are not silently
 merged into official API measurements.
+
+
+### Toolkit test compatibility during migration
+
+The upstream HELP tests deliberately assert exact original DOM, SVG resource paths and original .github workflow file. The import checks its untouched pinned source with the original generated-build, all calculator tests and Chrome layout smoke checks first. After inserting a namespaced static back-navigation bridge and correcting the mannequin asset path, separate integration tests validate the hosted copy. This prevents rewriting the creator's source tests or disguising differences as passes.

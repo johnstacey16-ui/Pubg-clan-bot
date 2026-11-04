@@ -15,6 +15,18 @@ if [[ "$(git -C "$TMP/help" rev-parse HEAD)" != "$SOURCE_SHA" ]]; then
 fi
 test "$(git -C "$TMP/help" rev-parse HEAD)" = "$SOURCE_SHA"
 
+# The publisher's untouched site must pass its own strict tests first.
+# Those assertions inspect exact original HTML, art paths and workflow files;
+# moving those checks to the namespaced copy would create false failures.
+(
+  cd "$TMP/help"
+  node scripts/build-static.cjs --check
+  node --test tests/*.test.cjs
+  node tests/browser-smoke.cjs
+  node tests/hit-zone-preview-smoke.cjs
+  node tests/visual-layout-smoke.cjs
+)
+
 mkdir -p "$ROOT/training"
 rsync -a --delete --exclude='.git' --exclude='.github' "$TMP/help/" "$ROOT/training/"
 
