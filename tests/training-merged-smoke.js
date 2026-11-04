@@ -58,7 +58,8 @@ async function main(){
    });
    const entry=await page.goto(base+'/',{waitUntil:'domcontentloaded'});
    assert.equal(entry.status(),200);
-   await page.waitForSelector('#app-toolnav [data-open-panel="panel-clan"]');
+   // At mobile widths the sidebar is deliberately off-canvas until opened.
+   await page.waitForSelector('#app-toolnav [data-open-panel="panel-clan"]',{state:'attached'});
    assert.match(await page.title(),/HELP/);
    assert.equal(await page.locator('#app-toolnav [data-open-panel]').count(),7);
    assert.equal(await page.locator('#active-tool-index').getAttribute('aria-label'),'Tool 2 of 7');
