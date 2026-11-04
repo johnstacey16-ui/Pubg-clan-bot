@@ -37,8 +37,8 @@ test('only genuine current season IDs are accepted',()=>{
  assert.equal(currentId({data:[{id:'unsafe/id',attributes:{isCurrentSeason:true}}]}),null);
  assert.equal(currentId({data:[]}),null);
 });
-test('collects two verified players with one index request per shard',()=>withKey(async()=>{
- const db=fakeDb([player(),player(12)]),indexes=[],calls=[];
+test('collects three verified players with one index request per shard',()=>withKey(async()=>{
+ const db=fakeDb([player(),player(12),player(13)]),indexes=[],calls=[];
  const status=await collectClanSeasons(db,{
   cachedEndpoint:async(_db,shard,path,ttl,opts)=>{
     indexes.push({shard,path,ttl,force:opts.force});return{state:'fresh',data:season};
@@ -48,11 +48,12 @@ test('collects two verified players with one index request per shard',()=>withKe
   }
  });
  assert.equal(status.playersAttempted,MAX_PLAYERS);
- assert.equal(status.seasonSaved,2);
- assert.equal(status.rankedSaved,2);
+ assert.equal(status.seasonSaved,3);
+ assert.equal(status.rankedSaved,3);
  assert.equal(indexes.length,1);
- assert.equal(calls.length,4);
+ assert.equal(calls.length,6);
  assert.ok(calls.every(x=>x.force));
+ assert.ok(indexes.every(x=>x.force));
  assert.ok(db.outcomes.every(x=>x.last_result==='saved'));
 }));
 test('atomic limit refusal stops before claiming another member',()=>withKey(async()=>{
@@ -65,6 +66,8 @@ test('atomic limit refusal stops before claiming another member',()=>withKey(asy
  assert.equal(status.playersAttempted,1);
  assert.equal(db.calls.length,1);
  assert.equal(db.outcomes[0].last_result,'rate_limited');
+ assert.ok(Date.parse(db.outcomes[0].next_attempt_at)-Date.now() < 90*1000);
+ assert.ok(Date.parse(db.outcomes[0].next_attempt_at)>Date.now());
 }));
 test('stale cached stats are never counted as a new observation',()=>withKey(async()=>{
  const db=fakeDb([player()]);

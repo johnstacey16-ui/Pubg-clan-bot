@@ -32,7 +32,8 @@ test('rate-limit panel derives remaining reservations from observed used slots',
  const r=shapeCacheHealth({...data,budget:{...data.budget,reserved:12,remaining:999}});
  assert.equal(r.budget.remaining,0);
  assert.equal(r.budget.reservations,12);
- assert.equal(shapeCacheHealth({...data,budget:{...data.budget,reservationLimit:10}}).budget.limit,null);
+ assert.equal(shapeCacheHealth({...data,budget:{...data.budget,reservationLimit:10}}).budget.limit,10);
+ assert.equal(shapeCacheHealth({...data,budget:{...data.budget,reservationLimit:11}}).budget.limit,null);
 });
 test('service-role RPC errors degrade cache-health only, not the existing status page',async()=>{
  const failure={rpc:async()=>({error:{message:'not installed'}})};

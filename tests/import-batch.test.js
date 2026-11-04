@@ -21,7 +21,7 @@ function fakeDatabase(size = 10) {
     reservations,
     refill(value = 8) { remaining = value; },
     rpc(name, args) {
-      assert.equal(name, 'reserve_pubg_requests');
+      assert.equal(name, 'reserve_pubg_background_requests');
       const count = args.p_count;
       const allowed = count <= remaining;
       reservations.push({ count, allowed });

@@ -2,11 +2,18 @@
 const {createClient}=require('@supabase/supabase-js');
 const {getStats}=require('../lib/live-stats');
 const {publicPlayer,validInput,REFRESH_FRESH_MS}=require('../lib/web-player');
+// Require an exact same-origin HTTPS request from a configured public website.
+// Do not accept arbitrary *.vercel.app preview deployments or spoofed hosts.
+const WEBSITE_HOSTS=new Set([
+ 'pubg-help-clan.vercel.app',
+ 'pubg-clan-bot.vercel.app', // Legacy bookmarked URL
+ 'pubg-help-clan-acme-a675.vercel.app',
+ 'pubg-help-clan-git-main-acme-a675.vercel.app'
+]);
 const sameOrigin=req=>{
  const host=String(req.headers?.host||'').toLowerCase();
  const origin=String(req.headers?.origin||'').toLowerCase();
- return /^pubg-clan-bot(?:-[a-z0-9-]+)?\.vercel\.app$/.test(host) &&
-   origin==='https://'+host;
+ return WEBSITE_HOSTS.has(host) && origin==='https://'+host;
 };
 async function processLookup(db,{name,platform='auto',refresh=false}){
  if(!validInput(name,platform))

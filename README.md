@@ -519,3 +519,45 @@ Once the Vercel build quota allows it, use the existing **pubg-help-clan** Verce
 
 When all nine public resources pass, run `/setup` in the already configured Discord dashboard channel to edit its permanent buttons to `/dashboard/`. The Discord Interactions Endpoint remains `https://pubg-help-clan.vercel.app/interactions`.
 
+
+### Priority-based PUBG collection (first-fill + maintenance)
+
+The default publisher API-key allowance is **10 rate-limited calls per minute**. A
+single atomic Supabase budget now permits **10 reservations per rolling 65 seconds**;
+background collection stops at **8** so at least two unspent slots remain for
+interactive player searches. No second API key, fake data, or in-memory-only
+limiter is used. Official match detail and telemetry endpoints do not consume
+that key quota, but we still cap per-run work and downloads.
+
+- **Interactive:** Public search shows saved data immediately. An explicit
+  refresh can request newer lifetime data after two minutes for the same
+  player; all requests still pass the atomic global limit. Different visitors
+  are no longer held behind one 90-second site-wide cooldown.
+- **First fill:** Matched clan players get a persistent server-only job each
+  for lifetime statistics, player match index, Weapon Mastery and Survival Mastery. The server
+  fetches up to five unmetered match detail objects per saved player index.
+  Actual current-season and ranked statistics are gradually collected
+  separately with a two-call-per-player backfill.
+- **Maintenance:** Repeated requests reuse cached responses and decline
+  duplicate work. Season collection rotates verified accounts no more often
+  than every 23 hours; lifetime and match indexes are eligible for a daily
+  refresh, while weapon and survival mastery refresh weekly. Missing records
+  are retried with capped backoff rather than fabricated. Player-triggered
+  updates take priority.
+- **Scheduling:** Existing daily Vercel Hobby cron still runs. For accelerated
+  initial loading and daily maintenance, go to GitHub Settings → Secrets and
+  variables → Actions and add a repository secret named
+  `PUBG_SYNC_CRON_SECRET` with the **same value** as the existing Vercel
+  `CRON_SECRET` (never paste it into an issue, code or chat). The
+  `Collect missing PUBG clan data` workflow then runs daily and can be run
+  manually. It makes repeated authenticated, short serverless requests, at
+  most one every 66 seconds, for a bounded number of cycles.
+- **Deployment:** Apply
+  `supabase/migrations/20261104_maximum_pubg_priority_and_backfill.sql`
+  **before** deploying code that calls the new background reservation RPC.
+  Do not deploy the application change if its migration has not applied.
+- **Limits:** This backfill covers real, supported resources for the verified
+  stored clan roster, not every historical PUBG match ever played or all
+  events on the service. Deep telemetry remains selected-match/on-demand to
+  avoid downloading giant assets and flooding free hosting.
+
