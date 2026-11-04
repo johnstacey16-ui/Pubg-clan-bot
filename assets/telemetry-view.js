@@ -8,7 +8,7 @@
  const n=v=>typeof v==='number'&&Number.isFinite(v)?
   v.toLocaleString('en-GB',{maximumFractionDigits:2}):'—';
  let person=null,matches=[],report=null,play=false,frame=null,lastFrame=0;
- let center=null,selectedTime=0;
+ let center=null,selectedTime=0,eventPage=0,rivalsRequest=0;
  function stop(){
   play=false;
   $('telemetry-play').textContent='▶ Play';
@@ -33,6 +33,12 @@
   $('telemetry-report').innerHTML='';
   $('telemetry-map').innerHTML='';
   $('telemetry-track').innerHTML='';
+  $('telemetry-event-list').innerHTML='';
+  $('telemetry-event-count').textContent='Load real match telemetry to explore events.';
+  $('telemetry-rivals-table').innerHTML='';
+  $('telemetry-rivals-note').textContent='Select a player and read previously analysed matches.';
+  $('telemetry-rivals-refresh').disabled=!person;
+  rivalsRequest++;
  }
  function point(samples,t){
   let start=0,end=samples.length-1,result=null;
@@ -121,6 +127,92 @@
    (current.y/100).toFixed(1)+'m S · last sampled '+(t-current.t).toFixed(1)+'s ago':
    'Choose a player with real recorded positions. No missing positions are interpolated.';
  }
+ function renderEventBrowser(){
+  const events=Array.isArray(report?.playerEvents)?report.playerEvents:[];
+  const kind=$('telemetry-event-type').value;
+  const search=$('telemetry-event-search').value.trim().toLowerCase();
+  const filtered=events.filter(row=>
+   (!kind||row.type===kind)&&
+   (!search||[row.type,row.actor,row.subject,row.sourceIndex,row.timestamp].some(value=>
+    String(value??'').toLowerCase().includes(search))));
+  const size=40,pages=Math.max(1,Math.ceil(filtered.length/size));
+  eventPage=Math.min(Math.max(0,eventPage),pages-1);
+  $('telemetry-event-prev').disabled=eventPage===0;
+  $('telemetry-event-next').disabled=eventPage>=pages-1;
+  const coverage=report?.activityCoverage;
+  $('telemetry-event-count').textContent=filtered.length+' matching player events · '+
+   'page '+(eventPage+1)+' of '+pages+' · '+
+   (coverage?(coverage.returned||events.length)+' of '+coverage.observed+
+    ' meaningful events retained'+(coverage.truncated?' (bounded sample)':''):
+    events.length+' stored event rows (older saved report)')+
+   ' · '+(report?.sourceEvents||0)+' total PUBG match source events.';
+  $('telemetry-event-list').innerHTML=filtered.slice(eventPage*size,(eventPage+1)*size)
+   .map(row=>{
+    const canJump=typeof row.timeSeconds==='number'&&
+      Number.isFinite(row.timeSeconds)&&row.timeSeconds>=0;
+    const action=canJump?'<button type="button" class="secondary telemetry-jump" data-telemetry-jump="'+
+     row.timeSeconds+'" aria-label="Jump replay to event '+row.sourceIndex+'">Jump to '+row.timeSeconds.toFixed(1)+'s</button>':
+     'No timestamp';
+    return '<tr><td>'+n(row.sourceIndex)+'</td><td>'+escape(row.timestamp||'—')+
+     '</td><td>'+escape(row.type)+'</td><td>'+escape(row.actor)+'</td><td>'+
+     escape(row.subject)+'</td><td>'+action+'</td></tr>';
+   }).join('')||'<tr><td colspan="6">No real event rows match this filter.</td></tr>';
+ }
+ function chooseEvent(t){
+  if(!report?.replay||!Number.isFinite(t))return;
+  stop();
+  selectedTime=Math.max(0,Math.min(Number(report.replay.duration)||0,t));
+  $('telemetry-time').value=String(selectedTime);
+  draw();
+ }
+ function exportEvents(){
+  if(!report)return;
+  const payload={
+   matchId:report.matchId,player:report.player,
+   source:'Sanitized selected-player event references from a genuine PUBG match',
+   activityCoverage:report.activityCoverage||null,
+   events:Array.isArray(report.playerEvents)?report.playerEvents:[]
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  try{
+   const a=document.createElement('a');
+   a.href=url;a.download='pubg-player-events-'+String(report.matchId||'match').slice(0,36)+'.json';
+   a.click();
+  }finally{URL.revokeObjectURL(url);}
+ }
+ async function readRivals(){
+  if(!person)return;
+  const request=++rivalsRequest,selectedName=person;
+  const button=$('telemetry-rivals-refresh');
+  button.disabled=true;
+  $('telemetry-rivals-note').textContent='Reading previously analysed match reports…';
+  try{
+   const params=new URLSearchParams({name:selectedName,route:'rivals'});
+   const response=await fetch('/api/public-matches?'+params.toString(),
+    {cache:'no-store',headers:{Accept:'application/json'}});
+   const data=await response.json();
+   if(!response.ok||data.schemaVersion!==1||!Array.isArray(data.rivals))
+    throw Error(data.error||'Saved rival reports unavailable');
+   if(request!==rivalsRequest||selectedName!==person)return;
+   $('telemetry-rivals-note').textContent=data.matchesAnalysed+
+    ' distinct, previously analysed matches · '+data.rivals.length+
+    ' visible opponent names. Names can be shared between accounts; this is not a verified cross-match identity or career total.';
+   $('telemetry-rivals-table').innerHTML=data.rivals.map(row=>
+    '<tr><td>'+escape(row.name)+'</td><td>'+n(row.matchesSampled)+'</td><td>'+
+     n(row.kills)+'</td><td>'+n(row.deaths)+'</td><td>'+
+     n(row.damageDealt)+'</td><td>'+n(row.damageTaken)+'</td><td>'+
+     escape(row.lastMatchAt||'—')+'</td></tr>'
+   ).join('')||'<tr><td colspan="7">No saved opponent encounters yet. Analyse one of the actual saved matches first.</td></tr>';
+  }catch(error){
+   if(request!==rivalsRequest)return;
+   $('telemetry-rivals-note').textContent='Rival reports unavailable: '+error.message;
+   $('telemetry-rivals-table').innerHTML='';
+  }finally{
+   if(request===rivalsRequest)button.disabled=false;
+  }
+ }
+
  function render(){
   if(!report)return;
   const summary=report.combatSummary||{},rows=report.rivals||[];
@@ -140,12 +232,7 @@
    '<div class="scroll-table"><table><thead><tr><th>WEAPON / CAUSE</th><th>DAMAGE</th></tr></thead><tbody>'+
    (report.weapons||[]).map(x=>'<tr><td>'+escape(x.name)+'</td><td>'+n(x.damage)+'</td></tr>').join('')+
    '</tbody></table></div></details>'+
-   '<details><summary>Player-referenced telemetry activity (up to 180 events)</summary>'+
-   '<div class="scroll-table"><table><thead><tr><th>SOURCE #</th><th>TIME</th><th>TYPE</th><th>ACTOR</th><th>SUBJECT</th></tr></thead><tbody>'+
-   (report.playerEvents||[]).map(x=>'<tr><td>'+n(x.sourceIndex)+'</td><td>'+
-    escape(x.timestamp||'—')+'</td><td>'+escape(x.type)+'</td><td>'+
-    escape(x.actor)+'</td><td>'+escape(x.subject)+'</td></tr>').join('')+
-   '</tbody></table></div></details>'+
+
    '<p class="small muted">'+escape(report.note)+'</p>';
   const r=report.replay;
   $('telemetry-track').innerHTML=(r?.tracks||[]).map(x=>
@@ -157,6 +244,11 @@
   $('telemetry-time').value='0';
   selectedTime=0;center=null;
   $('telemetry-zoom').value='1';
+  $('telemetry-event-type').innerHTML='<option value="">All recorded player events</option>'+
+   [...new Set((report.playerEvents||[]).map(e=>e.type))].sort().map(type=>
+    '<option value="'+escape(type)+'">'+escape(type)+'</option>').join('');
+  $('telemetry-event-search').value='';eventPage=0;
+  renderEventBrowser();
   draw();
  }
  async function load(){
@@ -205,6 +297,16 @@
  }
  function init(){
   $('telemetry-load').addEventListener('click',load);
+  $('telemetry-rivals-refresh').addEventListener('click',readRivals);
+  $('telemetry-event-type').addEventListener('change',function(){eventPage=0;renderEventBrowser();});
+  $('telemetry-event-search').addEventListener('input',function(){eventPage=0;renderEventBrowser();});
+  $('telemetry-event-prev').addEventListener('click',function(){eventPage--;renderEventBrowser();});
+  $('telemetry-event-next').addEventListener('click',function(){eventPage++;renderEventBrowser();});
+  $('telemetry-event-export').addEventListener('click',exportEvents);
+  $('telemetry-event-list').addEventListener('click',function(event){
+   const action=event.target.closest&&event.target.closest('[data-telemetry-jump]');
+   if(action)chooseEvent(Number(action.dataset.telemetryJump));
+  });
   $('telemetry-track').addEventListener('change',draw);
   $('telemetry-time').addEventListener('input',function(){
    selectedTime=Number(this.value)||0;draw();
@@ -230,5 +332,6 @@
   });
  }
  init();
- window.TelemetryView={matchesChanged,renderForTest:data=>{report=data;render();}};
+ window.TelemetryView={matchesChanged,renderForTest:data=>{report=data;render();},
+  jumpToEvent:chooseEvent,renderEventBrowser};
 })();

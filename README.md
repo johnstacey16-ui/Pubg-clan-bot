@@ -415,3 +415,21 @@ the selected region, season and mode.
 ### Vercel Hobby function limit
 
 The old project had already reached the Hobby limit of **12 Node serverless functions**. To preserve free hosting, the new public-safe source and official regional ranking URLs are aliases for the existing insights function, and the telemetry analysis URL is an alias for the existing match function. Their frontend queries include explicit route selectors. The three new handler files were removed; all heavy logic is in reusable lib modules. This prevents the Vercel exceeded_serverless_functions_per_deployment build error. The regression suite explicitly checks the function count and aliases.
+
+
+## Source-indexed event exploration and observed opponent trends
+
+The replay panel now offers filtered, paginated player-event activity with
+true PUBG source indexes, clickable jump-to-event playback controls, and
+downloadable **sanitized** activity JSON. Positions are shown as genuine
+sampled tracks and omitted from the high-volume activity event table.
+A saved activity result includes source totals and the number of event rows
+retained (maximum 1,200); capped results are explicitly labelled and
+never presented as complete telemetry.
+
+The cached rival-trends view uses only distinct previously analysed match
+reports belonging to the exact saved console account (maximum 100 reports
+read, 80 visible opponent names). It makes no upstream PUBG/telemetry
+request or rate-budget reservation. The visible opponent name is used
+across matches without asserting that matching names prove the same account.
+It reports observed matches only; no career-wide aggregates are invented.

@@ -174,3 +174,12 @@
 #page-global .scroll-table{margin-top:15px}
 #page-global .scroll-table th,#page-global .scroll-table td{white-space:nowrap}
 #global-count,#global-cutlines{overflow-wrap:anywhere}
+
+/* Indexed, privacy-safe PUBG telemetry event browsing and genuine rival cache. */
+.telemetry-events,.telemetry-rival-trends{margin:24px 0;padding:20px 0;border-top:1px solid #344563}
+.telemetry-events .filters{margin:14px 0;align-items:end}
+.telemetry-events .filters label{flex:1 1 180px}
+.telemetry-events .filters input,.telemetry-events .filters select{width:100%;min-width:0}
+.telemetry-jump{white-space:nowrap}
+#telemetry-event-list td,#telemetry-rivals-table td{white-space:nowrap}
+#telemetry-event-list td:nth-child(3){max-width:225px;overflow-wrap:anywhere;white-space:normal}

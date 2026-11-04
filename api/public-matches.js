@@ -1,13 +1,13 @@
 'use strict';
 const { createClient } = require('@supabase/supabase-js');
 const { cachedPlayerMatches } = require('../lib/web-match-intel');
-const { publicTelemetry } = require('../lib/web-telemetry');
+const { publicTelemetry, publicRivalTrends } = require('../lib/web-telemetry');
 module.exports=async(req,res)=>{
   res.setHeader('Cache-Control','public, s-maxage=60, stale-while-revalidate=120');
   res.setHeader('X-Content-Type-Options','nosniff');
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
   const name=req.query?.name,route=req.query?.route;
-  if(route!==undefined && route!=='telemetry')
+  if(route!==undefined && !['telemetry','rivals'].includes(route))
     return res.status(400).json({error:'Unknown match route'});
   if(typeof name!=='string' || !name.trim() || name.length>100)
     return res.status(400).json({error:'Invalid PUBG gamertag'});
@@ -18,6 +18,7 @@ module.exports=async(req,res)=>{
       auth:{autoRefreshToken:false,persistSession:false}
     });
     const result=route==='telemetry'?await publicTelemetry(db,{name,match:req.query?.match}):
+      route==='rivals'?await publicRivalTrends(db,{name}):
       await cachedPlayerMatches(db,name);
     if(route)res.setHeader('Cache-Control','private, no-store');
     if(result.body?.retryAfterSeconds)res.setHeader('Retry-After',String(result.body.retryAfterSeconds));

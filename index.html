@@ -102,6 +102,36 @@
         </div>
         <p id="telemetry-status" class="small muted" aria-live="polite">Select a player and load their saved matches above.</p>
         <div id="telemetry-report" aria-live="polite"></div>
+
+        <div class="telemetry-events">
+          <div class="panel-heading"><div><h3>Source-indexed player event explorer</h3>
+            <p class="small muted">Find the selected player's meaningful recorded events. Positions remain in the replay tracks. Event indexes refer to the original PUBG telemetry array.</p></div>
+            <button id="telemetry-event-export" type="button" class="secondary">Download safe activity JSON</button>
+          </div>
+          <div class="filters">
+            <label>Event type <select id="telemetry-event-type"><option value="">All recorded player events</option></select></label>
+            <label>Filter actor, subject or event <input id="telemetry-event-search" type="search" maxlength="120" placeholder="Search recorded events"></label>
+            <button id="telemetry-event-prev" type="button" class="secondary">← Earlier events</button>
+            <button id="telemetry-event-next" type="button" class="secondary">Later events →</button>
+          </div>
+          <p id="telemetry-event-count" class="small muted" aria-live="polite">Load real match telemetry to explore events.</p>
+          <div class="scroll-table"><table><thead><tr>
+            <th>SOURCE #</th><th>TIME</th><th>TYPE</th><th>ACTOR</th><th>SUBJECT</th><th>REPLAY</th>
+          </tr></thead><tbody id="telemetry-event-list"></tbody></table></div>
+          <p class="small muted">The analysis may return a bounded sample of events for exceptionally long matches. Event indexes and genuine event times are preserved; no absent events or positions are invented.</p>
+        </div>
+        <div class="telemetry-rival-trends">
+          <div class="panel-heading"><div><h3>Opponent trends across saved match analyses</h3>
+            <p class="small muted">Compare rivals across distinct saved match reports. No new PUBG fetch and no guessed career totals.</p></div>
+            <button id="telemetry-rivals-refresh" type="button" class="secondary">Read saved rival trends</button>
+          </div>
+          <p id="telemetry-rivals-note" class="small muted" aria-live="polite">Select a player and read analysed match reports.</p>
+          <div class="scroll-table"><table><thead><tr>
+            <th>VISIBLE NAME</th><th>MATCHES OBSERVED</th><th>YOU KILLED</th>
+            <th>THEY KILLED YOU</th><th>DAMAGE DEALT</th><th>DAMAGE TAKEN</th><th>LAST SAVED MATCH</th>
+          </tr></thead><tbody id="telemetry-rivals-table"></tbody></table></div>
+        </div>
+
         <div class="telemetry-controls">
           <label>Player track <select id="telemetry-track"></select></label>
           <label>Speed <select id="telemetry-speed"><option value="1">1×</option><option value="5" selected>5×</option><option value="15">15×</option><option value="30">30×</option></select></label>

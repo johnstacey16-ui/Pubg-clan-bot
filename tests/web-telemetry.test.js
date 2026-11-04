@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {publicTelemetry,shapeTelemetry,validTelemetryUrl}=require('../lib/web-telemetry');
+const {publicTelemetry,publicRivalTrends,shapeTelemetry,validTelemetryUrl}=require('../lib/web-telemetry');
 const {buildReplay,latestSample,pathSegments}=require('../lib/pubg-replay');
 const uuid='e7ff11aa-2222-3333-4444-555555555555';
 const id='account.player123456789';
@@ -103,4 +103,71 @@ test('first trusted fetch stores bounded report; repeated fetch uses cache',asyn
  assert.equal(second.body.cache,'saved');
  assert.equal(hits,1);
  assert.equal(db.calls.rpc,1);
+});
+
+test('expanded activity is source-indexed and carries replay jump timestamps',()=>{
+ const records=[...events,
+  {_T:'LogPlayerPosition',_D:date(67),character:{accountId:id,name:'Hero',
+    location:{x:2000,y:3000,z:0}}},
+  {_T:'LogItemPickup',_D:date(70),character:{accountId:id,name:'Hero'}}];
+ const result=shapeTelemetry(records,id,uuid,{mapName:'Erangel_Main'});
+ assert.equal(result.activityCoverage.observed,5);
+ assert.equal(result.activityCoverage.returned,5);
+ assert.equal(result.activityCoverage.truncated,false);
+ assert.ok(result.playerEvents.some(e=>e.sourceIndex===8&&e.timeSeconds===70));
+ assert.ok(result.playerEvents.every(e=>e.type!=='LogPlayerPosition'));
+});
+function trendDb(accountRecords,allPlayers=[{gamertag:'Hero',platform:'xbox',pubg_account_id:id}]){
+ let upstream=0;
+ return{get upstream(){return upstream;},
+  from(table){
+   if(table==='players')return{
+    select(){return this;},ilike(){return this;},
+    async limit(){return{data:allPlayers,error:null};}
+   };
+   if(table==='pubg_endpoint_cache')return{
+    select(){return this;},like(col,pattern){
+     assert.equal(col,'cache_key');
+     assert.ok(pattern.startsWith('web:telemetry:v1:%:'));
+     return this;
+    },order(){return this;},
+    async limit(){return{data:accountRecords,error:null};}
+   };
+   throw Error('Unexpected table '+table);
+  },
+  rpc(){upstream++;throw Error('Trend reads must not reserve API budgets');}
+ };
+}
+test('cross-match rival trends deduplicate saved report IDs and use no upstream requests',async()=>{
+ const two='e7ff11aa-2222-3333-4444-777777777777';
+ const record=(match,arr)=>({
+  cache_key:'web:telemetry:v1:'+match+':'+id,
+  fetched_at:'2026-11-03T18:00:00Z',
+  payload:{
+   schemaVersion:1,matchId:match,playedAt:'2026-11-03T16:00:00Z',
+   rivals:arr
+  }
+ });
+ const db=trendDb([
+  record(uuid,[{name:'Opponent',kills:1,deaths:0,damageDealt:60,damageTaken:12}]),
+  record(uuid,[{name:'Opponent',kills:1,deaths:0,damageDealt:60,damageTaken:12}]),
+  record(two,[{name:'opponent',kills:0,deaths:1,damageDealt:null,damageTaken:30}]),
+  {cache_key:'web:telemetry:v1:'+two+':account.other1234',
+   payload:{schemaVersion:1,matchId:two,rivals:[{name:'Bad',kills:99}]}}
+ ]);
+ const r=await publicRivalTrends(db,{name:'Hero'});
+ assert.equal(r.status,200);
+ assert.equal(r.body.matchesAnalysed,2);
+ assert.equal(r.body.rivals.length,1);
+ assert.equal(r.body.rivals[0].matchesSampled,2);
+ assert.equal(r.body.rivals[0].kills,1);
+ assert.equal(r.body.rivals[0].deaths,1);
+ assert.equal(r.body.rivals[0].damageDealt,60);
+ assert.equal(r.body.rivals[0].damageTaken,42);
+ assert.equal(db.upstream,0);
+ assert.doesNotMatch(JSON.stringify(r.body),/account.other|account.player|Bad/);
+});
+test('rival name validation occurs before querying saved records',async()=>{
+ const db={from(){throw Error('No DB on invalid name')}};
+ assert.equal((await publicRivalTrends(db,{name:'A,B'})).status,400);
 });
