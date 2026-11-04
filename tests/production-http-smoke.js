@@ -2,7 +2,7 @@
 // Independent public production static-asset check from GitHub Actions.
 // GET only. Never reads credentials, user accounts or PUBG/Supabase endpoints.
 const assert=require('node:assert/strict');
-const host='https://pubg-clan-bot.vercel.app';
+const host='https://pubg-help-clan.vercel.app';
 const assets=[
  {path:'/',name:'PUBG clan homepage',content:'Console Clan Intelligence',mime:'text/html'},
  {path:'/training/',name:'HELP training homepage',content:'HELP — PUBG Field Toolkit',mime:'text/html'},
