@@ -13,6 +13,7 @@
 <script defer src="/assets/source-explorer.js"></script>
 <script defer src="/assets/telemetry-view.js"></script>
 <script defer src="/assets/global-board.js"></script>
+<script defer src="/assets/survival-view.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -33,6 +34,7 @@
       <button class="nav-link" type="button" data-page="analysis"><span>◈</span> Deep analysis</button>
       <button class="nav-link" type="button" data-page="data-tools"><span>⇩</span> Data tools</button>
       <button class="nav-link" type="button" data-page="help"><span>?</span> Analytics guide</button>
+      <button class="nav-link" type="button" data-page="survival"><span>♧</span> Survival mastery</button>
       <button class="nav-link" type="button" data-page="sources"><span>▤</span> PUBG data library</button>
       <button class="nav-link" type="button" data-page="global"><span>◎</span> Official regional ranks</button>
       <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
@@ -347,6 +349,21 @@
           <dt>CSV imports</dt><dd>Local preview only. The official Supabase database is untouched. A future manager-only persistent import would need authenticated authorisation and a separate source label.</dd>
           <dt>Sample size</dt><dd>Large, Medium and Limited labels describe observed match counts. They are not a confidence level or probability of accuracy.</dd>
         </dl>
+      </div>
+    </section>
+    <section class="page" id="page-survival" hidden>
+      <div class="page-head"><p class="eyebrow">OFFICIAL PUBG SURVIVAL PROGRESSION</p>
+        <h1>Survival <em>mastery.</em></h1>
+        <p>Actual account-wide XP, level, tier and qualifying matches from the PUBG developer API. This is independent of seasonal and ranked scores.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Saved Xbox or PlayStation gamertag <input id="survival-name" list="survival-known" type="search" maxlength="100" placeholder="Exact saved player name" autocomplete="off"><datalist id="survival-known"></datalist></label>
+          <button id="survival-load" type="button" class="secondary">Reload saved mastery</button>
+          <button id="survival-refresh" type="button" class="primary">↻ Refresh Survival from PUBG</button>
+        </div>
+        <p id="survival-status" class="small muted" aria-live="polite">Select a saved console player. Reading existing statistics makes no PUBG request.</p>
+        <div id="survival-data" class="cc-awards-grid"></div>
+        <p class="small muted">These are original Survival Mastery attributes. Missing values display — rather than invented zeroes. Explicit refresh requests use the same atomic PUBG API budget and public website cooldown as other player features.</p>
       </div>
     </section>
     <section class="page" id="page-sources" hidden>

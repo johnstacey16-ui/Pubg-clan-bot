@@ -92,7 +92,7 @@
 - [x] Add public-safe saved PUBG source explorer for profile, seasons, ranked, mastery, survival and match fields, including typed nested paths and safe JSON download
 - [x] Integrate bounded real match-local combat, event-level rival analysis and 2D sampled-coordinate replay (secure publisher-only telemetry URL, shared web cooldown, persistent derived Supabase cache, no extra API key)
 - [ ] Verify actual telemetry processing and replay on a newly fetched production match
-- [x] Official regional/season leaderboard page with exact API rank/metric fields, saved cache reuse, 90-second shared web cooldown and atomic shared PUBG requests
+- [x] Official regional/season leaderboard page with exact API rank/metric fields, saved cache reuse, 90-second shared web cooldown and atomic shared PUBG requests; corrected for the post-Season-7 no-page-filter endpoint
 - [ ] Validate official regional leaderboard live against a genuine returned production response
 - [ ] Complete telemetry source browsing, player activity, sample and tournament resources
 - [ ] Verify migrated features using production API, Chromium and console browsers

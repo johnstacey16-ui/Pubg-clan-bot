@@ -32,7 +32,7 @@ test('static web app assets and original reference pictures are present',()=>{
  const index=read('index.html');
  assert.match(index,/assets\/site\.css/);
  assert.match(index,/assets\/site\.js/);
- for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','sources','global','roadmap'])
+ for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','roadmap'])
    assert.ok(index.includes('id="page-'+page+'"'),page);
  for(const f of ['assets/site.css','assets/site.js','assets/brand.svg',
   'design/overview-reference.svg','design/leaderboard-reference.svg','ROADMAP.md'])
@@ -90,4 +90,18 @@ test('free Hobby Vercel deployment stays within 12 serverless function builds',(
  assert.match(read('assets/source-explorer.js'),/route:'source'/);
  assert.match(read('assets/global-board.js'),/route:'global'/);
  assert.match(read('assets/telemetry-view.js'),/route:'telemetry'/);
+});
+
+
+test('Survival Mastery reuses the existing insight and player-refresh functions',()=>{
+ const html=read('index.html'),view=read('assets/survival-view.js');
+ for(const id of ['survival-name','survival-known','survival-load',
+  'survival-refresh','survival-data','survival-status'])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(html,/assets\/survival-view\.js/);
+ assert.match(view,/\/api\/public-insights/);
+ assert.match(view,/\/api\/player-refresh/);
+ assert.match(read('lib/web-refresh.js'),/survival_mastery/);
+ assert.match(read('lib/web-insights.js'),/survivalFields/);
+ assert.doesNotMatch(html+view,/SUPABASE_SERVICE_KEY|PUBG_API_KEY/);
 });

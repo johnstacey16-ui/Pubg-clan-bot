@@ -11,7 +11,7 @@ module.exports=async(req,res)=>{
   if(!['source','global',undefined].includes(route))
     return res.status(400).json({error:'Unknown insight route'});
   if(route===undefined && (typeof name!=='string'||!name.trim()||name.length>100 ||
-    typeof kind!=='string'||!['weapons','teammates'].includes(kind)))
+    typeof kind!=='string'||!['weapons','teammates','survival'].includes(kind)))
     return res.status(400).json({error:'Invalid insight request'});
   if(!process.env.SUPABASE_URL||!process.env.SUPABASE_SERVICE_KEY)
     return res.status(503).json({error:'Saved data source unavailable'});

@@ -237,3 +237,25 @@ test('history allowlist refuses invented timestamps, modes, and hidden identifie
  assert.equal(r.damage,null);
  assert.doesNotMatch(JSON.stringify(r),/account\.PRIVATE|telemetry|private\.test/);
 });
+
+test('survival mastery refresh uses existing atomic budget and real PUBG endpoint',async()=>{
+ const database=db(),calls=[];
+ const result=await refreshScopedData(database,{
+  name:'OtherPlayer',platform:'auto',scope:'survival'
+ },{
+  playerEndpoint:async(_db,player,suffix,ttl,opts)=>{
+   calls.push({player,suffix,ttl,opts});
+   return{state:'fresh',data:{data:{attributes:{
+    level:50,xp:14000,tier:1,totalMatchesPlayed:140
+   }}}};
+  }
+ });
+ assert.equal(result.status,200);
+ assert.equal(result.body.scope,'survival');
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].suffix,'survival_mastery');
+ assert.equal(calls[0].opts.force,true);
+ assert.deepEqual(database.calls.find(x=>x.rpc==='reserve_web_refresh').args,
+   {p_player_key:'psn:survival:otherplayer'});
+ assert.doesNotMatch(JSON.stringify(result.body),/account.TESTPLAYER|pubg_account_id/);
+});

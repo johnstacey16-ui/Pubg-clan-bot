@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {publicInsights,weaponItems}=require('../lib/web-insights');
+const {publicInsights,weaponItems,survivalFields}=require('../lib/web-insights');
 const id='account.TESTPLAYER0123456';
 const weapon={data:{attributes:{weaponSummaries:{
   Item_Weapon_BerylM762_C:{
@@ -97,4 +97,27 @@ test('unknown type and invalid multi-name input cannot access stored data',async
   assert.equal(result.status,400);
   assert.equal(database.calls.length,0);
  }
+});
+
+test('survival mastery reads real saved XP, tier, level and matches independently',async()=>{
+ const source=survivalFields({data:{attributes:{
+  xp:123400,tier:2,level:140,totalMatchesPlayed:380,
+  accountId:'account.private',lobbyId:'secret'
+ }}});
+ assert.deepEqual(source,{xp:123400,tier:2,level:140,totalMatchesPlayed:380});
+ assert.doesNotMatch(JSON.stringify(source),/account|lobby|secret/);
+ const onlySome=survivalFields({data:{attributes:{xp:0,level:4}}});
+ assert.equal(onlySome.xp,0);
+ assert.equal(onlySome.tier,null);
+ assert.equal(onlySome.totalMatchesPlayed,null);
+ assert.equal(survivalFields({data:{attributes:null}}),null);
+});
+test('Survival Mastery is accessible to saved console players without clan dependency',async()=>{
+ const database=db({official:false});
+ const result=await publicInsights(database,{name:'ClanTester',kind:'survival'});
+ assert.equal(result.status,200);
+ assert.equal(result.body.kind,'survival');
+ assert.equal(result.body.stats.level,null);
+ assert.equal(result.body.savedAt,'2026-11-03T17:00:00Z');
+ assert.doesNotMatch(JSON.stringify(result.body),/account.TESTPLAYER/);
 });

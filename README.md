@@ -433,3 +433,20 @@ read, 80 visible opponent names). It makes no upstream PUBG/telemetry
 request or rate-budget reservation. The visible opponent name is used
 across matches without asserting that matching names prove the same account.
 It reports observed matches only; no career-wide aggregates are invented.
+
+
+## PUBG Survival Mastery — saved data and shared-budget refresh
+
+The new Survival Mastery page reads the already saved console-player
+Survival Mastery response and shows only original XP, tier, level and
+totalMatchesPlayed, with missing values shown as unavailable. These are
+account-wide values, not normal season/ranked statistics. The selected
+gamertag can be any previously saved Xbox or PlayStation account, not
+necessarily an official clan member.
+
+The explicit Refresh Survival from PUBG button uses the existing
+same-origin POST player refresh endpoint and the same per-player,
+per-scope website cooldown, atomic Supabase PUBG request budget,
+Vercel deployment, and Supabase cache as all other player refreshes.
+The new page and data reader add **zero serverless functions**.
+The original safe saved response can also be inspected in the data library.

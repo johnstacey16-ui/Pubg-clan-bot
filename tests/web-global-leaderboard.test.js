@@ -43,7 +43,7 @@ test('unsupported regional shards never hit Supabase',async()=>{
 });
 test('fresh saved leaderboard costs no extra PUBG or global web budget',async()=>{
  const season='division.bro.official.console-43';
- const key='pubg:v1:xbox-eu/leaderboards/'+season+'/squad?page[number]=0';
+ const key='pubg:v1:xbox-eu/leaderboards/'+season+'/squad';
  const database=db({[key]:{payload:sample,expires_at:'2099-01-01T00:00:00Z',
   fetched_at:'2026-11-03T10:00:00Z'}});
  const x=await officialLeaderboard(database,{season});
@@ -72,7 +72,7 @@ test('allowed refresh uses one shared PUBG-cached endpoint with explicit season'
  });
  assert.equal(x.status,200);
  assert.equal(called.shard,'xbox-eu');
- assert.match(called.path,/\/squad\?page\[number\]=0$/);
+ assert.match(called.path,/\/squad$/);
  assert.equal(called.ttl,7200);
  assert.equal(database.calls.rpc,1);
 });
