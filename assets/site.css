@@ -196,3 +196,11 @@
 #page-health .cc-award strong{font-size:clamp(1.25rem,2vw,1.75rem)}
 #page-health .scroll-table{margin-top:14px}
 #page-health .scroll-table td:nth-child(2){font-variant-numeric:tabular-nums}
+
+/* Accessible long navigation: desktop items must remain scroll-reachable. */
+@media(min-width:741px){
+  .sidebar{overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin;
+    scrollbar-color:#426080 transparent}
+  .sidebar nav{flex-shrink:0}
+  .side-bottom{flex-shrink:0}
+}
