@@ -35,8 +35,8 @@ async function check(asset){
   if(asset.minBytes)assert.ok(body.length>=asset.minBytes,
    asset.name+' unexpectedly short response: '+body.length);
   if(asset.path==='/training/'||asset.path==='/'){
-   assert.match(body,/href="\/"/,'Training must link back to statistics');
-   assert.match(body,/href="\/#matches"/,'Training must link to replays');
+   assert.match(body,/href="\/dashboard\/"/,'Training must link to Clan Dashboard');
+   assert.match(body,/href="\/dashboard\/#matches"/,'Training must link to replays');
    assert.match(body,/href="\/training\/assets\/damage-training-mannequin.svg"/,
     'Training must use relocated mannequin asset');
   }
@@ -60,6 +60,6 @@ async function main(){
   }
   if(error)throw error;
  }
- console.log('PRODUCTION STATIC ACCEPTANCE PASS: all six public resources verified.');
+ console.log('PRODUCTION STATIC ACCEPTANCE PASS: all seven public resources verified.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});
