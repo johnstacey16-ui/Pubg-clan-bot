@@ -156,9 +156,10 @@ client-side pages under /training/.
 - [x] Verify 198/198 original source tests and the original real-Chrome eight-tool core smoke before applying namespaced navigation.
 - [x] Validate preserved assets, source attribution, redirect/route configuration and 12-function cap.
 - [x] Verify combined GitHub PR branch with standard Node and real desktop/mobile Chromium smoke checks (run 41753197183).
-- [ ] Verify the combined /training/ route on a READY Vercel production deployment matching the merge commit, including its asset URLs. A separate local integrated-Chrome check at 390px and 1280px has been added to CI; mark that check passed only after the job completes.
+- [x] Vercel production READY on merged app commit `12be7e5` at the existing public alias; local Chrome passed at 390px and 1280px. Independent public HTTP response checks remain gated separately.
+- [ ] Confirm six actual public HTTP resources under `/training/` resolve correctly using the new GitHub-hosted production-static-smoke job.
 - [ ] Inspect trainer↔statistics navigation, original calculation examples and responsive layout on production Chrome, Android and physical Xbox Edge.
-- [ ] Re-run the legacy isolated 320px–1280px hit-zone preview with image/svg+xml test serving (runner corrected without changing the original 13-region mannequin or calculator). Mark complete only after CI passes.
+- [x] Fixed isolated preview server's SVG MIME; the real Chrome 13-hit-zone mannequin check passed at 320, 360, 390, 768 and 1280px, no changes to creator damage models (CI run `41757883122`).
 - [ ] Check 2026 weapon/attachment data freshness against its source methodology before implying exact current-patch values; retain provenance and "unknown" distinctions.
 - [ ] Reassess branding/cosmetic consistency and a possible old-domain redirect only after production acceptance. Keep the old HELP repository and Vercel address available for rollback; do not delete without a separate explicit request.
 

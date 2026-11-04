@@ -39,3 +39,16 @@ jobs:
         run: node tests/training-merged-smoke.js
       - name: Verify all 13 hit zones and mannequin at five screen widths
         run: node training/tests/hit-zone-preview-smoke.cjs
+
+  production-static-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: chromium-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Check real production static pages and HELP toolkit assets
+        run: node tests/production-http-smoke.js
+

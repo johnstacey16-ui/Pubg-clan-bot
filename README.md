@@ -503,3 +503,8 @@ The main GitHub Chrome job now also runs tests/training-merged-smoke.js against 
 ### Hit-zone visual test fixture correction
 
 The vendored legacy 320px preview runner previously served the neutral SVG mannequin with `application/octet-stream`. Its self-contained Chrome `Image()` decode could fail even though the preserved 13-region source was valid. The migrated runner now explicitly serves `.svg` as `image/svg+xml` and the real five-width Chrome preview is part of the combined CI gate. No authored SVG art, hit zones, damage equations, or publisher-source data is changed by this fixture fix.
+
+
+### Public production HTTP acceptance
+
+GitHub Actions now verifies the actual public `https://pubg-clan-bot.vercel.app` host *after* the local Chrome job on a main-branch push. It checks six public static GET resources: clan homepage, toolkit homepage, navigation CSS, mannequin SVG, sensitivity JS and the original calculator bundle, including expected content/MIME and the two-way navigation links. No PUBG, Supabase, or Discord APIs are contacted. A source deployment marked READY is not treated as proof of HTTP accessibility until this separate test passes. A protected/inaccessible URL causes an explicit failed external verification; no automatic bypass or paid upgrade is attempted.
