@@ -63,7 +63,7 @@ async function main(){
    assert.match(await page.title(),/HELP/);
    assert.equal(await page.locator('#app-toolnav [data-open-panel]').count(),7);
    assert.equal(await page.locator('#active-tool-index').getAttribute('aria-label'),'Tool 2 of 7');
-   assert.match(await page.locator('#site-masthead').innerText(),/HELP CLAN/);
+   assert.match(await page.locator('#site-masthead').textContent(),/HELP CLAN/);
    for(const id of panels){
     await page.evaluate(panel=>{
      const btn=document.querySelector('#app-toolnav [data-open-panel="'+panel+'"]');
