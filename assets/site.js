@@ -144,14 +144,19 @@
   }
   function chart(target, totals, modes) {
     var max = Math.max.apply(null, [1].concat(modes.map(function (m) { return totals[m] ? totals[m].kills : 0; })));
-    $(target).innerHTML = modes.map(function (m) {
+    var host=$(target);
+    host.innerHTML = modes.map(function (m) {
       var v = totals[m] ? totals[m].kills : 0;
       var h = Math.max(2, Math.round(v / max * 135));
       return '<div class="bar-wrap" title="' + escapeHtml(modeName(m)) + ' · ' + fmt(v) + ' kills">' +
         '<span class="bar-value">' + fmt(v) + '</span>' +
-        '<span class="bar-actual" style="height:' + h + 'px"></span>' +
+        '<span class="bar-actual" data-height="' + h + '"></span>' +
         '<span class="bar-label">' + escapeHtml(modeName(m)) + '</span></div>';
     }).join('');
+    // CSSOM writes work under our strict CSP; HTML style attributes do not.
+    if(host.querySelectorAll)host.querySelectorAll('.bar-actual[data-height]').forEach(function(el){
+      el.style.height=el.dataset.height+'px';
+    });
   }
   function playerLink(p) {
     return '<button class="player-button" type="button" data-profile="' + escapeHtml(p.name) + '">' + escapeHtml(p.name) + '</button>';
@@ -393,12 +398,16 @@
     }).join('')||'<tr><td colspan="6" class="empty">No saved weapons match this filter.</td></tr>';
     var top=rows.filter(function(w){return Number(w[category]?.kills)>0;}).slice(0,6);
     var high=Math.max(1,...top.map(function(w){return Number(w[category].kills);}));
-    $('weapon-bars').innerHTML=top.map(function(w){
+    var barHost=$('weapon-bars');
+    barHost.innerHTML=top.map(function(w){
       var kills=Number(w[category].kills);
       return '<div class="weapon-bar-row"><strong>'+escapeHtml(w.name)+'</strong>'+
-        '<div class="weapon-rail"><span style="width:'+Math.max(1,Math.round(kills/high*100))+'%"></span></div>'+
+        '<div class="weapon-rail"><span data-width="'+Math.max(1,Math.round(kills/high*100))+'"></span></div>'+
         '<b>'+fmt(kills)+'</b></div>';
     }).join('')||'<p class="small muted">No recorded kills in this category. Other mastery entries may appear below.</p>';
+    if(barHost.querySelectorAll)barHost.querySelectorAll('.weapon-rail [data-width]').forEach(function(el){
+      el.style.width=el.dataset.width+'%';
+    });
   }
   function renderTeammateInsights() {
     var source=insightCache.teammates;

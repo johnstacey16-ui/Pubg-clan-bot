@@ -47,7 +47,11 @@ const server=http.createServer(async(req,res)=>{
    stats:{xp:14000,tier:2,level:75,totalMatchesPlayed:240}});
  if(uri.pathname==='/api/public-matches')
   return reply(res,200,{schemaVersion:1,matches:[],count:0});
- if(uri.pathname.startsWith('/api/'))return reply(res,404,{error:'Synthetic fixture unavailable'});
+ // Other pages may read optional endpoints: return a benign synthetic empty
+ // payload rather than polluting the Chrome console with fixture 404 errors.
+ if(uri.pathname.startsWith('/api/'))return reply(res,200,{
+  schemaVersion:1,items:[],matches:[],rows:[],entries:[],error:'No synthetic records'
+ });
  const uriPath=uri.pathname==='/'?'/index.html':path.posix.normalize(uri.pathname);
  if(uriPath.includes('..')||!(/^\/(?:assets|design)\/[\w./-]+$/.test(uriPath)||
    uriPath==='/index.html'))return reply(res,404,{error:'Invalid asset'});
@@ -78,6 +82,9 @@ async function run(){
     waitUntil:'networkidle'});
    assert.equal(response.status(),200);
    await page.locator('#notice').waitFor({state:'hidden',timeout:12000});
+   const barHeight=await page.locator('#overview-chart .bar-actual').first()
+    .evaluate(el=>parseFloat(getComputedStyle(el).height));
+   assert.ok(barHeight>2,'Chart bars must render at real numeric heights under strict CSP');
    for(const tab of ['overview','leaderboard','players','modes','matches',
     'weapons','season','teammates','compare','awards','analysis',
     'data-tools','help','survival','sources','global','health','roadmap'])

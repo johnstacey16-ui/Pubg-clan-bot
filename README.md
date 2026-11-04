@@ -460,3 +460,8 @@ The read-only Data Health tab at /#health uses the existing /api/health endpoint
 ## Headless Chromium smoke coverage
 
 GitHub Actions now runs a separate real Google Chrome smoke job with pinned Playwright Core using the preinstalled Ubuntu 24.04 Chrome. It exercises all 18 tabs, roster pagination, awards, dictionary, Survival Mastery and Data Health at desktop (1280px) and mobile (390px) widths, failing on browser errors. All HTTP requests use a local test server with purely synthetic PUBG responses. This validates real browser rendering and navigation of checked-in code but does not verify the production Vercel deployment, Android hardware or physical Xbox browser. No external paid browser service, PUBG API requests or user data is involved.
+
+
+### Browser-discovered sidebar and Content Security Policy fixes
+
+A real Chrome smoke test found that the long desktop sidebar could overflow outside the visible sticky viewport. The sidebar is now independently vertically scrollable above mobile breakpoint, so all navigation tabs remain reachable. Chrome also surfaced CSP violations from chart-bar HTML style attributes. Mode and weapon bar dimensions are now applied through DOM CSSOM properties after rendering, preserving the strict script/style policy rather than adding unsafe-inline. The browser smoke test checks that a real chart bar has a rendered height and does not accept uncaught browser console errors.
