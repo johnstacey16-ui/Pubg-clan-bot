@@ -166,3 +166,11 @@
 .cc-telemetry-stats strong{font-size:24px}
 #telemetry-report details{margin:16px 0;border-top:1px solid #344663;padding:12px 0}
 #telemetry-report summary{cursor:pointer;font-weight:700}
+
+/* Official regional PUBGlite leaderboard, all returned metric columns. */
+#page-global .filters{margin:12px 0;align-items:end}
+#page-global .filters label{flex:1 1 140px}
+#page-global .filters input,#page-global .filters select{width:100%;min-width:0}
+#page-global .scroll-table{margin-top:15px}
+#page-global .scroll-table th,#page-global .scroll-table td{white-space:nowrap}
+#global-count,#global-cutlines{overflow-wrap:anywhere}

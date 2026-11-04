@@ -76,6 +76,10 @@
       "dest": "api/public-telemetry.js"
     },
     {
+      "src": "/api/public-global-leaderboard",
+      "dest": "api/public-global-leaderboard.js"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
     },

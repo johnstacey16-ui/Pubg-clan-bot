@@ -12,6 +12,7 @@
 <script defer src="/assets/pubg-dictionaries.js"></script>
 <script defer src="/assets/source-explorer.js"></script>
 <script defer src="/assets/telemetry-view.js"></script>
+<script defer src="/assets/global-board.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -33,6 +34,7 @@
       <button class="nav-link" type="button" data-page="data-tools"><span>⇩</span> Data tools</button>
       <button class="nav-link" type="button" data-page="help"><span>?</span> Analytics guide</button>
       <button class="nav-link" type="button" data-page="sources"><span>▤</span> PUBG data library</button>
+      <button class="nav-link" type="button" data-page="global"><span>◎</span> Official regional ranks</button>
       <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
     </nav>
     <div class="side-bottom"><b><span class="dot"></span> SUPABASE CACHE</b><p>One clan. One shared database. Xbox and PlayStation.</p><span class="chip">XBOX</span><span class="chip">PLAYSTATION</span></div>
@@ -350,6 +352,28 @@
         </div>
         <p class="small muted">© KRAFTON. Original codes are preserved; missing or newly introduced codes are not guessed.
           <a href="https://github.com/pubg/api-assets" target="_blank" rel="noopener noreferrer">Publisher source ↗</a></p>
+      </div>
+    </section>
+    <section class="page" id="page-global" hidden>
+      <div class="page-head"><p class="eyebrow">OFFICIAL PUBG CONSOLE RANKINGS</p>
+        <h1>Regional <em>leaderboards.</em></h1>
+        <p>These are official PUBG rankings for a selected console, region, season and game mode. They are not your clan's private or official roster leaderboard.</p></div>
+      <div class="card panel">
+        <div class="filters">
+          <label>Console <select id="global-platform"><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label>
+          <label>Region <select id="global-region"></select></label>
+          <label>Mode <select id="global-mode"><option value="squad">Squad TPP</option><option value="squad-fpp">Squad FPP</option><option value="duo">Duo TPP</option><option value="duo-fpp">Duo FPP</option><option value="solo">Solo TPP</option><option value="solo-fpp">Solo FPP</option></select></label>
+          <label>Season ID (optional) <input id="global-season" type="text" maxlength="128" placeholder="Use saved current season"></label>
+          <button class="primary" id="global-load" type="button">Load official leaderboard</button>
+          <button class="secondary" id="global-download" type="button">Export safe JSON</button>
+        </div>
+        <p class="small muted">PUBG's regional leaderboard refreshes on its own schedule, normally every two hours for an active season. Cached reads use no PUBG requests. Cache misses pass the shared web cooldown and the same atomic PUBG request budget used by Discord and this website.</p>
+        <p id="global-status" class="small muted" aria-live="polite">Choose your console and region. Unsupported region/mode combinations are reported as unavailable.</p>
+        <div class="filters"><label>Filter returned players <input type="search" id="global-filter" placeholder="Name or exact returned rank"></label></div>
+        <p id="global-count" class="small muted"></p>
+        <p id="global-cutlines" class="small muted"></p>
+        <div class="scroll-table"><table><thead id="global-table-head"><tr><th>RANK</th><th>PLAYER</th></tr></thead>
+          <tbody id="global-table"></tbody></table></div>
       </div>
     </section>
     <section class="page" id="page-roadmap" hidden><div class="page-head"><p class="eyebrow">THE DEVELOPMENT PLAN</p><h1>What's <em>next.</em></h1><p>Tracked in GitHub: no claiming features are done before their acceptance checks.</p></div><div class="roadmap-grid"><article class="card panel"><span class="mint">FOUNDATION</span><h3>First working web app</h3><p>Responsive website, saved-data API, roster, leaderboard, modes, comparisons.</p></article><article class="card panel"><span class="lavender">PHASE TWO</span><h3>Profiles and discovery</h3><p>Advanced statistics, real historical snapshots, shareable player profiles.</p></article><article class="card panel"><span class="lavender">PHASE THREE</span><h3>Match and weapon analysis</h3><p>Recent match records, squads, rivals, weapons, ranked histories. No replays.</p></article><article class="card panel"><span class="lavender">PHASE FOUR</span><h3>Protected refresh and release</h3><p>Admin web controls, Discord integration, browser regression and Xbox checks.</p></article></div><div class="card panel"><h3>Saved visual references & roadmap</h3><p>The original vector example pictures are versioned in GitHub.</p><div class="links"><a href="/design/overview-reference.svg" target="_blank" rel="noopener noreferrer">Overview reference ↗</a><a href="/design/leaderboard-reference.svg" target="_blank" rel="noopener noreferrer">Leaderboard reference ↗</a><a href="https://github.com/johnstacey16-ui/Pubg-clan-bot/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Full checklist ↗</a></div></div></section>

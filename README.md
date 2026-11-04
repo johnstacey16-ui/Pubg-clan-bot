@@ -392,3 +392,21 @@ bound repeated work. Replays show recorded positions only, with gaps and
 stale markers visible. Terrain artwork is intentionally omitted until
 the coordinates and artwork version can be shown to align correctly.
 Matches without saved details or official telemetry show a clear error.
+
+
+## Official regional console leaderboards
+
+The Official Regional Ranks page supports real publisher response rankings
+for Xbox/PlayStation, allowed regions, all six standard console modes, the
+stored current season or an explicitly entered season ID. Results include
+only publisher-returned exact ranks and available stats, with missing
+cut lines left missing (not inferred). The API returns a maximum of 500
+public-safe player records, no PUBG account IDs or database identifiers.
+
+The new GET /api/public-global-leaderboard uses our existing Supabase cache,
+2-hour fresh TTL, the atomic reserve_web_refresh public cooldown before
+a cache miss, and the same reserve_pubg_requests PUBG API request gate
+as Discord. No separate Redis/Upstash cache is deployed. Existing cached
+entries do not cost upstream capacity, and stale records are labelled.
+This is **not** a clan leaderboard. Publisher availability depends on
+the selected region, season and mode.

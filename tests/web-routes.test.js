@@ -23,6 +23,7 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(routes['/api/public-insights'],'api/public-insights.js');
  assert.equal(routes['/api/public-source'],'api/public-source.js');
  assert.equal(routes['/api/public-telemetry'],'api/public-telemetry.js');
+ assert.equal(routes['/api/public-global-leaderboard'],'api/public-global-leaderboard.js');
  assert.ok(v.builds.some(x=>x.src==='index.html'&&x.use==='@vercel/static'));
  assert.ok(v.builds.some(x=>x.src==='assets/**'&&x.use==='@vercel/static'));
  assert.equal(v.crons[0].path,'/api/sync');
@@ -31,7 +32,7 @@ test('static web app assets and original reference pictures are present',()=>{
  const index=read('index.html');
  assert.match(index,/assets\/site\.css/);
  assert.match(index,/assets\/site\.js/);
- for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','sources','roadmap'])
+ for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','sources','global','roadmap'])
    assert.ok(index.includes('id="page-'+page+'"'),page);
  for(const f of ['assets/site.css','assets/site.js','assets/brand.svg',
   'design/overview-reference.svg','design/leaderboard-reference.svg','ROADMAP.md'])
