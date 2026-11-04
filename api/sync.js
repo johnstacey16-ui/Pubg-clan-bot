@@ -2,6 +2,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { importPendingBatch } = require('../lib/import-batch');
 const { collectClanSeasons } = require('../lib/clan-season-sync');
+const { collectClanExtras } = require('../lib/clan-backfill');
 const channelDashboard = require('../lib/channel-dashboard');
 
 // Vercel Hobby's daily cron is a fallback. /leaderboard can make progress
@@ -22,12 +23,25 @@ module.exports = async (req, res) => {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
+  const mode=req.query?.mode;
+  if(mode!==undefined&&mode!=='backfill')
+    return res.status(400).json({error:'Unknown sync mode'});
   let result;
   try {
     result = await importPendingBatch(db);
   } catch (error) {
     console.error('Scheduled console import failed:', error.message);
     result = { status: 'import_failed' };
+  }
+
+  if(mode==='backfill'){
+    try{result.extras=await collectClanExtras(db);}
+    catch(error){console.error('Clan extras backfill failed:',error.message);
+      result.extras={status:'failed'};}
+    try{result.seasonCollection=await collectClanSeasons(db);}
+    catch(error){console.error('Clan season backfill failed:',error.message);
+      result.seasonCollection={status:'failed'};}
+    return res.status(200).json({mode:'backfill',...result});
   }
 
   // The daily cron also updates every configured persistent Discord dashboard
@@ -47,6 +61,10 @@ module.exports = async (req, res) => {
     console.error('Scheduled clan season collection failed:',error.message);
     result.seasonCollection={status:'collection_failed'};
   }
+  // Short optional queue stage: prefill profile indices, mastery and match details.
+  try{result.extras=await collectClanExtras(db);}
+  catch(error){console.error('Scheduled extra PUBG backfill failed:',error.message);
+    result.extras={status:'failed'};}
   // Pruning occurs on the existing secret-protected daily sync.
   try {
     const pruned=await db.rpc('prune_clan_match_archive');
