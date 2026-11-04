@@ -803,7 +803,7 @@
       '<div class="profile-history"><div class="profile-history-header"><h3>📈 Actual lifetime progress</h3><label>Metric <select id="history-metric">'+
       '<option value="kills">Kills</option><option value="wins">Wins</option><option value="matches">Matches</option></select></label></div>'+
       '<div id="profile-history" aria-live="polite">Loading history…</div></div>';
-    if(!fromLink) history.pushState(null,'','/dashboard/#player/+p.platform+'/'+encodeURIComponent(p.name));
+    if(!fromLink) history.pushState(null,'','/dashboard/#player/'+p.platform+'/'+encodeURIComponent(p.name));
     if(typeof $('profile').showModal==='function') {
       if(!$('profile').open)$('profile').showModal();
     } else $('profile').setAttribute('open','');
