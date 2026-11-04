@@ -1,0 +1,103 @@
+/* The embedded clan workspace uses the same visual system as the HELP trainer. */
+#panel-clan{
+ --bg:#0a1019;--panel:#111c29;--panel2:#0e1722;--stroke:rgba(181,202,222,.17);
+ --text:#f7f3eb;--muted:#a9b6c5;--mint:#e9bc77;--gold:#e9bc77;
+ --blue:#7fb8cb;--violet:#b0a0d4;min-width:0;
+ background:transparent;color:var(--text);
+ font:14px/1.55 "Manrope","Segoe UI",sans-serif
+}
+#panel-clan .clan-tool-header{
+ display:flex;align-items:flex-end;justify-content:space-between;
+ flex-wrap:wrap;gap:22px;
+ margin:0;padding:34px clamp(17px,3vw,42px) 26px;
+ background:radial-gradient(ellipse at 90% 20%,rgba(233,188,119,.12),transparent 55%),
+ linear-gradient(145deg,#122331,#0d1722);
+ border-bottom:1px solid rgba(233,188,119,.24)
+}
+#panel-clan .clan-kicker{color:#e9bc77;font:700 11px/1.4 "IBM Plex Mono",monospace;letter-spacing:.12em;margin:0 0 10px}
+#panel-clan .clan-tool-header h1{
+ margin:0;color:#f7f3eb;letter-spacing:.03em;
+ font:800 clamp(32px,4vw,56px)/1.05 "Barlow Condensed","Arial Narrow",Impact,sans-serif
+}
+#panel-clan .clan-tool-header h1 span{color:#e9bc77}
+#panel-clan .clan-intro{max-width:680px;color:#c4d0dc;margin:10px 0}
+#panel-clan .clan-section-current{color:#899fb3;font:600 11px/1.5 "IBM Plex Mono",monospace;margin:11px 0 0}
+#panel-clan .clan-section-current strong{color:#e9bc77}
+#panel-clan .clan-tool-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+#panel-clan .clan-return,#panel-clan .clan-reload{
+ display:inline-flex;min-height:44px;align-items:center;justify-content:center;
+ padding:10px 14px;border-radius:7px;border:1px solid rgba(233,188,119,.42);
+ font:700 11px/1.3 "IBM Plex Mono",monospace;letter-spacing:.05em;
+ cursor:pointer;text-decoration:none;white-space:nowrap
+}
+#panel-clan .clan-return{color:#101b27;background:#e9bc77}
+#panel-clan .clan-reload{color:#e9bc77;background:#172636}
+#panel-clan .clan-return:hover{background:#ffe1aa;color:#101b27}
+#panel-clan .clan-reload:hover{background:#24384a}
+#panel-clan .clan-tool-subnav-label{
+ display:flex;gap:16px;justify-content:space-between;
+ padding:15px clamp(17px,3vw,42px) 7px;
+ color:#dfb783;font:600 10px/1.5 "IBM Plex Mono",monospace;letter-spacing:.13em
+}
+#panel-clan .clan-tool-subnav-label span{color:#8194a8}
+#panel-clan .clan-section-tabs{
+ display:flex;overflow-x:auto;overscroll-behavior-inline:contain;gap:7px;
+ padding:5px clamp(17px,3vw,42px) 18px;scrollbar-width:thin;
+ border-bottom:1px solid rgba(181,202,222,.14)
+}
+#panel-clan .clan-section-tabs .nav-link{
+ flex:0 0 auto;min-height:40px;white-space:nowrap;display:inline-flex;
+ gap:7px;align-items:center;padding:9px 12px;
+ border-radius:6px;border:1px solid #364657;background:#111e2a;
+ color:#aebdca;font:700 11px/1.25 "IBM Plex Mono",monospace
+}
+#panel-clan .clan-section-tabs .nav-link span{font-size:14px;width:auto}
+#panel-clan .clan-section-tabs .nav-link.active{
+ background:#e9bc77;border-color:#e9bc77;color:#101b27;box-shadow:none
+}
+#panel-clan .clan-section-tabs .nav-link:hover:not(.active){border-color:#e9bc77;color:#e9bc77;background:#192b3a}
+#panel-clan #content{
+ max-width:1500px;margin:auto;min-width:0;
+ padding:28px clamp(17px,3vw,42px) 35px
+}
+#panel-clan .page[hidden]{display:none!important}
+#panel-clan .page-head h1,#panel-clan .hero h1{
+ font-family:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+ letter-spacing:.01em;text-transform:uppercase
+}
+#panel-clan .hero{
+ background:radial-gradient(circle at 92% 18%,rgba(233,188,119,.16),transparent 38%),
+ linear-gradient(125deg,#192633,#1b3041 60%,#0e1d2b);
+ border:1px solid rgba(233,188,119,.23);border-radius:13px
+}
+#panel-clan .hero h1 em,#panel-clan .page-head h1 em{color:#e9bc77}
+#panel-clan .card,#panel-clan .profile-stat{
+ background:linear-gradient(145deg,rgba(23,36,50,.96),rgba(13,24,36,.98));
+ border:1px solid rgba(176,194,210,.17);border-radius:9px;
+ box-shadow:0 12px 30px rgba(0,0,0,.13)
+}
+#panel-clan .card.panel{padding:clamp(15px,2vw,24px)}
+#panel-clan .metric strong,#panel-clan .profile-stat strong{
+ font-family:"Barlow Condensed","Arial Narrow",Impact,sans-serif;color:#e9bc77
+}
+#panel-clan .eyebrow,#panel-clan .metric-title,#panel-clan th{
+ font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.10em
+}
+#panel-clan .primary{background:#e9bc77;border-color:#e9bc77;color:#14202b;border-radius:6px}
+#panel-clan .primary:hover{background:#f8d59d}
+#panel-clan .secondary,#panel-clan input,#panel-clan select{
+ color:#e5edf4;background:#111d2b;border-color:#3c5264;border-radius:6px
+}
+#panel-clan .notice{background:#142230;color:#d9e5ee;border:1px solid #496072}
+#panel-clan .chip,#panel-clan .badge{border-radius:4px}
+#panel-clan .bar-actual{background:linear-gradient(90deg,#a27b46,#e9bc77)}
+#panel-clan dialog{color:var(--text);background:#0f1c29;border:1px solid #617181}
+#panel-clan .clan-dashboard-content footer{color:#8299ab;border-color:rgba(181,202,222,.14)}
+@media(max-width:740px){
+ #panel-clan .clan-tool-header{padding:24px 15px;gap:14px}
+ #panel-clan .clan-tool-controls{width:100%}
+ #panel-clan .clan-return,#panel-clan .clan-reload{flex:1 1 auto}
+ #panel-clan .clan-section-tabs{padding-inline:12px}
+ #panel-clan #content{padding:20px 15px}
+ #panel-clan .clan-tool-subnav-label{padding-inline:15px}
+}
