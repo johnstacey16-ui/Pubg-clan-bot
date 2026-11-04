@@ -1,7 +1,7 @@
 # PUBG Console Platform — Roadmap
 
 **Repository:** johnstacey16-ui/Pubg-clan-bot  
-**Production target:** https://pubg-clan-bot.vercel.app  
+**Production target:** https://pubg-help-clan.vercel.app  
 **Services:** existing Vercel Hobby, Supabase, official PUBG console API, Discord bot  
 **Rules:** free hosting where possible; never expose credentials; Xbox & PlayStation only; real telemetry 2D replays are permitted (no invented paths); complete checks only when tests pass.
 
