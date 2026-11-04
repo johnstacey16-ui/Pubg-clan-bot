@@ -138,7 +138,7 @@ Existing server-side Supabase service role --> saved verified statistics
 Existing Discord /interactions & /api/sync --> shared rate-limited PUBG data collection
 ```
 
-Ordinary website reads use saved Supabase data and never spend PUBG API capacity. Explicit **Refresh from PUBG** requests run through a server-side Vercel function, an additional web cooldown and the same atomic shared PUBG request limit as Discord. Unknown gamertags are checked on Xbox and PSN once; known account IDs and platforms are reused. No 2D replays will be built.
+Ordinary website reads use saved Supabase data and never spend PUBG API capacity. Explicit **Refresh from PUBG** requests run through a server-side Vercel function, an additional web cooldown and the same atomic shared PUBG request limit as Discord. Unknown gamertags are checked on Xbox and PSN once; known account IDs and platforms are reused. Recorded-coordinate 2D telemetry replays are supported for verified PUBG match telemetry; video, terrain overlays without accurate alignment and invented movement remain unsupported.
 
 
 ## HELP Clan training toolkit merger (4 November 2026)
@@ -158,7 +158,7 @@ client-side pages under /training/.
 - [x] Verify combined GitHub PR branch with standard Node and real desktop/mobile Chromium smoke checks (run 41753197183).
 - [ ] Verify the combined /training/ route on a READY Vercel production deployment matching the merge commit, including its asset URLs. A separate local integrated-Chrome check at 390px and 1280px has been added to CI; mark that check passed only after the job completes.
 - [ ] Inspect trainer↔statistics navigation, original calculation examples and responsive layout on production Chrome, Android and physical Xbox Edge.
-- [ ] Resolve the inherited optional 320px hit-zone preview failure, which currently cannot load the neutral mannequin. Original calculator data remains unchanged.
+- [ ] Re-run the legacy isolated 320px–1280px hit-zone preview with image/svg+xml test serving (runner corrected without changing the original 13-region mannequin or calculator). Mark complete only after CI passes.
 - [ ] Check 2026 weapon/attachment data freshness against its source methodology before implying exact current-patch values; retain provenance and "unknown" distinctions.
 - [ ] Reassess branding/cosmetic consistency and a possible old-domain redirect only after production acceptance. Keep the old HELP repository and Vercel address available for rollback; do not delete without a separate explicit request.
 

@@ -37,3 +37,5 @@ jobs:
         run: node tests/browser-smoke.js
       - name: Verify the merged HELP toolkit and namespaced assets in real Chrome
         run: node tests/training-merged-smoke.js
+      - name: Verify all 13 hit zones and mannequin at five screen widths
+        run: node training/tests/hit-zone-preview-smoke.cjs

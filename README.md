@@ -498,3 +498,8 @@ The original pinned HELP repository passes its 198 source/unit checks and its co
 ### Integrated HELP browser acceptance
 
 The main GitHub Chrome job now also runs tests/training-merged-smoke.js against a local static server that uses the actual combined /training/ URL structure. At 1280px and 390px viewports it checks the creator's six main training workspaces, real JS navigation, the original pinned SVG and sensitivity source asset paths, and the two-way Command Centre navigation bridge. The test fails on missing training resources or uncaught JavaScript errors. External analytics/fonts are stubbed; no live PUBG or production player data is accessed. These are real Chromium checks, not physical Xbox browser or live production acceptance.
+
+
+### Hit-zone visual test fixture correction
+
+The vendored legacy 320px preview runner previously served the neutral SVG mannequin with `application/octet-stream`. Its self-contained Chrome `Image()` decode could fail even though the preserved 13-region source was valid. The migrated runner now explicitly serves `.svg` as `image/svg+xml` and the real five-width Chrome preview is part of the combined CI gate. No authored SVG art, hit zones, damage equations, or publisher-source data is changed by this fixture fix.

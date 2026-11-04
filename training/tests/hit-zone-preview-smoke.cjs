@@ -1,5 +1,6 @@
 // Standalone Chromium rendering smoke for the development-only hit-zone SVG.
 // Tests real CSS+HTML at phone AND desktop widths without publishing the eighth tab.
+// SVG assets must use image/svg+xml; Chrome will reject an octet-stream in Image().
 'use strict';
 const fs=require('node:fs');
 const http=require('node:http');
@@ -8,7 +9,7 @@ const {spawn,spawnSync}=require('node:child_process');
 const {mkdtempSync,rmSync}=require('node:fs');
 const {tmpdir}=require('node:os');
 const root=path.resolve(__dirname,'..');
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const binaries=[process.env.CHROME_BIN,'google-chrome','google-chrome-stable','chromium','chromium-browser'].filter(Boolean);
 function chromePath(){
  for(const bin of binaries){
