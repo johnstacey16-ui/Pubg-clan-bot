@@ -31,7 +31,7 @@ test('root legacy clan hashes redirect without interrupting toolkit anchor links
   }
 });
 test('dashboard player history and Discord links remain under /dashboard/',()=>{
-  const js=read('assets/site.js'),discord=read('lib/channel-dashboard.js');
+  const js=read('assets/site.js'),discord=read('lib/channel-dashboard-render.js');
   assert.match(js,/location\.origin\+'\/dashboard\/#player\//);
   assert.match(discord,/https:\/\/pubg-help-clan\.vercel\.app\/dashboard\//);
   assert.doesNotMatch(js,/location\.origin\+'\/#player\//);
