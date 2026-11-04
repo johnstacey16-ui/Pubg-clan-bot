@@ -96,3 +96,19 @@ test('runner uses only authenticated requests and caps retry cycles',()=>{
  assert.match(src,/redirect:'error'/);
  assert.doesNotMatch(src,/PUBG_API_KEY|SUPABASE_SERVICE_KEY/);
 });
+
+
+test('lifetime backfill uses the background reservation lane, not live-search slots',async()=>{
+ const database=db([job('lifetime')]);
+ const calls=[];
+ const result=await collectClanExtras(database,{
+   getStats:async(_db,name,opts)=>{calls.push({name,opts});
+     return{state:'player',source:'live',player:{gamertag:name}};},
+   playerEndpoint:async()=>{throw Error('Lifetime uses getStats');}
+ });
+ assert.equal(result.saved,1);
+ assert.equal(result.done,1);
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].opts.background,true);
+ assert.equal(calls[0].opts.refreshRequested,true);
+});

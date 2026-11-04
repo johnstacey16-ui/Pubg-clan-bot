@@ -534,14 +534,16 @@ that key quota, but we still cap per-run work and downloads.
   player; all requests still pass the atomic global limit. Different visitors
   are no longer held behind one 90-second site-wide cooldown.
 - **First fill:** Matched clan players get a persistent server-only job each
-  for player match index, Weapon Mastery and Survival Mastery. The server
+  for lifetime statistics, player match index, Weapon Mastery and Survival Mastery. The server
   fetches up to five unmetered match detail objects per saved player index.
   Actual current-season and ranked statistics are gradually collected
   separately with a two-call-per-player backfill.
 - **Maintenance:** Repeated requests reuse cached responses and decline
   duplicate work. Season collection rotates verified accounts no more often
-  than every 23 hours; other durable first-fill jobs stop when done or
-  explicitly unavailable. Player-triggered updates take priority.
+  than every 23 hours; lifetime and match indexes are eligible for a daily
+  refresh, while weapon and survival mastery refresh weekly. Missing records
+  are retried with capped backoff rather than fabricated. Player-triggered
+  updates take priority.
 - **Scheduling:** Existing daily Vercel Hobby cron still runs. For accelerated
   initial loading and daily maintenance, go to GitHub Settings → Secrets and
   variables → Actions and add a repository secret named

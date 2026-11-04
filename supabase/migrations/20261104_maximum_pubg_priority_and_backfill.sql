@@ -75,7 +75,7 @@ grant execute on function public.reserve_web_refresh(text) to service_role;
 -- missing or temporarily unavailable resources cannot starve later players.
 create table if not exists public.pubg_backfill_jobs (
   player_id bigint not null references public.players(id) on delete cascade,
-  scope text not null check (scope in ('profile','weapons','survival')),
+  scope text not null check (scope in ('lifetime','profile','weapons','survival')),
   state text not null default 'pending'
     check (state in ('pending','leased','done','unavailable')),
   attempts integer not null default 0 check (attempts >= 0),
@@ -96,10 +96,17 @@ returns integer language plpgsql security invoker set search_path = ''
 as $fn$
 declare added integer;
 begin
+  -- Existing saved results are refreshed only when genuinely stale: lifetime
+  -- and match indexes daily, mastery once per week, not on every page view.
+  update public.pubg_backfill_jobs j set state='pending',
+    next_attempt_at=pg_catalog.clock_timestamp(),completed_at=null
+  where j.state='done' and j.completed_at < pg_catalog.clock_timestamp()-
+    (case when j.scope in ('lifetime','profile') then interval '24 hours'
+          else interval '7 days' end);
   insert into public.pubg_backfill_jobs(player_id,scope)
   select p.id,s.scope
     from public.players p
-    cross join (values ('profile'),('weapons'),('survival')) s(scope)
+    cross join (values ('lifetime'),('profile'),('weapons'),('survival')) s(scope)
    where p.platform in ('xbox','psn')
      and p.pubg_account_id ~ '^[A-Za-z0-9._-]{8,160}$'
      and exists (
@@ -130,7 +137,7 @@ with selected as (
   from public.pubg_backfill_jobs j
   where j.state in ('pending','leased') and
     j.next_attempt_at <= pg_catalog.clock_timestamp()
-  order by case j.scope when 'profile' then 1 when 'weapons' then 2 else 3 end,
+  order by case j.scope when 'lifetime' then 1 when 'profile' then 2 when 'weapons' then 3 else 4 end,
     j.next_attempt_at,j.player_id
   limit pg_catalog.least(6,pg_catalog.greatest(1,pg_catalog.coalesce(p_limit,6)))
   for update of j skip locked
