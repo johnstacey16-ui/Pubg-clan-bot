@@ -132,7 +132,7 @@
       else el.removeAttribute('aria-current');
     });
     $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',survival:'Survival mastery',sources:'PUBG data library',global:'Official regional ranks',health:'Data health',roadmap:'Roadmap'}[page];
-    try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
+    try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/dashboard/' : '/dashboard/#' + page); } catch (e) {}
     window.scrollTo(0,0);
     if(page==='matches' && data)loadCachedMatches();
     if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
@@ -803,7 +803,7 @@
       '<div class="profile-history"><div class="profile-history-header"><h3>📈 Actual lifetime progress</h3><label>Metric <select id="history-metric">'+
       '<option value="kills">Kills</option><option value="wins">Wins</option><option value="matches">Matches</option></select></label></div>'+
       '<div id="profile-history" aria-live="polite">Loading history…</div></div>';
-    if(!fromLink) history.pushState(null,'','/#player/'+p.platform+'/'+encodeURIComponent(p.name));
+    if(!fromLink) history.pushState(null,'','/dashboard/#player/'+p.platform+'/'+encodeURIComponent(p.name));
     if(typeof $('profile').showModal==='function') {
       if(!$('profile').open)$('profile').showModal();
     } else $('profile').setAttribute('open','');
@@ -859,12 +859,12 @@
   $('profile-close').addEventListener('click',function () { $('profile').close(); });
   $('profile').addEventListener('close',function(){
     profileRequest++;
-    if(location.hash.startsWith('#player/')) history.replaceState(null,'',current==='overview'?'/':'/#'+current);
+    if(location.hash.startsWith('#player/')) history.replaceState(null,'',current==='overview'?'/dashboard/':'/dashboard/#'+current);
   });
   $('share-profile').addEventListener('click',async function(){
     var name=$('profile-name').textContent;
     var player=findPlayer(name);
-    var url=location.origin+'/#player/'+(player?.platform||'xbox')+'/'+encodeURIComponent(name);
+    var url=location.origin+'/dashboard/#player/'+(player?.platform||'xbox')+'/'+encodeURIComponent(name);
     try {
       if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');
       await navigator.clipboard.writeText(url);

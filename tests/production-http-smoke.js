@@ -4,7 +4,8 @@
 const assert=require('node:assert/strict');
 const host='https://pubg-help-clan.vercel.app';
 const assets=[
- {path:'/',name:'PUBG clan homepage',content:'Console Clan Intelligence',mime:'text/html'},
+ {path:'/',name:'HELP Clan home',content:'HELP — PUBG Field Toolkit',mime:'text/html'},
+ {path:'/dashboard/',name:'Clan dashboard',content:'HELP Clan — Clan Dashboard',mime:'text/html'},
  {path:'/training/',name:'HELP training homepage',content:'HELP — PUBG Field Toolkit',mime:'text/html'},
  {path:'/training/command-centre-bridge.css',name:'shared navigation bridge CSS',
   content:'.command-centre-bridge',mime:'text/css'},
@@ -33,13 +34,13 @@ async function check(asset){
    asset.name+' missing expected content');
   if(asset.minBytes)assert.ok(body.length>=asset.minBytes,
    asset.name+' unexpectedly short response: '+body.length);
-  if(asset.path==='/training/'){
-   assert.match(body,/href="\/"/,'Training must link back to statistics');
-   assert.match(body,/href="\/#matches"/,'Training must link to replays');
+  if(asset.path==='/training/'||asset.path==='/'){
+   assert.match(body,/href="\/dashboard\/"/,'Training must link to Clan Dashboard');
+   assert.match(body,/href="\/dashboard\/#matches"/,'Training must link to replays');
    assert.match(body,/href="\/training\/assets\/damage-training-mannequin.svg"/,
     'Training must use relocated mannequin asset');
   }
-  if(asset.path==='/')assert.match(body,/href="\/training\/"/,
+  if(asset.path==='/dashboard/')assert.match(body,/href="\/training\/"/,
     'Clan homepage must link into training');
   console.log('PRODUCTION STATIC PASS',res.status,asset.name,asset.path,body.length+' bytes');
  }finally{clearTimeout(timer);}
@@ -59,6 +60,6 @@ async function main(){
   }
   if(error)throw error;
  }
- console.log('PRODUCTION STATIC ACCEPTANCE PASS: all six public resources verified.');
+ console.log('PRODUCTION STATIC ACCEPTANCE PASS: all seven public resources verified.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

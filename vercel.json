@@ -107,8 +107,17 @@
       "dest": "/design/$1"
     },
     {
-      "src": "/",
+      "src": "/dashboard",
+      "status": 308,
+      "headers": {"Location": "/dashboard/"}
+    },
+    {
+      "src": "/dashboard/",
       "dest": "/index.html"
+    },
+    {
+      "src": "/",
+      "dest": "/training/index.html"
     },
     {
       "src": "/index.html",

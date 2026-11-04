@@ -13,3 +13,9 @@
  .command-centre-bridge strong{order:-1;flex:1 1 100%;font-size:12px}
  .command-centre-bridge a{font-size:12px;flex:1;text-align:center}
 }
+
+/* Clan Dashboard is the first application entry, using the same HELP sidebar controls. */
+#app-toolnav a.unified-clan-entry {text-decoration:none;min-height:52px;color:#f1d4a7;background:linear-gradient(100deg,rgba(233,188,119,.15),rgba(233,188,119,.04));border-color:rgba(233,188,119,.2);box-shadow:inset 2px 0 #e9bc77;margin-bottom:16px}
+#app-toolnav a.unified-clan-entry:hover {color:#fff3dc;background:rgba(233,188,119,.20)}
+#app-toolnav a.unified-clan-entry .nav-tool-icon {color:#e9bc77;border-color:rgba(233,188,119,.22);background:rgba(233,188,119,.1)}
+#app-toolnav a.unified-clan-entry .nav-tool-chevron {opacity:.85;transform:none}

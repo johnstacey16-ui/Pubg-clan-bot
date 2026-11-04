@@ -2,11 +2,12 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#091021">
-<meta name="description" content="PUBG Console Clan Intelligence: lifetime kills, wins, roster, game modes, and player comparisons.">
+<meta name="description" content="HELP Clan dashboard: Xbox and PlayStation statistics, player history, match intelligence and clan leaderboards.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
-<title>Console Clan Intelligence — PUBG Statistics</title>
+<title>HELP Clan — Clan Dashboard &amp; PUBG Intelligence</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand.svg">
 <link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/toolkit-theme.css">
 <script defer src="/assets/clan-analytics.js"></script>
 <script defer src="/assets/command-centre.js"></script>
 <script defer src="/assets/pubg-dictionaries.js"></script>
@@ -19,9 +20,20 @@
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
   <aside class="sidebar">
-    <a class="brand" href="/"><img src="/assets/brand.svg" alt="" width="44" height="44"><span><b>CONSOLE<span class="mint">//</span>CLAN</b><small>PLAYER INTELLIGENCE</small></span></a>
-    <p class="nav-label">COMMAND CENTRE</p>
-    <nav aria-label="Main navigation">
+    <a class="brand" href="/" aria-label="HELP Clan tools homepage"><span class="suite-mark" aria-hidden="true">H</span><span><b>HELP <span class="mint">CLAN</span></b><small>PUBG FIELD TOOLKIT</small></span></a>
+    
+    <p class="nav-label suite-label">HELP CLAN / ALL TOOLS</p>
+    <nav class="suite-tools" aria-label="HELP Clan tools">
+      <a class="nav-link suite-current" href="/dashboard/" aria-current="page"><span>◫</span> Clan Dashboard</a>
+      <a class="nav-link" href="/#panel-sensitivity"><span>⌖</span> Sensitivity Studio</a>
+      <a class="nav-link" href="/#panel-combat"><span>◉</span> Combat DB</a>
+      <a class="nav-link" href="/#panel-hit-zone"><span>◎</span> Combat Lab</a>
+      <a class="nav-link" href="/#panel-recoil2"><span>≋</span> Recoil Analyzer</a>
+      <a class="nav-link" href="/#panel-attach"><span>⚒</span> Attachments</a>
+      <a class="nav-link" href="/#panel-backpack"><span>▣</span> Tactical Loadout &amp; Gear</a>
+    </nav>
+    <p class="nav-label">CLAN DASHBOARD SECTIONS</p>
+    <nav class="clan-pages" aria-label="Clan dashboard sections">
       <button class="nav-link active" type="button" data-page="overview"><span>◫</span> Overview</button>
       <button class="nav-link" type="button" data-page="leaderboard"><span>🏆</span> Leaderboards</button>
       <button class="nav-link" type="button" data-page="players"><span>♙</span> Player roster</button>
@@ -44,7 +56,7 @@
     </nav>
     <div class="side-bottom"><b><span class="dot"></span> SUPABASE CACHE</b><p>One clan. One shared database. Xbox and PlayStation.</p><span class="chip">XBOX</span><span class="chip">PLAYSTATION</span></div>
   </aside>
-  <div class="main-area"><header class="topbar"><div>PLATFORM <span class="muted">/</span> <b id="crumb">Overview</b></div><div class="top-actions"><span class="live"><span class="dot"></span> VERIFIED DATA</span><button type="button" class="secondary" id="reload">↻ Reload saved stats</button></div></header>
+  <div class="main-area"><header class="topbar"><div>HELP CLAN <span class="muted">/</span> DASHBOARD <span class="muted">/</span> <b id="crumb">Overview</b></div><div class="top-actions"><span class="live"><span class="dot"></span> VERIFIED DATA</span><button type="button" class="secondary" id="reload">↻ Reload saved stats</button></div></header>
   <main id="content">
     <p id="notice" role="status" aria-live="polite" class="notice">Loading saved PUBG statistics…</p>
     <section class="page" id="page-overview">

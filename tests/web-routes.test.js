@@ -8,7 +8,8 @@ const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 test('website and all existing bot endpoints share a single Vercel deployment',()=>{
  const v=JSON.parse(read('vercel.json'));
  const routes=Object.fromEntries(v.routes.map(x=>[x.src,x.dest]));
- assert.equal(routes['/'],'/index.html');
+ assert.equal(routes['/'],'/training/index.html');
+ assert.equal(routes['/dashboard/'],'/index.html');
  assert.equal(routes['/interactions'],'api/index.js');
  assert.equal(routes['/api/sync'],'api/sync.js');
  assert.equal(routes['/api/health'],'api/health.js');
