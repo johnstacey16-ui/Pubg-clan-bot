@@ -509,4 +509,13 @@ The vendored legacy 320px preview runner previously served the neutral SVG manne
 
 ### Public production HTTP acceptance
 
-GitHub Actions now verifies the actual public `https://pubg-help-clan.vercel.app` host *after* the local Chrome job on a main-branch push. It checks six public static GET resources: clan homepage, toolkit homepage, navigation CSS, mannequin SVG, sensitivity JS and the original calculator bundle, including expected content/MIME and the two-way navigation links. No PUBG, Supabase, or Discord APIs are contacted. A source deployment marked READY is not treated as proof of HTTP accessibility until this separate test passes. A protected/inaccessible URL causes an explicit failed external verification; no automatic bypass or paid upgrade is attempted.
+GitHub Actions now verifies the actual public `https://pubg-help-clan.vercel.app` host *after* the local Chrome job on a main-branch push. It checks nine public static GET resources: toolkit homepage, the Clan Dashboard, legacy `/training/` entry, the shared navigation CSS, the HELP theme CSS, the legacy player-link redirect script, the mannequin SVG, sensitivity JS and the original calculator bundle. It verifies content types and the links between the two app views. No PUBG, Supabase, or Discord APIs are contacted. A source deployment marked READY is not treated as proof of HTTP accessibility until this separate test passes. A protected/inaccessible URL causes an explicit failed external verification; no automatic bypass or paid upgrade is attempted.
+
+### Releasing the unified HELP Clan layout
+
+GitHub `main` contains the reviewed layout, but the public site changes only after Vercel successfully deploys the latest `main` commit to **production**. A Vercel Hobby build-rate-limit rejection can leave the live domain on a previous READY deployment; neither passing local Chrome checks nor merging into GitHub proves that the new layout is live.
+
+Once the Vercel build quota allows it, use the existing **pubg-help-clan** Vercel project to deploy the latest `main` commit. Do not create a replacement project or change Discord secrets. Then open the [manual production HTTP verification workflow](https://github.com/johnstacey16-ui/pubg-help-clan/actions/workflows/production-release-check.yml) in GitHub Actions and click **Run workflow** on `main`. This runs read-only public HTTP GET checks for the current site; it never invokes paid services, PUBG API calls, Supabase writes or Discord refreshes.
+
+When all nine public resources pass, run `/setup` in the already configured Discord dashboard channel to edit its permanent buttons to `/dashboard/`. The Discord Interactions Endpoint remains `https://pubg-help-clan.vercel.app/interactions`.
+

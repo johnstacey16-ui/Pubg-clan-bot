@@ -9,6 +9,10 @@ const assets=[
  {path:'/training/',name:'HELP training homepage',content:'HELP — PUBG Field Toolkit',mime:'text/html'},
  {path:'/training/command-centre-bridge.css',name:'shared navigation bridge CSS',
   content:'.command-centre-bridge',mime:'text/css'},
+ {path:'/assets/toolkit-theme.css',name:'HELP Clan dashboard amber theme',
+  content:'--mint:#e9bc77',mime:'text/css'},
+ {path:'/training/legacy-dashboard-hashes.js',name:'legacy player-link compatibility',
+  content:"window.location.replace('/dashboard/'",mime:'javascript'},
  {path:'/training/assets/damage-training-mannequin.svg',name:'13-region neutral SVG mannequin',
   content:'<svg',mime:'image/svg+xml'},
  {path:'/training/js/sensitivity.js',name:'original sensitivity calculations',
@@ -40,8 +44,18 @@ async function check(asset){
    assert.match(body,/href="\/training\/assets\/damage-training-mannequin.svg"/,
     'Training must use relocated mannequin asset');
   }
-  if(asset.path==='/dashboard/')assert.match(body,/href="\/training\/"/,
-    'Clan homepage must link into training');
+  if(asset.path==='/dashboard/'){
+    assert.match(body,/href="\/#panel-sensitivity"/,
+      'Dashboard must link to the unified HELP training navigation');
+    assert.match(body,/href="\/dashboard\/"/,
+      'Clan Dashboard must be the first shared navigation item');
+    assert.match(body,/\/assets\/toolkit-theme\.css/,
+      'Dashboard must load the matching HELP Clan theme');
+  }
+  if(asset.path==='/'){
+    assert.match(body,/aria-label="Tool 2 of 7"/,
+      'Toolkit must number Clan Dashboard as the first tool');
+  }
   console.log('PRODUCTION STATIC PASS',res.status,asset.name,asset.path,body.length+' bytes');
  }finally{clearTimeout(timer);}
 }
@@ -60,6 +74,6 @@ async function main(){
   }
   if(error)throw error;
  }
- console.log('PRODUCTION STATIC ACCEPTANCE PASS: all seven public resources verified.');
+ console.log('PRODUCTION STATIC ACCEPTANCE PASS: all nine public resources verified.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

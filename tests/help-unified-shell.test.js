@@ -48,3 +48,15 @@ test('shared HELP navigation counts the dashboard as tool one and avoids redunda
   assert.doesNotMatch(dashboard,/Training toolkit ↗/);
   assert.match(read('training/command-centre-bridge.css'),/#e9bc77/);
 });
+
+
+test('production smoke validates the new dashboard links rather than removed legacy navigation',()=>{
+  const smoke=read('tests/production-http-smoke.js');
+  const dashboard=read('index.html');
+  assert.match(smoke,/Dashboard must link to the unified HELP training navigation/);
+  assert.match(smoke,/Toolkit must number Clan Dashboard as the first tool/);
+  assert.match(smoke,/legacy player-link compatibility/);
+  assert.match(dashboard,/href="\/#panel-sensitivity"/);
+  assert.doesNotMatch(dashboard,/href="\/training\/"/);
+  assert.doesNotMatch(smoke,/Clan homepage must link into training/);
+});
