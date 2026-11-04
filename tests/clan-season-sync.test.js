@@ -66,6 +66,8 @@ test('atomic limit refusal stops before claiming another member',()=>withKey(asy
  assert.equal(status.playersAttempted,1);
  assert.equal(db.calls.length,1);
  assert.equal(db.outcomes[0].last_result,'rate_limited');
+ assert.ok(Date.parse(db.outcomes[0].next_attempt_at)-Date.now() < 90*1000);
+ assert.ok(Date.parse(db.outcomes[0].next_attempt_at)>Date.now());
 }));
 test('stale cached stats are never counted as a new observation',()=>withKey(async()=>{
  const db=fakeDb([player()]);
