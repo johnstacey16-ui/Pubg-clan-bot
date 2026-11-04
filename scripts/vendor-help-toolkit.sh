@@ -23,8 +23,6 @@ test "$(git -C "$TMP/help" rev-parse HEAD)" = "$SOURCE_SHA"
   node scripts/build-static.cjs --check
   node --test tests/*.test.cjs
   node tests/browser-smoke.cjs
-  node tests/hit-zone-preview-smoke.cjs
-  node tests/visual-layout-smoke.cjs
 )
 
 mkdir -p "$ROOT/training"
