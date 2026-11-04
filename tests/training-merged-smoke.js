@@ -85,6 +85,11 @@ async function main(){
    assert.equal(mainLink,'/dashboard/');
    assert.equal(await page.locator('#app-toolnav .unified-clan-entry').getAttribute('href'),'/dashboard/');
    // Real navigation between both pages (not an iframe) shares the same origin.
+   // On narrow screens the shared navigation is an accessible off-canvas menu.
+   if(width<=900){
+     await page.locator('#mobile-nav-toggle').click();
+     assert.equal(await page.locator('#mobile-nav-toggle').getAttribute('aria-expanded'),'true');
+   }
    await page.locator('#app-toolnav .unified-clan-entry').click();
    await page.waitForURL(base+'/dashboard/');
    assert.match(await page.title(),/HELP Clan.*Clan Dashboard/);
