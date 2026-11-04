@@ -7,7 +7,7 @@ A Vercel serverless Discord bot using **PUBG API**, **Supabase**, and optional *
 The website and Discord bot now share **this repository, Vercel project, and Supabase**.
 
 - Website: https://pubg-help-clan.vercel.app/
-- The previous `https://pubg-clan-bot.vercel.app/` address remains attached to the same Vercel project as a compatibility URL until Discord's Interactions Endpoint URL is switched to the new address.
+- The previous `https://pubg-clan-bot.vercel.app/` address remains attached to the same Vercel project for compatibility with old bookmarks. Discord's Interactions Endpoint URL has been switched to `https://pubg-help-clan.vercel.app/interactions` by the application owner.
 - Read-only web API: `GET /api/public-stats`
 - Existing Discord webhook: `POST /interactions` (unchanged)
 - Existing scheduled sync: `GET /api/sync` (unchanged)
