@@ -9,7 +9,7 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  const v=JSON.parse(read('vercel.json'));
  const routes=Object.fromEntries(v.routes.map(x=>[x.src,x.dest]));
  assert.equal(routes['/'],'/training/index.html');
- assert.equal(routes['/dashboard/'],'/index.html');
+ assert.equal(routes['/dashboard/'],'/training/index.html');
  assert.equal(routes['/interactions'],'api/index.js');
  assert.equal(routes['/api/sync'],'api/sync.js');
  assert.equal(routes['/api/health'],'api/health.js');
@@ -30,9 +30,9 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(v.crons[0].path,'/api/sync');
 });
 test('static web app assets and original reference pictures are present',()=>{
- const index=read('index.html');
- assert.match(index,/assets\/site\.css/);
- assert.match(index,/assets\/site\.js/);
+ const index=read('training/index.html');
+ assert.match(index,/clan-dashboard-scoped\.css/);
+ assert.match(read('training/js/clan-dashboard-loader.js'),/\/assets\/site\.js/);
  for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'])
    assert.ok(index.includes('id="page-'+page+'"'),page);
  for(const f of ['assets/site.css','assets/site.js','assets/brand.svg',
@@ -54,12 +54,12 @@ test('static web app assets and original reference pictures are present',()=>{
 });
 
 test('old command centre features are present without shipping fixtures or secrets',()=>{
- const html=read('index.html'),js=read('assets/command-centre.js'),math=read('assets/clan-analytics.js');
+ const html=read('training/index.html'),js=read('assets/command-centre.js'),math=read('assets/clan-analytics.js');
  for(const id of ['cc-awards-grid','cc-scores','cc-progress','cc-quality','compare-radar',
   'cc-export','cc-before-file','cc-after-file','cc-scatter','cc-min-matches','cc-team-weight'])
    assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/clan-analytics\.js/);
- assert.match(html,/command-centre\.js/);
+ assert.match(read('training/js/clan-dashboard-loader.js'),/clan-analytics\.js/);
+ assert.match(read('training/js/clan-dashboard-loader.js'),/command-centre\.js/);
  assert.match(js,/\/api\/public-progress/);
  assert.match(js,/local-only|local-only|Local-only/i);
  assert.doesNotMatch(html+js+math,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN|window\.storage/);
@@ -68,11 +68,11 @@ test('old command centre features are present without shipping fixtures or secre
 
 
 test('telemetry panel and browser runner are bundled without extra public credentials',()=>{
- const html=read('index.html'),ui=read('assets/telemetry-view.js');
+ const html=read('training/index.html'),ui=read('assets/telemetry-view.js');
  for(const id of ['telemetry-panel','telemetry-match','telemetry-load','telemetry-report',
   'telemetry-time','telemetry-zoom','telemetry-track','telemetry-map','telemetry-play'])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/assets\/telemetry-view\.js/);
+ assert.match(read('training/js/clan-dashboard-loader.js'),/assets\/telemetry-view\.js/);
  assert.match(ui,/\/api\/public-telemetry/);
  assert.doesNotMatch(html+ui,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN/);
 });

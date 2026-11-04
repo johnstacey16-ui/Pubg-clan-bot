@@ -4,13 +4,15 @@
 const assert=require('node:assert/strict');
 const host='https://pubg-help-clan.vercel.app';
 const assets=[
- {path:'/',name:'HELP Clan home',content:'HELP — PUBG Field Toolkit',mime:'text/html'},
- {path:'/dashboard/',name:'Clan dashboard',content:'HELP Clan — Clan Dashboard',mime:'text/html'},
- {path:'/training/',name:'HELP training homepage',content:'HELP — PUBG Field Toolkit',mime:'text/html'},
- {path:'/training/command-centre-bridge.css',name:'shared navigation bridge CSS',
-  content:'.command-centre-bridge',mime:'text/css'},
- {path:'/assets/toolkit-theme.css',name:'HELP Clan dashboard amber theme',
-  content:'--mint:#e9bc77',mime:'text/css'},
+ {path:'/',name:'HELP Clan home',content:'HELP Clan — PUBG Field Toolkit',mime:'text/html'},
+ {path:'/dashboard/',name:'Embedded clan dashboard',content:'id="panel-clan"',mime:'text/html'},
+ {path:'/training/',name:'HELP training homepage',content:'HELP Clan — PUBG Field Toolkit',mime:'text/html'},
+ {path:'/training/clan-dashboard-scoped.css',name:'scoped dashboard presentation',
+  content:'#panel-clan .hero',mime:'text/css'},
+ {path:'/training/clan-dashboard-shell.css',name:'shared toolkit shell theme',
+  content:'clan-section-tabs',mime:'text/css'},
+ {path:'/training/js/clan-dashboard-loader.js',name:'lazy clan API tool loader',
+  content:'help:panel-changed',mime:'javascript'},
  {path:'/training/legacy-dashboard-hashes.js',name:'legacy player-link compatibility',
   content:"window.location.replace('/dashboard/'",mime:'javascript'},
  {path:'/training/assets/damage-training-mannequin.svg',name:'13-region neutral SVG mannequin',
@@ -38,23 +40,14 @@ async function check(asset){
    asset.name+' missing expected content');
   if(asset.minBytes)assert.ok(body.length>=asset.minBytes,
    asset.name+' unexpectedly short response: '+body.length);
-  if(asset.path==='/training/'||asset.path==='/'){
-   assert.match(body,/href="\/dashboard\/"/,'Training must link to Clan Dashboard');
-   assert.match(body,/href="\/dashboard\/#matches"/,'Training must link to replays');
-   assert.match(body,/href="\/training\/assets\/damage-training-mannequin.svg"/,
-    'Training must use relocated mannequin asset');
-  }
-  if(asset.path==='/dashboard/'){
-    assert.match(body,/href="\/#panel-sensitivity"/,
-      'Dashboard must link to the unified HELP training navigation');
-    assert.match(body,/href="\/dashboard\/"/,
-      'Clan Dashboard must be the first shared navigation item');
-    assert.match(body,/\/assets\/toolkit-theme\.css/,
-      'Dashboard must load the matching HELP Clan theme');
-  }
-  if(asset.path==='/'){
-    assert.match(body,/aria-label="Tool 2 of 7"/,
-      'Toolkit must number Clan Dashboard as the first tool');
+  if(['/', '/dashboard/','/training/'].includes(asset.path)){
+    assert.match(body,/id="app-shell"/,'All entry routes must use the toolkit shell');
+    assert.match(body,/id="panel-clan"/,'All entry routes must contain the dashboard');
+    assert.match(body,/Back to Toolkit/,'Dashboard must include Back to Toolkit');
+    assert.match(body,/clan-dashboard-scoped\.css/,'Dashboard must load isolated styling');
+    assert.match(body,/data-open-panel="panel-clan"/,'Clan must be first inside toolkit navigation');
+    assert.match(body,/href="\/training\/assets\/damage-training-mannequin.svg"/,
+      'The original trainer artwork must remain available');
   }
   console.log('PRODUCTION STATIC PASS',res.status,asset.name,asset.path,body.length+' bytes');
  }finally{clearTimeout(timer);}
@@ -74,6 +67,6 @@ async function main(){
   }
   if(error)throw error;
  }
- console.log('PRODUCTION STATIC ACCEPTANCE PASS: all nine public resources verified.');
+ console.log('PRODUCTION STATIC ACCEPTANCE PASS: all ten public resources verified.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});
