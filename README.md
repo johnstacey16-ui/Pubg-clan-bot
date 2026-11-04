@@ -450,3 +450,8 @@ per-scope website cooldown, atomic Supabase PUBG request budget,
 Vercel deployment, and Supabase cache as all other player refreshes.
 The new page and data reader add **zero serverless functions**.
 The original safe saved response can also be inspected in the data library.
+
+
+## Data Health and shared PUBG API budget
+
+The read-only Data Health tab at /#health uses the existing /api/health endpoint. It shows real cached response counts by category, fresh/expired totals, latest saved fetch, genuine lifetime/season historical coverage, daily collection attempts and shared request reservations. It does not poll or call PUBG. The actual Supabase atomic reservation policy is 8 requests per rolling 65 seconds, below PUBG's nominal 10/minute. A reservation is not proof of a successful API response. The versioned service-role-only RPC get_public_pubg_cache_health returns no cache keys, player IDs, payloads, credentials, telemetry URLs or individual request logs. Ordinary clients cannot execute it. Missing RPC results degrade only the cache diagnostics, not the main health page.

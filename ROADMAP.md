@@ -98,6 +98,9 @@
 - [ ] Verify migrated features using production API, Chromium and console browsers
 - [ ] Retain old private source until feature parity and acceptance; no deletion
 
+- [x] Safe on-demand Data Health page with real Supabase cache and budget summaries (8 reserved API calls per 65 seconds); no new Vercel function
+- [ ] Complete final old-dashboard migration matrix and browser/device acceptance
+
 ### Phase 4 — Secure updates and Discord integration
 - [ ] Authenticated manager-only website refresh using existing budget and database lock
 - [x] Discord dashboard **View full dashboard** link

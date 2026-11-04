@@ -123,7 +123,7 @@
   }
 
   function go(page, preserveHash) {
-    if (['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','roadmap'].indexOf(page) === -1) return;
+    if (['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'].indexOf(page) === -1) return;
     current = page;
     document.querySelectorAll('.page').forEach(function (el) { el.hidden = el.id !== 'page-' + page; });
     document.querySelectorAll('[data-page]').forEach(function (el) {
@@ -131,7 +131,7 @@
       if (el.dataset.page === page) el.setAttribute('aria-current','page');
       else el.removeAttribute('aria-current');
     });
-    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',survival:'Survival mastery',sources:'PUBG data library',global:'Official regional ranks',roadmap:'Roadmap'}[page];
+    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',survival:'Survival mastery',sources:'PUBG data library',global:'Official regional ranks',health:'Data health',roadmap:'Roadmap'}[page];
     try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/' : '/#' + page); } catch (e) {}
     window.scrollTo(0,0);
     if(page==='matches' && data)loadCachedMatches();
@@ -140,6 +140,7 @@
     if(data&&window.CommandCentre?.render)window.CommandCentre.render(page,data);
     if(page==='sources'&&window.SourceExplorer?.show)window.SourceExplorer.show();
     if(page==='survival'&&data&&window.SurvivalView?.show)window.SurvivalView.show();
+    if(page==='health'&&window.CacheHealth?.show)window.CacheHealth.show();
   }
   function chart(target, totals, modes) {
     var max = Math.max.apply(null, [1].concat(modes.map(function (m) { return totals[m] ? totals[m].kills : 0; })));
@@ -933,7 +934,7 @@
       } else sharedName=decodeURIComponent(path);
     }catch(error){}
   }
-  go(sharedName?'overview':(['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
+  go(sharedName?'overview':(['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
   reload().then(async function(){
     if(!sharedName)return;
     if(findPlayer(sharedName) && (!sharedPlatform||findPlayer(sharedName).platform===sharedPlatform)){

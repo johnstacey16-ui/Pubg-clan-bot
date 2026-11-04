@@ -32,7 +32,7 @@ test('static web app assets and original reference pictures are present',()=>{
  const index=read('index.html');
  assert.match(index,/assets\/site\.css/);
  assert.match(index,/assets\/site\.js/);
- for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','roadmap'])
+ for(const page of ['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'])
    assert.ok(index.includes('id="page-'+page+'"'),page);
  for(const f of ['assets/site.css','assets/site.js','assets/brand.svg',
   'design/overview-reference.svg','design/leaderboard-reference.svg','ROADMAP.md'])
@@ -104,4 +104,13 @@ test('Survival Mastery reuses the existing insight and player-refresh functions'
  assert.match(read('lib/web-refresh.js'),/survival_mastery/);
  assert.match(read('lib/web-insights.js'),/survivalFields/);
  assert.doesNotMatch(html+view,/SUPABASE_SERVICE_KEY|PUBG_API_KEY/);
+});
+
+test('health panel and privacy-safe aggregate route reuse the existing backend',()=>{
+ const index=read('index.html'),view=read('assets/cache-health.js');
+ for(const id of ['health-metrics','health-types','health-refresh','health-status','health-source-note'])
+  assert.ok(index.includes('id="'+id+'"'));
+ assert.match(view,/fetch\('\/api\/health'/);
+ assert.match(read('api/health.js'),/getCacheHealth/);
+ assert.doesNotMatch(index+view,/SUPABASE_SERVICE_KEY|PUBG_API_KEY/);
 });

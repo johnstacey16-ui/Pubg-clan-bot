@@ -190,3 +190,9 @@
 #page-survival .filters input{width:100%;min-width:0}
 #survival-data{margin-top:16px}
 #survival-data .cc-award strong{font-size:clamp(1.35rem,3vw,2rem)}
+
+/* Read-only aggregate data-health panel; no background polling. */
+#page-health .cc-awards-grid{margin:18px 0 22px}
+#page-health .cc-award strong{font-size:clamp(1.25rem,2vw,1.75rem)}
+#page-health .scroll-table{margin-top:14px}
+#page-health .scroll-table td:nth-child(2){font-variant-numeric:tabular-nums}

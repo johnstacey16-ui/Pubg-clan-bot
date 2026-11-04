@@ -14,6 +14,7 @@
 <script defer src="/assets/telemetry-view.js"></script>
 <script defer src="/assets/global-board.js"></script>
 <script defer src="/assets/survival-view.js"></script>
+<script defer src="/assets/cache-health.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -37,6 +38,7 @@
       <button class="nav-link" type="button" data-page="survival"><span>♧</span> Survival mastery</button>
       <button class="nav-link" type="button" data-page="sources"><span>▤</span> PUBG data library</button>
       <button class="nav-link" type="button" data-page="global"><span>◎</span> Official regional ranks</button>
+      <button class="nav-link" type="button" data-page="health"><span>◉</span> Data health</button>
       <button class="nav-link" type="button" data-page="roadmap"><span>◎</span> Roadmap</button>
     </nav>
     <div class="side-bottom"><b><span class="dot"></span> SUPABASE CACHE</b><p>One clan. One shared database. Xbox and PlayStation.</p><span class="chip">XBOX</span><span class="chip">PLAYSTATION</span></div>
@@ -423,7 +425,27 @@
           <tbody id="global-table"></tbody></table></div>
       </div>
     </section>
-    <section class="page" id="page-roadmap" hidden><div class="page-head"><p class="eyebrow">THE DEVELOPMENT PLAN</p><h1>What's <em>next.</em></h1><p>Tracked in GitHub: no claiming features are done before their acceptance checks.</p></div><div class="roadmap-grid"><article class="card panel"><span class="mint">FOUNDATION</span><h3>First working web app</h3><p>Responsive website, saved-data API, roster, leaderboard, modes, comparisons.</p></article><article class="card panel"><span class="lavender">PHASE TWO</span><h3>Profiles and discovery</h3><p>Advanced statistics, real historical snapshots, shareable player profiles.</p></article><article class="card panel"><span class="lavender">PHASE THREE</span><h3>Match and weapon analysis</h3><p>Recent match records, squads, rivals, weapons, ranked histories. No replays.</p></article><article class="card panel"><span class="lavender">PHASE FOUR</span><h3>Protected refresh and release</h3><p>Admin web controls, Discord integration, browser regression and Xbox checks.</p></article></div><div class="card panel"><h3>Saved visual references & roadmap</h3><p>The original vector example pictures are versioned in GitHub.</p><div class="links"><a href="/design/overview-reference.svg" target="_blank" rel="noopener noreferrer">Overview reference ↗</a><a href="/design/leaderboard-reference.svg" target="_blank" rel="noopener noreferrer">Leaderboard reference ↗</a><a href="https://github.com/johnstacey16-ui/Pubg-clan-bot/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Full checklist ↗</a></div></div></section>
+    <section class="page" id="page-health" hidden>
+      <div class="page-head"><p class="eyebrow">TRANSPARENT SHARED INFRASTRUCTURE</p>
+        <h1>Data <em>health.</em></h1>
+        <p>Shared PUBG API reservations, Supabase cache freshness and genuine observation coverage. This report is read-only and makes no upstream PUBG requests.</p></div>
+      <div class="card panel">
+        <div class="panel-heading"><div><h2>Live aggregate diagnostics</h2>
+          <p class="small muted">Our bot and website share one Supabase database and atomic request budget.</p></div>
+          <button id="health-refresh" type="button" class="secondary">↻ Reload diagnostics</button></div>
+        <p id="health-status" class="small muted" role="status" aria-live="polite">Open this page to inspect the existing cache.</p>
+        <div class="cc-awards-grid" id="health-metrics"></div>
+        <p id="health-season-note" class="small muted"></p>
+        <p id="health-source-note" class="small muted">PUBG request reservations are not guaranteed successful responses.</p>
+      </div>
+      <div class="card panel"><h2>Saved PUBG cache categories</h2>
+        <p class="small muted">Counts only. The website never receives private cache keys, player account IDs, raw payloads or credentials.</p>
+        <div class="scroll-table"><table><thead><tr><th>RESOURCE</th><th>CACHED RESPONSES</th></tr></thead>
+          <tbody id="health-types"></tbody></table></div>
+        <p class="small muted">Expired entries are not deleted by this panel and may remain available as clearly labelled stale fallbacks elsewhere.</p>
+      </div>
+    </section>
+    <section class="page" id="page-roadmap" hidden><div class="page-head"><p class="eyebrow">THE DEVELOPMENT PLAN</p><h1>What's <em>next.</em></h1><p>Tracked in GitHub: no claiming features are done before their acceptance checks.</p></div><div class="roadmap-grid"><article class="card panel"><span class="mint">FOUNDATION</span><h3>First working web app</h3><p>Responsive website, saved-data API, roster, leaderboard, modes, comparisons.</p></article><article class="card panel"><span class="lavender">PHASE TWO</span><h3>Profiles and discovery</h3><p>Advanced statistics, real historical snapshots, shareable player profiles.</p></article><article class="card panel"><span class="lavender">PHASE THREE</span><h3>Match, weapon and replay analysis</h3><p>Real match records, rivals, weapons, ranked histories and sampled-coordinate replays.</p></article><article class="card panel"><span class="lavender">PHASE FOUR</span><h3>Protected refresh and release</h3><p>Admin web controls, Discord integration, browser regression and Xbox checks.</p></article></div><div class="card panel"><h3>Saved visual references & roadmap</h3><p>The original vector example pictures are versioned in GitHub.</p><div class="links"><a href="/design/overview-reference.svg" target="_blank" rel="noopener noreferrer">Overview reference ↗</a><a href="/design/leaderboard-reference.svg" target="_blank" rel="noopener noreferrer">Leaderboard reference ↗</a><a href="https://github.com/johnstacey16-ui/Pubg-clan-bot/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Full checklist ↗</a></div></div></section>
     <footer>CONSOLE//CLAN INTELLIGENCE <span>Xbox + PlayStation · Saved official PUBG data</span><span>Same Discord bot · Same Supabase database</span></footer>
   </main></div>
 </div>
