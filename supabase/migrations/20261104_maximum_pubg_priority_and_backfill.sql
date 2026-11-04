@@ -139,7 +139,7 @@ with selected as (
     j.next_attempt_at <= pg_catalog.clock_timestamp()
   order by case j.scope when 'lifetime' then 1 when 'profile' then 2 when 'weapons' then 3 else 4 end,
     j.next_attempt_at,j.player_id
-  limit pg_catalog.least(6,pg_catalog.greatest(1,pg_catalog.coalesce(p_limit,6)))
+  limit least(6,greatest(1,coalesce(p_limit,6)))
   for update of j skip locked
 ), acquired as (
   update public.pubg_backfill_jobs j set
@@ -195,7 +195,7 @@ with classified as (
   max(fetched_at) newest
  from classified
 ), groups as (
- select pg_catalog.coalesce(pg_catalog.jsonb_object_agg(category,n),'{}'::jsonb) items
+ select coalesce(pg_catalog.jsonb_object_agg(category,n),'{}'::jsonb) items
  from (select category,count(*)::int n from classified group by category) counts
 ), quota as (
  select count(*) filter(
@@ -211,7 +211,7 @@ select pg_catalog.jsonb_build_object(
  ),
  'budget',pg_catalog.jsonb_build_object(
   'reservationLimit',10,'rollingWindowSeconds',65,'reserved',quota.reserved,
-  'remaining',pg_catalog.greatest(0,10-quota.reserved),'lastReservedAt',quota.latest
+  'remaining',greatest(0,10-quota.reserved),'lastReservedAt',quota.latest
  ),
  'observations',pg_catalog.jsonb_build_object(
   'lifetimePlayers',(select count(distinct player_id)::int from public.player_stat_snapshots),
