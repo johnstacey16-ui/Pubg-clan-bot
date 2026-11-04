@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Access-Control-Allow-Origin', 'https://pubg-clan-bot.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://pubg-help-clan.vercel.app');
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)
     return res.status(503).json({ error: 'Data source not configured' });
   try {

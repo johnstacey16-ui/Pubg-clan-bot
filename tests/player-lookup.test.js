@@ -41,6 +41,9 @@ test('refresh requests are separately throttled before PUBG API access',async()=
 });
 test('web refresh requires matching HTTPS origin and valid console selection',()=>{
  assert.equal(sameOrigin({headers:{host:'pubg-clan-bot.vercel.app',origin:'https://pubg-clan-bot.vercel.app'}}),true);
+ assert.equal(sameOrigin({headers:{host:'pubg-help-clan.vercel.app',origin:'https://pubg-help-clan.vercel.app'}}),true);
+ assert.equal(sameOrigin({headers:{host:'pubg-help-clan.vercel.app',origin:'https://pubg-clan-bot.vercel.app'}}),false);
+ assert.equal(sameOrigin({headers:{host:'evil.vercel.app',origin:'https://evil.vercel.app'}}),false);
  assert.equal(sameOrigin({headers:{host:'pubg-clan-bot.vercel.app',origin:'https://evil.example'}}),false);
  assert.equal(validInput('Random Player','psn'),true);
  assert.equal(validInput('Random, Other','psn'),false);
