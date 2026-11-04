@@ -40,7 +40,7 @@
   $('global-status').textContent='Reading official PUBG regional rankings using the shared cache and rate budget…';
   try{
    const params=new URLSearchParams({
-    platform:$('global-platform').value,region:$('global-region').value,
+    route:'global',platform:$('global-platform').value,region:$('global-region').value,
     mode:$('global-mode').value
    });
    const season=$('global-season').value.trim();

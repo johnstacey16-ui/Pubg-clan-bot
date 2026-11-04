@@ -116,6 +116,7 @@
 - [x] Full automated Node regression suite: regression suite checked via GitHub Actions on 2026-11-03
 - [ ] Complete live desktop, Android and Xbox browser checks
 - [ ] Error monitoring, stale-data indicators and backoff
+- [x] Consolidate new API handlers into the existing 12 Hobby-compatible Vercel functions (no paid upgrade or separate backend)
 - [ ] Confirm free-tier usage, hosting and API-request budgets
 - [ ] Validate layout and interaction on Xbox browser (hardware acceptance separately)
 

@@ -410,3 +410,8 @@ as Discord. No separate Redis/Upstash cache is deployed. Existing cached
 entries do not cost upstream capacity, and stale records are labelled.
 This is **not** a clan leaderboard. Publisher availability depends on
 the selected region, season and mode.
+
+
+### Vercel Hobby function limit
+
+The old project had already reached the Hobby limit of **12 Node serverless functions**. To preserve free hosting, the new public-safe source and official regional ranking URLs are aliases for the existing insights function, and the telemetry analysis URL is an alias for the existing match function. Their frontend queries include explicit route selectors. The three new handler files were removed; all heavy logic is in reusable lib modules. This prevents the Vercel exceeded_serverless_functions_per_deployment build error. The regression suite explicitly checks the function count and aliases.

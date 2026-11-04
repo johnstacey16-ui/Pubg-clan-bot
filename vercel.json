@@ -69,15 +69,15 @@
     },
     {
       "src": "/api/public-source",
-      "dest": "api/public-source.js"
+      "dest": "api/public-insights.js"
     },
     {
       "src": "/api/public-telemetry",
-      "dest": "api/public-telemetry.js"
+      "dest": "api/public-matches.js"
     },
     {
       "src": "/api/public-global-leaderboard",
-      "dest": "api/public-global-leaderboard.js"
+      "dest": "api/public-insights.js"
     },
     {
       "src": "/assets/(.*)",

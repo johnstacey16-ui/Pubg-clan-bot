@@ -21,9 +21,9 @@ test('website and all existing bot endpoints share a single Vercel deployment',(
  assert.equal(routes['/api/public-progress'],'api/public-progress.js');
  assert.equal(routes['/api/public-matches'],'api/public-matches.js');
  assert.equal(routes['/api/public-insights'],'api/public-insights.js');
- assert.equal(routes['/api/public-source'],'api/public-source.js');
- assert.equal(routes['/api/public-telemetry'],'api/public-telemetry.js');
- assert.equal(routes['/api/public-global-leaderboard'],'api/public-global-leaderboard.js');
+ assert.equal(routes['/api/public-source'],'api/public-insights.js');
+ assert.equal(routes['/api/public-telemetry'],'api/public-matches.js');
+ assert.equal(routes['/api/public-global-leaderboard'],'api/public-insights.js');
  assert.ok(v.builds.some(x=>x.src==='index.html'&&x.use==='@vercel/static'));
  assert.ok(v.builds.some(x=>x.src==='assets/**'&&x.use==='@vercel/static'));
  assert.equal(v.crons[0].path,'/api/sync');
@@ -74,4 +74,20 @@ test('telemetry panel and browser runner are bundled without extra public creden
  assert.match(html,/assets\/telemetry-view\.js/);
  assert.match(ui,/\/api\/public-telemetry/);
  assert.doesNotMatch(html+ui,/SUPABASE_SERVICE_KEY|PUBG_API_KEY|DISCORD_BOT_TOKEN/);
+});
+
+
+test('free Hobby Vercel deployment stays within 12 serverless function builds',()=>{
+ const files=fs.readdirSync(path.join(root,'api')).filter(f=>f.endsWith('.js'));
+ assert.ok(files.length<=12,'Hobby permits at most 12 functions, found '+files.length);
+ const routes=JSON.parse(read('vercel.json')).routes;
+ for(const route of routes)if(/^\/api\//.test(route.src))
+  assert.ok(files.includes(route.dest.split('/').at(-1)),'Route lacks compiled function: '+route.src);
+ const source=read('api/public-insights.js'),matches=read('api/public-matches.js');
+ assert.match(source,/publicSource/);
+ assert.match(source,/officialLeaderboard/);
+ assert.match(matches,/publicTelemetry/);
+ assert.match(read('assets/source-explorer.js'),/route:'source'/);
+ assert.match(read('assets/global-board.js'),/route:'global'/);
+ assert.match(read('assets/telemetry-view.js'),/route:'telemetry'/);
 });

@@ -167,7 +167,7 @@
   $('telemetry-report').innerHTML='';
   $('telemetry-map').innerHTML='';
   try{
-   const params=new URLSearchParams({name:person,match:$('telemetry-match').value});
+   const params=new URLSearchParams({name:person,match:$('telemetry-match').value,route:'telemetry'});
    const res=await fetch('/api/public-telemetry?'+params.toString(),{cache:'no-store'});
    const body=await res.json();
    if(!res.ok)throw Error((body.error||'Telemetry unavailable')+

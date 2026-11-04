@@ -56,7 +56,7 @@
   $('source-note').textContent='Reading real saved PUBG response…';
   fields=[];current=null;renderFields();
   try{
-   const query=new URLSearchParams({name,kind,platform});
+   const query=new URLSearchParams({name,kind,platform,route:'source'});
    if(kind==='match')query.set('match',match);
    const response=await fetch('/api/public-source?'+query.toString(),{cache:'no-store'});
    const result=await response.json();
