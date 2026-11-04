@@ -48,8 +48,8 @@ test('collects three verified players with one index request per shard',()=>with
   }
  });
  assert.equal(status.playersAttempted,MAX_PLAYERS);
- assert.equal(status.seasonSaved,2);
- assert.equal(status.rankedSaved,2);
+ assert.equal(status.seasonSaved,3);
+ assert.equal(status.rankedSaved,3);
  assert.equal(indexes.length,1);
  assert.equal(calls.length,6);
  assert.ok(calls.every(x=>x.force));
