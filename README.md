@@ -535,7 +535,9 @@ that key quota, but we still cap per-run work and downloads.
   are no longer held behind one 90-second site-wide cooldown.
 - **First fill:** Matched clan players get a persistent server-only job each
   for lifetime statistics, player match index, Weapon Mastery and Survival Mastery. The server
-  fetches up to five unmetered match detail objects per saved player index.
+  fetches up to five unmetered match detail objects **per run** and continues
+  in later runs until the entire returned recent-match index has been cached.
+  Existing match details are skipped, and cached completed matches are reused.
   Actual current-season and ranked statistics are gradually collected
   separately with a two-call-per-player backfill.
 - **Maintenance:** Repeated requests reuse cached responses and decline
