@@ -24,7 +24,7 @@
 - [x] Vercel deployment READY for initial web foundation commit f73041b; production alias confirmed
 - [ ] Verify the homepage and `/api/public-stats` using a real HTTP/browser request (external HTTP inspection was blocked in the current environment)
 - [ ] Confirm /interactions, /api/health, /api/sync and Discord dashboard still work
-- [ ] Verify responsive layout in Chromium and phone screen size
+- [ ] Verify real production layout in Chromium and phone screen size (local headless Chrome desktop/mobile regression job added; verify its CI result before marking it passed)
 - [ ] Verify browser security headers and safe public data with production responses
 
 ## Next development phases

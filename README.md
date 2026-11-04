@@ -455,3 +455,8 @@ The original safe saved response can also be inspected in the data library.
 ## Data Health and shared PUBG API budget
 
 The read-only Data Health tab at /#health uses the existing /api/health endpoint. It shows real cached response counts by category, fresh/expired totals, latest saved fetch, genuine lifetime/season historical coverage, daily collection attempts and shared request reservations. It does not poll or call PUBG. The actual Supabase atomic reservation policy is 8 requests per rolling 65 seconds, below PUBG's nominal 10/minute. A reservation is not proof of a successful API response. The versioned service-role-only RPC get_public_pubg_cache_health returns no cache keys, player IDs, payloads, credentials, telemetry URLs or individual request logs. Ordinary clients cannot execute it. Missing RPC results degrade only the cache diagnostics, not the main health page.
+
+
+## Headless Chromium smoke coverage
+
+GitHub Actions now runs a separate real Google Chrome smoke job with pinned Playwright Core using the preinstalled Ubuntu 24.04 Chrome. It exercises all 18 tabs, roster pagination, awards, dictionary, Survival Mastery and Data Health at desktop (1280px) and mobile (390px) widths, failing on browser errors. All HTTP requests use a local test server with purely synthetic PUBG responses. This validates real browser rendering and navigation of checked-in code but does not verify the production Vercel deployment, Android hardware or physical Xbox browser. No external paid browser service, PUBG API requests or user data is involved.
