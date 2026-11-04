@@ -35,3 +35,5 @@ jobs:
         run: command -v google-chrome && google-chrome --version
       - name: Verify real Chrome at desktop and mobile viewports with synthetic data
         run: node tests/browser-smoke.js
+      - name: Verify the merged HELP toolkit and namespaced assets in real Chrome
+        run: node tests/training-merged-smoke.js

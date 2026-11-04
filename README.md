@@ -493,3 +493,8 @@ The upstream HELP tests deliberately assert exact original DOM, SVG resource pat
 
 
 The original pinned HELP repository passes its 198 source/unit checks and its core real-Chrome eight-tool smoke in the import runner. Its separate legacy 320px hit-zone screenshot preview currently fails to find the neutral mannequin (a pre-existing optional preview check). The importer does not change core damage maths to hide this issue. That standalone visual acceptance remains an explicit follow-up and is not claimed to have passed.
+
+
+### Integrated HELP browser acceptance
+
+The main GitHub Chrome job now also runs tests/training-merged-smoke.js against a local static server that uses the actual combined /training/ URL structure. At 1280px and 390px viewports it checks the creator's six main training workspaces, real JS navigation, the original pinned SVG and sensitivity source asset paths, and the two-way Command Centre navigation bridge. The test fails on missing training resources or uncaught JavaScript errors. External analytics/fonts are stubbed; no live PUBG or production player data is accessed. These are real Chromium checks, not physical Xbox browser or live production acceptance.
