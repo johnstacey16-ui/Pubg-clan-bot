@@ -4,20 +4,26 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '30 2 * * *'
+    - cron: '30 14 * * *'
 
 permissions:
   contents: read
+  id-token: write
+
+concurrency:
+  group: pubg-clan-data-collection
+  cancel-in-progress: false
 
 jobs:
   pubg-backfill:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - name: Fill missing data using the shared API limit
+      - name: Fill missing PUBG data within shared rate limit
         env:
-          PUBG_SYNC_CRON_SECRET: ${{ secrets.PUBG_SYNC_CRON_SECRET }}
-          PUBG_BACKFILL_CYCLES: '20'
+          PUBG_BACKFILL_CYCLES: '25'
         run: node scripts/collect-pubg-backfill.js
