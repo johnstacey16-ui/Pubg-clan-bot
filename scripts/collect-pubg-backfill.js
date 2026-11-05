@@ -2,7 +2,7 @@
 const {AUDIENCE}=require('../lib/github-oidc');
 // GitHub Actions uses its short-lived verified OIDC identity. No shared secret required.
 // Each invocation is short; no attempt to bypass Vercel Hobby's scheduled cron.
-const URL='https://pubg-help-clan.vercel.app/api/sync?mode=backfill';
+const BACKFILL_ENDPOINT='https://pubg-help-clan.vercel.app/api/sync?mode=backfill';
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function githubToken(){
  const raw=process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
@@ -28,7 +28,7 @@ async function main(){
  for(let i=0;i<cycles;i++){
    // Reissue the 5-minute OIDC token for each cycle, never log the JWT.
    const credential=secret||await githubToken();
-   const response=await fetch(URL,{
+   const response=await fetch(BACKFILL_ENDPOINT,{
      method:'GET',headers:{Authorization:'Bearer '+credential,Accept:'application/json','Cache-Control':'no-store'},
      redirect:'error',signal:AbortSignal.timeout(45000)
    });
