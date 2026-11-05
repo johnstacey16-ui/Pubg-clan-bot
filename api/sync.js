@@ -4,6 +4,7 @@ const { importPendingBatch } = require('../lib/import-batch');
 const { collectClanSeasons } = require('../lib/clan-season-sync');
 const { collectClanExtras } = require('../lib/clan-backfill');
 const channelDashboard = require('../lib/channel-dashboard');
+const {verifyGitHubBackfillToken}=require('../lib/github-oidc');
 
 // Vercel Hobby's daily cron is a fallback. /leaderboard can make progress
 // immediately when people use the bot; both share the database API budget.
@@ -12,20 +13,28 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
 
   const secret = process.env.CRON_SECRET;
-  if (!secret || !process.env.PUBG_API_KEY ||
+  if (!process.env.PUBG_API_KEY ||
     !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)
     return res.status(503).json({ error: 'Import environment is not configured' });
-  if (req.headers.authorization !== 'Bearer ' + secret)
-    return res.status(401).json({ error: 'Unauthorized' });
+  const mode=req.query?.mode;
+  if(mode!==undefined&&mode!=='backfill')
+    return res.status(400).json({error:'Unknown sync mode'});
+  // Daily Vercel cron retains its existing, production-only CRON_SECRET.
+  // The GitHub catch-up runner may instead present a cryptographically signed
+  // short-lived workflow ID token; it is authorised ONLY for backfill mode.
+  const authorization=req.headers?.authorization;
+  const cronAllowed=Boolean(secret)&&authorization==='Bearer '+secret;
+  const oidcAllowed=!cronAllowed&&mode==='backfill'&&
+    typeof authorization==='string'&&authorization.startsWith('Bearer ')&&
+    await verifyGitHubBackfillToken(authorization.slice(7));
+  if(!cronAllowed&&!oidcAllowed)
+    return res.status(401).json({error:'Unauthorized'});
 
   const db = createClient(process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-  const mode=req.query?.mode;
-  if(mode!==undefined&&mode!=='backfill')
-    return res.status(400).json({error:'Unknown sync mode'});
   let result;
   try {
     result = await importPendingBatch(db);

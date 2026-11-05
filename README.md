@@ -548,14 +548,13 @@ that key quota, but we still cap per-run work and downloads.
   refresh, while weapon and survival mastery refresh weekly. Missing records
   are retried with capped backoff rather than fabricated. Player-triggered
   updates take priority.
-- **Scheduling:** Existing daily Vercel Hobby cron still runs. For accelerated
-  initial loading and daily maintenance, go to GitHub Settings → Secrets and
-  variables → Actions and add a repository secret named
-  `PUBG_SYNC_CRON_SECRET` with the **same value** as the existing Vercel
-  `CRON_SECRET` (never paste it into an issue, code or chat). The
-  `Collect missing PUBG clan data` workflow then runs daily and can be run
-  manually. It makes repeated authenticated, short serverless requests, at
-  most one every 66 seconds, for a bounded number of cycles.
+- **Scheduling:** The free GitHub Actions runner runs twice daily and can be
+  started manually. It uses GitHub's signed, short-lived OIDC identity to
+  authenticate to the existing production API; **no GitHub secret is required**.
+  The server verifies its signature using GitHub's published JWKS and exact
+  immutable repository and owner IDs, workflow file, branch and event. The
+  token can only access `/api/sync?mode=backfill`, not Discord admin updates.
+  Work is bounded to 25 cycles of 66 seconds and exits as soon as no work is due.
 - **Deployment:** Apply
   `supabase/migrations/20261104_maximum_pubg_priority_and_backfill.sql`
   **before** deploying code that calls the new background reservation RPC.
@@ -571,3 +570,17 @@ The adaptive limit is defined in `supabase/migrations/20261104_adaptive_pubg_use
 ### Fully embedded Clan Dashboard tool
 
 The HELP Toolkit is the only visual shell. Its first sidebar tool is **Clan Dashboard** (`panel-clan`) with all 18 PUBG API data sections rendered as sub-tabs in the same DOM and styled with the trainer's typography, header, controls and palette. **Back to Toolkit** returns to the previously active training tool, including on mobile. There is no iframe and dashboard assets load only when the tool is opened. `/dashboard/#player/...`, Discord buttons and old deep links open the same integrated panel; `/index.html` redirects to `/dashboard/`. See `training/clan-dashboard-shell.css`, `training/clan-dashboard-scoped.css`, and `training/js/clan-dashboard-loader.js`.
+
+#### GitHub catch-up collector without duplicated secrets
+
+`Collect missing PUBG clan data` uses GitHub Actions OIDC (`id-token: write`)
+to request a signed token for each short `/api/sync?mode=backfill` call. The
+server validates the immutable repository subject, repository/owner numeric IDs,
+`main` branch, workflow filename, scheduled/manual event, token expiry, expected
+audience and the RSA signature against GitHub's pinned-issuer JWKS. Existing
+Vercel `CRON_SECRET` keeps protecting the original daily cron. Neither PUBG
+API credentials nor the Vercel cron secret is copied into GitHub Actions.
+
+On GitHub Actions → Collect missing PUBG clan data → Run workflow (main),
+start an on-demand catch-up. Otherwise the scheduled runner starts twice daily.
+The database's own 10-request/65-second limiter always controls upstream calls.
