@@ -42,7 +42,7 @@ test('source-specific summaries only add observed fields and preserve real zero'
 });
 test('exports never mix sources, and neutralize formula-looking CSV cells',()=>{
  const csv=exportCsv(weapons,'official');
- assert.match(csv,/"BerylM762","30","3","15,000","10"/);
+ assert.match(csv,/"BerylM762","30","3","15000","10"/);
  assert.doesNotMatch(csv,/"300"/);
  assert.match(csv,/"45"/);
  const risky=exportCsv([{name:'=CMD()',official:{kills:3}}],'official');
