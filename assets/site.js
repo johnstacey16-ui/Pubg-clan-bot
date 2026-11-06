@@ -380,37 +380,9 @@
     return value===null||value===undefined?'—':fmt(value);
   }
   function renderWeaponInsights() {
-    var source=insightCache.weapons;
-    if(!source)return;
-    var category=$('weapon-category').value;
-    var query=$('weapon-search').value.toLowerCase().trim();
-    var rows=source.items.filter(function(w){return w.name.toLowerCase().includes(query);})
-      .sort(function(a,b){
-        return (Number(b[category]?.kills??-1)-Number(a[category]?.kills??-1))||
-          (Number(b.xp??-1)-Number(a.xp??-1));
-      });
-    $('weapons-table').innerHTML=rows.map(function(w){
-      var s=w[category]||{};
-      return '<tr><td><strong>'+escapeHtml(w.name)+'</strong></td>'+
-        '<td>'+displayedStat(w,'level')+' / '+displayedStat(w,'tier')+'</td>'+
-        '<td><strong>'+displayedStat(s,'kills')+'</strong></td>'+
-        '<td>'+displayedStat(s,'headshots')+'</td>'+
-        '<td>'+displayedStat(s,'damage')+'</td>'+
-        '<td>'+displayedStat(w,'xp')+'</td></tr>';
-    }).join('')||'<tr><td colspan="6" class="empty">No saved weapons match this filter.</td></tr>';
-    var top=rows.filter(function(w){return Number(w[category]?.kills)>0;}).slice(0,6);
-    var high=Math.max(1,...top.map(function(w){return Number(w[category].kills);}));
-    var barHost=$('weapon-bars');
-    barHost.innerHTML=top.map(function(w){
-      var kills=Number(w[category].kills);
-      return '<div class="weapon-bar-row"><strong>'+escapeHtml(w.name)+'</strong>'+
-        '<div class="weapon-rail"><span data-width="'+Math.max(1,Math.round(kills/high*100))+'"></span></div>'+
-        '<b>'+fmt(kills)+'</b></div>';
-    }).join('')||'<p class="small muted">No recorded kills in this category. Other mastery entries may appear below.</p>';
-    if(barHost.querySelectorAll)barHost.querySelectorAll('.weapon-rail [data-width]').forEach(function(el){
-      el.style.width=el.dataset.width+'%';
-    });
+    if(window.WeaponExplorer?.render)window.WeaponExplorer.render(insightCache.weapons);
   }
+
   function renderTeammateInsights() {
     var source=insightCache.teammates;
     if(!source)return;
@@ -425,6 +397,7 @@
     var name=insightNames[kind];
     if(!name)return;
     var request=++insightRequests[kind];
+    if(kind==='weapons'){insightCache.weapons=null;renderWeaponInsights();}
     $(kind+'-note').textContent='Reading saved '+(kind==='weapons'?'weapon mastery':'squad')+' data for '+name+'…';
     try{
       var response=await fetch('/api/public-insights?kind='+kind+'&name='+encodeURIComponent(name),{
@@ -938,7 +911,9 @@
     $(kind+'-reload').addEventListener('click',function(){loadInsight(kind);});
   }
   $('weapon-category').addEventListener('change',renderWeaponInsights);
+  $('weapon-sort').addEventListener('change',renderWeaponInsights);
   $('weapon-search').addEventListener('input',renderWeaponInsights);
+  window.WeaponExplorer?.init();
   var hash=location.hash.slice(1);
   var sharedName=null,sharedPlatform=null;
   if(hash.startsWith('player/')){
