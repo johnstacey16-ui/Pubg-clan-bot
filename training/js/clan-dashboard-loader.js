@@ -4,7 +4,8 @@
   const scripts=['/assets/clan-analytics.js','/assets/command-centre.js',
     '/assets/pubg-dictionaries.js','/assets/source-explorer.js',
     '/assets/telemetry-view.js','/assets/global-board.js',
-    '/assets/survival-view.js','/assets/cache-health.js','/assets/site.js'];
+    '/assets/survival-view.js','/assets/cache-health.js',
+    '/assets/full-stats.js','/assets/weapon-explorer.js','/assets/site.js'];
   let running=null;
   function load(src){
     return new Promise((resolve,reject)=>{
