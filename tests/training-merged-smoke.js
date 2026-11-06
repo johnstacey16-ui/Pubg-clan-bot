@@ -93,7 +93,7 @@ async function main(){
    await page.waitForURL(base+'/dashboard/');
    assert.ok(await page.locator('#panel-clan').evaluate(el=>el.classList.contains('active')));
    assert.equal(await page.locator('#active-tool-index').getAttribute('aria-label'),'Tool 1 of 7');
-   assert.equal(await page.locator('#clan-section-tabs [data-page]').count(),18);
+   assert.equal(await page.locator('#clan-section-tabs [data-page]').count(),19);
    assert.equal(await page.locator('iframe').count(),0);
    await page.locator('[data-return-tool]').click();
    assert.match(page.url(),/\/#panel-backpack$/);
