@@ -1,0 +1,24 @@
+/* Client-side saved match analysis; source sample sizes stay visible. */
+.match-lab-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:10px;margin:14px 0 18px}
+.match-lab-kpi{border:1px solid #37506a;border-radius:11px;padding:14px;background:#162a40}
+.match-lab-kpi small{display:block;color:#9bb2cd;font-size:10px;letter-spacing:.6px}
+.match-lab-kpi strong{display:block;color:#d2ffef;font-size:23px;margin-top:6px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.match-lab-coverage{line-height:1.7}
+.match-lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}
+.match-lab-grid>section{min-width:0;border:1px solid #2b4560;background:#11243a;border-radius:12px;padding:15px}
+.match-lab-grid h3,.match-lab-trend-title h3{font-size:16px;margin:0 0 9px}
+.match-lab-grid .scroll-table table{min-width:660px}
+.match-lab-grid th{font-size:9px;white-space:nowrap}
+.match-lab-trend-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:20px}
+.match-lab-trend-title label{color:#a8bad0;font-size:11px;display:flex;align-items:center;gap:8px}
+.match-lab-trend-title select{color:#eaf5ff;background:#14273b;padding:8px 10px;border:1px solid #37516d;border-radius:7px}
+.match-lab-trend{display:flex;gap:8px;align-items:flex-end;overflow-x:auto;padding:18px 4px 10px;min-height:175px}
+.match-trend-item{flex:1 0 54px;max-width:110px;display:flex;align-items:center;flex-direction:column;text-align:center;min-width:0}
+.match-trend-item strong{font-size:11px;color:#d2ffef}
+.match-trend-item small{font-size:9px;color:#9bb2cd;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.match-trend-rail{height:94px;width:32px;background:#1a324b;border-radius:5px;display:flex;align-items:flex-end;overflow:hidden;margin:7px 0}
+.match-trend-rail span{display:block;width:100%;height:0;background:linear-gradient(#40e8d1,#236c95);border-radius:5px 5px 0 0}
+.match-squad-overview{font-size:11px;margin-top:11px;color:#aee9d8}
+.match-replay-select{font-size:11px;margin-top:12px;min-height:40px}
+@media(max-width:1030px){.match-lab-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.match-lab-kpi strong{font-size:20px}.match-trend-item{flex-basis:48px}}
