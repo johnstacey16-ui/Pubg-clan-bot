@@ -99,6 +99,7 @@
       extraPlayers.push(p);
       if(data){
         renderCompare();chooseMatchPlayer(matchName);chooseInsightPlayers();chooseSeasonPlayer();
+        window.FullPubgStats?.setPlayers(visiblePlayers());
       }
       result.innerHTML='<div class="lookup-top"><strong>'+escapeHtml(p.name)+
         ' · '+(p.platform==='xbox'?'Xbox':'PlayStation')+'</strong><span class="badge '+
@@ -123,7 +124,7 @@
   }
 
   function go(page, preserveHash) {
-    if (['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'].indexOf(page) === -1) return;
+    if (['overview','leaderboard','players','modes','full-stats','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'].indexOf(page) === -1) return;
     current = page;
     document.querySelectorAll('.page').forEach(function (el) { el.hidden = el.id !== 'page-' + page; });
     document.querySelectorAll('[data-page]').forEach(function (el) {
@@ -131,10 +132,11 @@
       if (el.dataset.page === page) el.setAttribute('aria-current','page');
       else el.removeAttribute('aria-current');
     });
-    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',survival:'Survival mastery',sources:'PUBG data library',global:'Official regional ranks',health:'Data health',roadmap:'Roadmap'}[page];
+    $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes','full-stats':'Complete player stats',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',survival:'Survival mastery',sources:'PUBG data library',global:'Official regional ranks',health:'Data health',roadmap:'Roadmap'}[page];
     try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/dashboard/' : '/dashboard/#' + page); } catch (e) {}
     window.scrollTo(0,0);
     if(page==='matches' && data)loadCachedMatches();
+    if(page==='full-stats')window.FullPubgStats?.show();
     if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
     if(page==='season'&&data){loadSeason();loadSeasonLeaderboard();}
     if(data&&window.CommandCentre?.render)window.CommandCentre.render(page,data);
@@ -791,7 +793,8 @@
       '<div class="profile-insight-actions"><button class="secondary" type="button" data-match-player="'+escapeHtml(p.name)+'">⚑ Matches</button>'+
       '<button class="secondary" type="button" data-insight-page="weapons" data-insight-name="'+escapeHtml(p.name)+'">⌖ Weapons</button>'+
       '<button class="secondary" type="button" data-insight-page="teammates" data-insight-name="'+escapeHtml(p.name)+'">♟ Teammates</button>'+
-      '<button class="secondary" type="button" data-insight-page="season" data-insight-name="'+escapeHtml(p.name)+'">🏆 Season</button></div>'+
+      '<button class="secondary" type="button" data-insight-page="season" data-insight-name="'+escapeHtml(p.name)+'">🏆 Season</button>'+ 
+       '<button class="secondary" type="button" data-full-stats="'+escapeHtml(p.name)+'">▦ All statistics</button></div>'+
       '<h3>Advanced lifetime statistics</h3><div class="advanced-stats">'+
       [['Damage',p.advanced?.damage],['Headshots',p.advanced?.headshots],['Assists',p.advanced?.assists],
        ['Knockdowns',p.advanced?.knocks],['Revives',p.advanced?.revives],['Top 10',p.advanced?.top10],
@@ -823,7 +826,8 @@
       chooseInsightPlayers();chooseSeasonPlayer();
       if(current==='weapons'||current==='teammates')loadInsight(current);
       if(current==='season'){loadSeason();loadSeasonLeaderboard();}
-      if(window.CommandCentre?.render)window.CommandCentre.render(current,data);
+      window.FullPubgStats?.setPlayers(visiblePlayers());
+       if(window.CommandCentre?.render)window.CommandCentre.render(current,data);
       if(window.SourceExplorer?.setPlayers)window.SourceExplorer.setPlayers(data.players);
       if(window.SurvivalView?.setPlayers)window.SurvivalView.setPlayers(data.players);
       if(current==='survival'&&window.SurvivalView?.show)window.SurvivalView.show();
@@ -839,6 +843,9 @@
     if(favourite)toggleRosterFavourite(favourite.dataset.favourite);
     var b=e.target.closest&&e.target.closest('[data-profile]');
     if(b)openProfile(b.dataset.profile);
+    var fullStats=e.target.closest&&e.target.closest('[data-full-stats]');
+    if(fullStats){window.FullPubgStats?.select(fullStats.dataset.fullStats);
+      if($('profile').open)$('profile').close();go('full-stats');}
     var match=e.target.closest&&e.target.closest('[data-match-player]');
     if(match) {
       chooseMatchPlayer(match.dataset.matchPlayer);
@@ -943,7 +950,7 @@
       } else sharedName=decodeURIComponent(path);
     }catch(error){}
   }
-  go(sharedName?'overview':(['overview','leaderboard','players','modes','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
+  go(sharedName?'overview':(['overview','leaderboard','players','modes','full-stats','matches','weapons','season','teammates','compare','awards','analysis','data-tools','help','survival','sources','global','health','roadmap'].includes(hash)?hash:'overview'),Boolean(sharedName));
   reload().then(async function(){
     if(!sharedName)return;
     if(findPlayer(sharedName) && (!sharedPlatform||findPlayer(sharedName).platform===sharedPlatform)){
