@@ -58,7 +58,9 @@
     const finishes=items.map(m=>value(m.placement)).filter(n=>n!==null&&n>=1);
     const wins=finishes.filter(n=>n===1).length,top10=finishes.filter(n=>n<=10).length;
     const kills=sum(items,'kills'),damage=sum(items,'damage'),
-      assists=sum(items,'assists'),knocks=sum(items,'knocks');
+      assists=sum(items,'assists'),knocks=sum(items,'knocks'),
+      survival=sum(items,'timeSurvivedSeconds'),
+      roadKills=sum(items,'roadKills'),vehicles=sum(items,'vehicleDestroys');
     return {
       count,ranked:finishes.length,wins,top10,
       winRate:finishes.length?100*wins/finishes.length:null,
@@ -68,7 +70,10 @@
       killsPerMatch:kills.count?kills.total/kills.count:null,
       damage:damage.total,damageObserved:damage.count,
       damagePerMatch:damage.count?damage.total/damage.count:null,
-      assists:assists.total,knocks:knocks.total
+      assists:assists.total,knocks:knocks.total,
+      survival:survival.total,survivalObserved:survival.count,
+      averageSurvivalSeconds:survival.count?survival.total/survival.count:null,
+      roadKills:roadKills.total,vehicleDestroys:vehicles.total
     };
   }
   function groups(items,key){
@@ -83,6 +88,34 @@
   }
   const fmt=(n,digits=0)=>value(n)===null?'—':Number(n).toLocaleString('en-GB',{maximumFractionDigits:digits});
   const pct=n=>value(n)===null?'—':fmt(n,1)+'%';
+  function duration(n){
+    const seconds=value(n);
+    if(seconds===null)return '—';
+    const whole=Math.floor(seconds);
+    return Math.floor(whole/60)+'m '+String(whole%60).padStart(2,'0')+'s';
+  }
+  const DEATH_LABELS=Object.freeze({
+    alive:'Alive at match end',byplayer:'Killed by player',byzone:'Died to zone',
+    suicide:'Suicide',logout:'Disconnected'
+  });
+  const deathText=x=>DEATH_LABELS[x]||'—';
+  const EXTRA_FIELDS=Object.freeze([
+    {label:'Time survived',key:'timeSurvivedSeconds',unit:'duration',group:'Survival'},
+    {label:'Death type',key:'deathType',unit:'death',group:'Survival'},
+    {label:'Kill placement',key:'killPlace',group:'Combat'},
+    {label:'Kill streaks',key:'killStreaks',group:'Combat'},
+    {label:'Road kills',key:'roadKills',group:'Combat'},
+    {label:'Team kills',key:'teamKills',group:'Combat'},
+    {label:'Swam',key:'swimMeters',unit:'meters',group:'Movement'},
+    {label:'Vehicles destroyed',key:'vehicleDestroys',group:'Vehicles & equipment'},
+    {label:'Weapons acquired',key:'weaponsAcquired',group:'Vehicles & equipment'}
+  ]);
+  function detailValue(m,field){
+    if(field.unit==='death')return deathText(m[field.key]);
+    if(field.unit==='duration')return duration(m[field.key]);
+    if(field.unit==='meters')return value(m[field.key])===null?'—':fmt(m[field.key],1)+' m';
+    return fmt(m[field.key]);
+  }
   function uniqueSquad(m){
     const names=new Set();
     return (Array.isArray(m.squad)?m.squad:[]).filter(p=>{
@@ -163,7 +196,10 @@
       ['Saved matches shown',s.count],['Known finishes',s.ranked],
       ['Wins',s.ranked?s.wins:null],['Win rate',pct(s.winRate)],
       ['Kills per match',fmt(s.killsPerMatch,2)],['Damage per match',fmt(s.damagePerMatch,1)],
-      ['Top-10 rate',pct(s.top10Rate)],['Average placement',fmt(s.avgPlace,1)]
+      ['Top-10 rate',pct(s.top10Rate)],['Average placement',fmt(s.avgPlace,1)],
+      ['Average survival',duration(s.averageSurvivalSeconds)],
+      ['Road kills observed',fmt(s.roadKills)],
+      ['Vehicles destroyed',fmt(s.vehicleDestroys)]
     ];
     $('match-lab-summary').innerHTML=stats.map(([title,figure])=>
       '<div class="match-lab-kpi"><small>'+escape(title)+'</small><strong>'+
@@ -172,7 +208,8 @@
     $('match-lab-coverage').textContent=matches.length+' of '+all.length+
       ' unique saved match reports displayed · '+s.ranked+
       ' known placements · '+s.killsObserved+' match kills records · '+
-      s.damageObserved+' match damage records. '+origin+
+      s.damageObserved+' match damage records · '+s.survivalObserved+
+      ' match survival records. '+origin+
       '. These are observed samples, NOT lifetime totals or an estimate of missing games.';
     renderGroup('match-map-table',groups(matches,'map'));
     renderGroup('match-mode-table',groups(matches,'mode'));
@@ -201,6 +238,9 @@
         ['Walked (m)',m.walkMeters],['Driven (m)',m.driveMeters],
         ['Match duration (s)',m.durationSeconds]
       ].map(([n,v])=>escape(n)+' '+fmt(v,1)).join(' · ');
+      const detailed=EXTRA_FIELDS.map(field=>'<div class="match-detail-stat">'+
+        '<span>'+escape(field.label)+'</span><strong>'+
+        escape(detailValue(m,field))+'</strong></div>');
       return '<article class="match-card">'+
         '<header class="match-heading"><div><span class="match-map">'+
         escape(label(m.map,'Unknown map'))+'</span><span class="badge">'+
@@ -209,6 +249,9 @@
         '<div class="match-metrics">'+metrics.map(([name,v])=>'<div><small>'+
           name+'</small><strong>'+escape(v)+'</strong></div>').join('')+'</div>'+
         '<p class="match-secondary">'+secondary+'</p>'+
+        '<details class="match-detail"><summary>Complete official participant stats</summary>'+
+        '<p class="small muted">Fields are from the saved PUBG match participant. “—” means not returned or not archived. Death status does not identify another player.</p>'+
+        '<div class="match-detail-grid">'+detailed.join('')+'</div></details>'+
         (squad?'<div class="match-squad-overview">'+
           'Recorded squad: '+fmt(squad.members)+' · Squad kills '+fmt(squad.teamKills)+
           ' · Squad damage '+fmt(squad.teamDamage,1)+
@@ -218,7 +261,11 @@
         (team.length?team.map(member=>'<div class="match-teammate"><strong>'+
           (member.isSelf?'★ ':'')+escape(member.name)+'</strong><span>'+
           fmt(member.kills)+' kills · '+fmt(member.damage,1)+' damage · '+
-          fmt(member.assists)+' assists · '+fmt(member.knocks)+' knocks</span></div>').join(''):
+          fmt(member.assists)+' assists · '+fmt(member.knocks)+' knocks'+
+          (value(member.headshots)!==null?' · '+fmt(member.headshots)+' headshots':'')+
+          (value(member.revives)!==null?' · '+fmt(member.revives)+' revives':'')+
+          (value(member.timeSurvivedSeconds)!==null?' · '+duration(member.timeSurvivedSeconds)+' survived':'')+
+          '</span></div>').join(''):
           '<p class="small muted">No squad roster saved for this match.</p>')+
         '</details><button type="button" class="secondary match-replay-select" data-replay-match="'+
          escape(m.id)+'">Select for recorded 2D replay</button></article>';
@@ -240,5 +287,5 @@
       $('telemetry-panel').scrollIntoView({behavior:'smooth',block:'start'});
     });
   }
-  return{rows,filter,summary,groups,recentTrend,squadStats,fmt,pct,render,rerender,reset,init};
+  return{rows,filter,summary,groups,recentTrend,squadStats,fmt,pct,duration,deathText,EXTRA_FIELDS,render,rerender,reset,init};
 });
