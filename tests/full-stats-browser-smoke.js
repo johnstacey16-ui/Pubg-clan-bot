@@ -25,6 +25,25 @@ const server=http.createServer(async(req,res)=>{
  if(uri.pathname==='/api/public-stats')return respond(res,200,summary);
  if(uri.pathname==='/api/player-lookup')return respond(res,200,{
   schemaVersion:1,found:true,isClanMember:false,player:outsider});
+ if(uri.pathname==='/api/public-matches')return respond(res,200,{
+  schemaVersion:1,name:'Sample Member',platform:'xbox',
+  source:'Private 180-day archive',archivedCount:4,availableCount:4,
+  note:'Synthetic saved matches for browser testing',
+  matches:[
+   {id:'00336e4b-d659-4497-bfc4-9f6dd705cc71',map:'Baltic_Main',
+    mode:'squad',playedAt:'2026-11-05T14:00:00Z',placement:1,
+    kills:5,damage:800,headshots:2,knocks:4,assists:2,
+    squad:[{name:'Sample Member',isSelf:true,kills:5,damage:800,assists:2},
+     {name:'Friend',kills:3,damage:250,assists:1}]},
+   {id:'00336e4b-d659-4497-bfc4-9f6dd705cc72',map:'Baltic_Main',
+    mode:'squad',playedAt:'2026-11-04T14:00:00Z',placement:12,kills:0,damage:50,
+    squad:[{name:'Sample Member',isSelf:true,kills:0}]},
+   {id:'00336e4b-d659-4497-bfc4-9f6dd705cc73',map:'Desert_Main',
+    mode:'solo',playedAt:'2026-11-03T14:00:00Z',placement:7,kills:3,damage:450},
+   {id:'00336e4b-d659-4497-bfc4-9f6dd705cc74',map:'Desert_Main',
+    mode:'duo',playedAt:'2026-11-02T14:00:00Z',placement:null,
+    kills:null,damage:null}
+  ]});
  if(uri.pathname==='/api/public-insights'&&uri.searchParams.get('kind')==='weapons')
   return respond(res,200,{schemaVersion:1,kind:'weapons',name:'Sample Member',
    platform:'xbox',savedAt:'2026-11-05T12:00:00Z',count:2,
@@ -76,6 +95,36 @@ async function run(){
    await page.locator('#page-full-stats').waitFor({state:'visible'});
    assert.equal(await page.locator('#full-player option').count(),1);
    assert.match(await page.locator('#full-source').innerText(),/Sample Member/);
+   await page.locator('[data-page="matches"]').click();
+   await page.locator('#page-matches').waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.getElementById('match-map-table')?.
+    textContent.includes('Baltic_Main'),{timeout:12000});
+   assert.equal(await page.locator('#match-results article').count(),4);
+   assert.match(await page.locator('#match-lab-coverage').innerText(),/4 of 4/);
+   assert.match(await page.locator('#match-lab-coverage').innerText(),/NOT lifetime totals/);
+   assert.match(await page.locator('#match-map-table').innerText(),/Baltic_Main/);
+   assert.match(await page.locator('#match-map-table').innerText(),/50%/);
+   await page.locator('#match-map-filter').selectOption('Baltic_Main');
+   assert.equal(await page.locator('#match-results article').count(),2);
+   assert.match(await page.locator('#match-lab-coverage').innerText(),/2 of 4/);
+   await page.locator('#match-outcome-filter').selectOption('win');
+   assert.equal(await page.locator('#match-results article').count(),1);
+   assert.match(await page.locator('#match-results').innerText(),/62.5%/);
+   await page.locator('#match-trend-metric').selectOption('damage');
+   assert.equal(await page.locator('#match-trend .match-trend-item').count(),1);
+   const chartHeight=await page.locator('#match-trend [data-height]').first().evaluate(
+    el=>parseFloat(el.style.height));
+   assert.ok(chartHeight>0,'Saved match trend bars must have actual CSSOM heights');
+   await page.locator('#match-results [data-replay-match]').first().click();
+   assert.equal(await page.locator('#telemetry-match').inputValue(),
+    '00336e4b-d659-4497-bfc4-9f6dd705cc71');
+   await page.locator('#match-map-filter').selectOption('');
+   await page.locator('#match-outcome-filter').selectOption('unknown');
+   assert.equal(await page.locator('#match-results article').count(),1);
+   assert.match(await page.locator('#match-lab-summary').innerText(),/—/);
+   await page.locator('#match-outcome-filter').selectOption('all');
+   await page.locator('[data-page="full-stats"]').click();
+
    assert.match(await page.locator('#full-summary').innerText(),/7/);
    assert.match(await page.locator('#full-results').innerText(),/Longest kill/);
    await page.locator('#full-category').selectOption('Recent activity');
