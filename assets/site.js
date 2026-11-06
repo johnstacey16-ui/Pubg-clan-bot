@@ -296,6 +296,7 @@
     var request=++matchRequest,name=matchName;
     $('match-note').textContent='Reading saved console match data for '+name+'…';
     $('match-results').innerHTML='';
+    window.MatchLab?.reset();
     if(window.TelemetryView?.matchesChanged)window.TelemetryView.matchesChanged(name,[]);
     try{
       var response=await fetch('/api/public-matches?name='+encodeURIComponent(name),{
@@ -304,38 +305,12 @@
       if(!response.ok)throw Error('Match API HTTP '+response.status);
       var result=await response.json();
       if(request!==matchRequest || matchName!==name)return;
-      if(window.TelemetryView?.matchesChanged)window.TelemetryView.matchesChanged(name,result.matches||[]);
+      if(result.schemaVersion!==1||!Array.isArray(result.matches))throw Error('Unexpected match schema');
+      if(window.TelemetryView?.matchesChanged)window.TelemetryView.matchesChanged(name,result.matches);
+      window.MatchLab?.render(result);
       $('match-note').textContent=(result.note||'Saved PUBG matches only')+
         ' · '+result.availableCount+' detailed match(es) stored'+
         (result.archivedCount?' · '+result.archivedCount+' archived':'');
-      if(!result.matches?.length){
-        $('match-results').innerHTML='<p class="match-empty">No detailed match records are stored yet for this player. '+
-          'Select <strong>Refresh recent from PUBG</strong> above, or use Discord <strong>/recent</strong> to populate the shared cache.</p>';
-        return;
-      }
-      $('match-results').innerHTML=result.matches.map(function(m){
-        var team=Array.isArray(m.squad)?m.squad:[];
-        return '<article class="match-card">'+
-          '<header class="match-heading"><div><span class="match-map">'+escapeHtml(m.map)+'</span>'+
-          '<span class="badge">'+escapeHtml(m.mode)+'</span></div>'+
-          '<span class="small muted">'+escapeHtml(dateText(m.playedAt))+'</span></header>'+
-          '<div class="match-metrics">'+
-          '<div><small>PLACEMENT</small><strong>'+(m.placement?'#'+fmt(m.placement):'—')+'</strong></div>'+
-          '<div><small>KILLS</small><strong>'+fmt(m.kills)+'</strong></div>'+
-          '<div><small>DAMAGE</small><strong>'+fmt(m.damage)+'</strong></div>'+
-          '<div><small>ASSISTS</small><strong>'+fmt(m.assists)+'</strong></div>'+
-          '</div>'+
-          '<div class="match-secondary">Headshots '+fmt(m.headshots)+' · Knocks '+fmt(m.knocks)+
-          ' · Revives '+fmt(m.revives)+' · Heals '+fmt(m.heals)+
-          ' · Boosts '+fmt(m.boosts)+' · Longest kill '+fmt(m.longestKillMeters)+'m</div>'+
-          '<details class="match-squad"><summary>Squad details · '+team.length+' player(s)</summary>'+
-          (team.length?team.map(function(member){
-            return '<div class="match-teammate"><strong>'+(member.isSelf?'★ ':'')+
-              escapeHtml(member.name)+'</strong><span>'+fmt(member.kills)+' kills · '+
-              fmt(member.damage)+' damage · '+fmt(member.assists)+' assists</span></div>';
-          }).join(''):'<p class="small muted">No roster details were saved for this match.</p>')+
-          '</details></article>';
-      }).join('');
     }catch(error){
       if(request!==matchRequest)return;
       $('match-note').textContent='Saved match data is temporarily unavailable.';
@@ -877,6 +852,7 @@
   });
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);
+  window.MatchLab?.init();
   $('match-refresh').addEventListener('click',function(){
     refreshFromPubg('matches',matchName,'match-note');
   });
