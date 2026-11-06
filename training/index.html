@@ -11,6 +11,7 @@
 <title>HELP Clan — PUBG Field Toolkit &amp; Clan Dashboard</title>
 <link rel="stylesheet" href="/assets/full-stats.css">
 <link rel="stylesheet" href="/assets/weapon-explorer.css">
+<link rel="stylesheet" href="/assets/match-lab.css">
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
@@ -611,7 +612,7 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
       </div>
     </section>
     <section class="page" id="page-matches" hidden>
-      <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore archived squad and match results saved for up to 180 days. Read cached results for free, or open actual recorded PUBG telemetry for 2D coordinate replay and match-local rival analysis.</p></div>
+      <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore map, mode, placement and squad performance from archived matches saved for up to 180 days. Compare real observed reports, or open recorded PUBG telemetry for 2D replays and match-local rivals.</p></div>
       <div class="card panel">
         <div class="filters">
           <label>Saved console player <select id="match-player"></select></label>
@@ -619,7 +620,58 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
           <button type="button" class="primary" id="match-refresh">↻ Refresh recent from PUBG</button>
         </div>
         <p id="match-note" class="small muted" aria-live="polite">Choose a saved console player to explore existing match records.</p>
-        <div id="match-results" class="match-results" aria-live="polite"></div>
+        <section aria-label="Saved match performance lab">
+          <div class="panel-heading"><div>
+            <p class="eyebrow subtle">GENUINE SAVED MATCH REPORTS</p>
+            <h2>Match Performance Lab</h2>
+          </div><span class="chip">NO ADDITIONAL PUBG REQUESTS</span></div>
+          <p class="small muted">Explore only matches actually present in the saved archive or recent-match cache. The statistics below are observed samples, not career-wide totals. Changing filters updates the charts and match reports together.</p>
+          <div class="filters">
+            <label>Map <select id="match-map-filter"><option value="">All maps</option></select></label>
+            <label>Game mode <select id="match-mode-filter"><option value="">All modes</option></select></label>
+            <label>Placement <select id="match-outcome-filter">
+              <option value="all">All placements</option>
+              <option value="win">Wins only</option>
+              <option value="top10">Top 10</option>
+              <option value="other">Outside top 10</option>
+              <option value="unknown">Placement unavailable</option>
+            </select></label>
+            <label>Sort matches <select id="match-order">
+              <option value="newest">Most recent</option>
+              <option value="oldest">Oldest first</option>
+              <option value="kills">Most kills</option>
+              <option value="damage">Highest damage</option>
+              <option value="placement">Best placement</option>
+            </select></label>
+          </div>
+          <div id="match-lab-summary" class="match-lab-summary" aria-label="Statistics for filtered saved matches"></div>
+          <p id="match-lab-coverage" class="small muted match-lab-coverage" aria-live="polite">Choose a player to analyse actual saved matches.</p>
+          <div class="match-lab-grid">
+            <section aria-labelledby="match-map-summary-title">
+              <h3 id="match-map-summary-title">Performance by map</h3>
+              <div class="scroll-table"><table><thead><tr>
+                <th>MAP</th><th>MATCHES</th><th>WINS</th><th>WIN %</th><th>KILLS</th><th>KILLS/GAME</th><th>AVG DAMAGE</th><th>AVG PLACE</th>
+              </tr></thead><tbody id="match-map-table"></tbody></table></div>
+            </section>
+            <section aria-labelledby="match-mode-summary-title">
+              <h3 id="match-mode-summary-title">Performance by game mode</h3>
+              <div class="scroll-table"><table><thead><tr>
+                <th>MODE</th><th>MATCHES</th><th>WINS</th><th>WIN %</th><th>KILLS</th><th>KILLS/GAME</th><th>AVG DAMAGE</th><th>AVG PLACE</th>
+              </tr></thead><tbody id="match-mode-table"></tbody></table></div>
+            </section>
+          </div>
+          <div class="match-lab-trend-title"><h3>Last 12 observed matches, oldest to newest</h3>
+            <label>Chart metric <select id="match-trend-metric">
+              <option value="kills">Kills</option>
+              <option value="damage">Damage</option>
+              <option value="assists">Assists</option>
+              <option value="knocks">Knockdowns</option>
+            </select></label>
+          </div>
+          <div id="match-trend" class="match-lab-trend" aria-label="Observed recent match trend"></div>
+          <h3>Individual saved match reports</h3>
+          <div id="match-results" class="match-results" aria-live="polite"></div>
+        </section>
       </div>
 
       <div class="card panel telemetry-panel" id="telemetry-panel">
