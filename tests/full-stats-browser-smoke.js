@@ -79,7 +79,7 @@ async function run(){
    assert.match(await page.locator('#full-results').innerText(),/380 m/);
    await page.locator('#full-query').fill('');
    await page.locator('[data-page="players"]').click();
-   await page.locator('[data-profile="Sample Member"]').first().click();
+   await page.locator('#page-players [data-profile="Sample Member"]').click();
    await page.locator('#profile[open]').waitFor({state:'visible'});
    await page.locator('[data-full-stats]').click();
    await page.locator('#page-full-stats').waitFor({state:'visible'});
