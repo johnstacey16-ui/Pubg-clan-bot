@@ -1,0 +1,20 @@
+/* Publisher-source-aware weapon mastery exploration */
+.weapon-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:9px;margin:12px 0 18px}
+.weapon-kpi{padding:14px;border-radius:10px;border:1px solid #304a63;background:#15283c;min-width:0}
+.weapon-kpi small{display:block;font-size:10px;color:#9eafca;letter-spacing:.5px}
+.weapon-kpi strong{display:block;font-size:20px;margin-top:8px;color:#ebf8ff;overflow-wrap:anywhere}
+.weapon-coverage{line-height:1.7;margin:12px 0}
+.weapon-pick{background:transparent;border:0;padding:6px 0;color:var(--text);text-align:left;font-weight:850;text-decoration:underline;text-decoration-color:#406179;text-underline-offset:3px}
+.weapon-pick:hover,.weapon-pick:focus-visible{color:var(--mint)}
+.weapon-active td{background:#1b3a47}
+.weapon-detail{margin-top:24px;border-top:1px solid #34516b;padding-top:20px}
+.weapon-detail-title{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.weapon-detail-title h3{font-size:21px;margin:5px 0}
+.weapon-detail-title p{margin:5px 0}
+.weapon-detail-table{min-width:730px;white-space:normal}
+.weapon-detail-table th:not(:first-child),.weapon-detail-table td:not(:first-child){text-align:right;min-width:135px}
+.weapon-detail-table td:first-child{min-width:205px}
+.weapon-detail-table td small{display:block;color:#8facc5;font-size:10px;margin-top:5px;line-height:1.5}
+.weapon-detail-table td:not(:first-child){font-weight:750;white-space:nowrap}
+.weapon-detail-table .weapon-column-focus{background:#193f47;color:#c6ffef}
+.weapon-download-hint{line-height:1.65;color:#9db1c8}
