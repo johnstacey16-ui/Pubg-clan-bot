@@ -7,6 +7,7 @@
 <title>HELP Clan — Clan Dashboard &amp; PUBG Intelligence</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand.svg">
 <link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/full-stats.css">
 <link rel="stylesheet" href="/assets/toolkit-theme.css">
 <script defer src="/assets/clan-analytics.js"></script>
 <script defer src="/assets/command-centre.js"></script>
@@ -16,6 +17,7 @@
 <script defer src="/assets/global-board.js"></script>
 <script defer src="/assets/survival-view.js"></script>
 <script defer src="/assets/cache-health.js"></script>
+<script defer src="/assets/full-stats.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -38,6 +40,7 @@
       <button class="nav-link" type="button" data-page="leaderboard"><span>🏆</span> Leaderboards</button>
       <button class="nav-link" type="button" data-page="players"><span>♙</span> Player roster</button>
       <button class="nav-link" type="button" data-page="modes"><span>▥</span> Game modes</button>
+      <button class="nav-link" type="button" data-page="full-stats"><span>▦</span> Complete player stats</button>
       <button class="nav-link" type="button" data-page="matches"><span>⚑</span> Match intelligence</button>
       <button class="nav-link" type="button" data-page="weapons"><span>⌖</span> Weapon mastery</button>
       <button class="nav-link" type="button" data-page="season"><span>🏆</span> Season & ranked</button>
@@ -95,6 +98,39 @@
     <section class="page" id="page-leaderboard" hidden><div class="page-head"><p class="eyebrow">THE COMPETITIVE EDGE</p><h1>Clan <em>leaderboards.</em></h1><p>Sort actual saved statistics; change platforms instantly.</p></div><div class="card panel"><div class="filters"><label>Rank by <select id="sort"><option value="kills">Lifetime kills</option><option value="wins">Lifetime wins</option><option value="matches">Matches played</option><option value="kd">Kills per match</option><option value="winRate">Win rate</option><option value="headshots">Headshots</option><option value="damage">Total damage</option><option value="assists">Assists</option><option value="knocks">Knockdowns</option><option value="revives">Revives</option><option value="top10">Top 10 finishes</option><option value="longestKill">Longest kill</option></select></label><label>Platform <select id="leader-console"><option value="all">Both consoles</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option></select></label></div><div class="scroll-table"><table><thead><tr><th>#</th><th>PLAYER</th><th>KILLS</th><th>WINS</th><th>MATCHES</th><th>KILLS/MATCH</th><th>WIN RATE</th><th id="leader-stat-label">RANKED VALUE</th></tr></thead><tbody id="ranking-table"></tbody></table></div></div></section>
     <section class="page" id="page-players" hidden><div class="page-head"><p class="eyebrow">THE FULL ROSTER</p><h1>Every <em>clan member.</em></h1><p>See verified accounts alongside names still being imported.</p></div><div class="card panel"><div class="filters"><label>Player search <input id="search" type="search" placeholder="Search gamer tags…" autocomplete="off"></label><label>Console <select id="player-console"><option value="all">Both consoles</option><option value="xbox">Xbox</option><option value="psn">PlayStation</option><option value="unknown">Unconfirmed</option></select></label><label>Import status <select id="player-status"><option value="all">All players</option><option value="verified">Verified</option><option value="pending">Pending</option><option value="ambiguous">Ambiguous</option><option value="not_found">Not found</option></select></label><label>Sort roster <select id="roster-sort"><option value="name">Name A–Z</option><option value="kills">Most kills</option><option value="wins">Most wins</option><option value="favourites">Favourites first</option></select></label><label class="roster-fav-filter">Favourites only <input type="checkbox" id="roster-favs-only"></label><label>Per page <select id="roster-page-size"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select></label></div><div class="scroll-table"><table><thead><tr><th>PLAYER / FAVOURITE</th><th>PLATFORM</th><th>STATUS</th><th>KILLS</th><th>WINS</th><th>MATCHES</th></tr></thead><tbody id="roster-table"></tbody></table></div><div class="roster-pagination"><p id="roster-count" class="small muted" aria-live="polite"></p><div class="roster-page-buttons"><button type="button" id="roster-prev" class="secondary" aria-label="Previous roster page">← Previous</button><span id="roster-page-label" aria-live="polite">Page 1 of 1</span><button type="button" id="roster-next" class="secondary" aria-label="Next roster page">Next →</button></div></div></div></section>
     <section class="page" id="page-modes" hidden><div class="page-head"><p class="eyebrow">PLAYSTYLE BREAKDOWN</p><h1>Every <em>game mode.</em></h1><p>Solo, Duo, Squad and FPP: all actual saved PUBG lifetime numbers.</p></div><div class="card panel"><h3>Clan kills by mode</h3><div id="modes-chart" class="bars"></div><div class="scroll-table"><table><thead><tr><th>MODE</th><th>MATCHES</th><th>KILLS</th><th>WINS</th><th>KILLS/MATCH</th><th>DAMAGE</th><th>ASSISTS</th></tr></thead><tbody id="modes-table"></tbody></table></div></div></section>
+    <section class="page" id="page-full-stats" hidden>
+      <div class="page-head"><p class="eyebrow">COMPLETE OFFICIAL LIFETIME FIELD LIBRARY</p>
+        <h1>Complete <em>player statistics.</em></h1>
+        <p>Explore all 31 non-deprecated numeric PUBG game-mode statistics for a saved Xbox or PlayStation player, arranged by purpose. No extra PUBG API requests.</p></div>
+      <div class="card panel">
+        <div class="filters full-stat-controls">
+          <label>Saved console player <select id="full-player"></select></label>
+          <label>Game mode <select id="full-mode">
+            <option value="all">All saved lifetime modes</option>
+            <option value="solo">Solo TPP</option><option value="duo">Duo TPP</option>
+            <option value="squad">Squad TPP</option><option value="solo-fpp">Solo FPP</option>
+            <option value="duo-fpp">Duo FPP</option><option value="squad-fpp">Squad FPP</option>
+          </select></label>
+          <label>Category <select id="full-category">
+            <option value="all">All categories</option><option value="Combat">Combat</option>
+            <option value="Survival">Survival</option><option value="Movement">Movement</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Recent activity">Recent activity</option><option value="Other">Other</option>
+          </select></label>
+          <label>Find statistic <input id="full-query" type="search" placeholder="Kill, distance, damage, revive…" autocomplete="off"></label>
+        </div>
+        <p id="full-source" class="small muted" role="status" aria-live="polite">Reading verified saved statistics…</p>
+        <div id="full-summary" class="full-stat-kpis" aria-label="Observed player summary"></div>
+        <div id="full-results" aria-live="polite"></div>
+        <p class="full-stat-footnote">All-mode totals add only available records; missing modes can make a total incomplete. Maximums use the highest saved mode value, not their sum. Recent-day, recent-week and undefined “days” values appear only for their individual mode because their time windows or meaning cannot safely be combined. Rates are calculated from recorded figures and are <strong>not</strong> official PUBG K/D.</p>
+      </div>
+      <div class="card panel"><h2>Lifetime modes side by side</h2>
+        <p class="small muted">The coverage column shows how many of the 31 fields PUBG supplied in the saved mode. A dash is not treated as zero.</p>
+        <div class="scroll-table"><table><thead><tr><th>MODE</th><th>MATCHES</th><th>KILLS</th><th>DAMAGE</th><th>WIN RATE</th><th>FIELDS PRESENT</th></tr></thead>
+          <tbody id="full-mode-table"></tbody></table></div>
+        <p class="small muted">Use the <strong>PUBG data library</strong> to inspect public-safe source JSON, or the Season & ranked page for season-specific figures.</p>
+      </div>
+    </section>
     <section class="page" id="page-matches" hidden>
       <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore archived squad and match results saved for up to 180 days. Read cached results for free, or open actual recorded PUBG telemetry for 2D coordinate replay and match-local rival analysis.</p></div>
       <div class="card panel">

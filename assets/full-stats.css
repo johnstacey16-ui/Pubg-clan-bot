@@ -1,0 +1,20 @@
+/* Read-only advanced PUBG lifetime statistics. */
+.full-stat-controls{align-items:flex-end}
+.full-stat-controls label{flex:1 1 175px;min-width:130px}
+.full-stat-controls input,.full-stat-controls select{width:100%;min-width:0}
+.full-stat-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:10px;margin:18px 0}
+.full-stat-kpi{padding:15px;border:1px solid #2b4963;border-radius:12px;background:#172840;min-width:0}
+.full-stat-kpi small{display:block;color:#a0b6cb;font-size:10px;letter-spacing:.5px}
+.full-stat-kpi strong{display:block;color:#e7f8ff;font-size:23px;margin-top:7px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.full-stat-group{margin:23px 0}
+.full-stat-group h3{margin:0 0 8px;font-size:18px;color:var(--mint)}
+.full-stat-group table{min-width:560px}
+.full-stat-group th:nth-child(2),.full-stat-group td:nth-child(2){text-align:right}
+.full-stat-group td{white-space:normal}
+.full-stat-group td:first-child{min-width:220px}
+.full-stat-group td small{display:block;color:#91aac4;font-size:11px;line-height:1.5;margin-top:4px}
+.full-stat-group code{font-size:11px;color:#a9cce6;white-space:nowrap}
+.full-stat-value{color:#e0f7f7;font-weight:850;font-size:14px;font-variant-numeric:tabular-nums}
+.full-stat-footnote{color:#9fb4c9;font-size:12px;line-height:1.7;margin-top:18px}
+#full-mode-table td:last-child{color:#9db9d3}
+@media(max-width:740px){.full-stat-kpi{padding:12px}.full-stat-kpi strong{font-size:20px}}

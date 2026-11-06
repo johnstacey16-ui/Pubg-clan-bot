@@ -35,6 +35,8 @@ jobs:
         run: command -v google-chrome && google-chrome --version
       - name: Verify real Chrome at desktop and mobile viewports with synthetic data
         run: node tests/browser-smoke.js
+      - name: Verify complete player stats in the actual dashboard on Chrome
+        run: node tests/full-stats-browser-smoke.js
       - name: Verify the merged HELP toolkit and namespaced assets in real Chrome
         run: node tests/training-merged-smoke.js
       - name: Verify all 13 hit zones and mannequin at five screen widths
