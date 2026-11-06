@@ -117,10 +117,11 @@ test('health panel and privacy-safe aggregate route reuse the existing backend',
 });
 
 test('bar graphs set measured CSSOM dimensions without blocked inline style attributes',()=>{
- const app=read('assets/site.js'),page=read('index.html');
- assert.doesNotMatch(app,/<span style=/);
- assert.doesNotMatch(app,/<span class="bar-actual" style=/);
+ const app=read('assets/site.js'),page=read('index.html'),
+   weapons=read('assets/weapon-explorer.js');
+ assert.doesNotMatch(app+weapons,/<span style=/);
+ assert.doesNotMatch(app+weapons,/<span class="bar-actual" style=/);
  assert.match(app,/el\.style\.height=el\.dataset\.height/);
- assert.match(app,/el\.style\.width=el\.dataset\.width/);
+ assert.match(weapons,/e\.style\.width=e\.dataset\.width/);
  assert.match(page,/style-src 'self'/);
 });

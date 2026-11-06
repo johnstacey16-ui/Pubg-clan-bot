@@ -25,6 +25,20 @@ const server=http.createServer(async(req,res)=>{
  if(uri.pathname==='/api/public-stats')return respond(res,200,summary);
  if(uri.pathname==='/api/player-lookup')return respond(res,200,{
   schemaVersion:1,found:true,isClanMember:false,player:outsider});
+ if(uri.pathname==='/api/public-insights'&&uri.searchParams.get('kind')==='weapons')
+  return respond(res,200,{schemaVersion:1,kind:'weapons',name:'Sample Member',
+   platform:'xbox',savedAt:'2026-11-05T12:00:00Z',count:2,
+   note:'Saved genuine PUBG mastery — separate source fields',
+   items:[
+    {name:'BerylM762',level:34,tier:4,xp:8000,
+     official:{kills:8,headshots:3,damage:800,longestKill:295,
+      mostDefeatsInGame:5},competitive:{kills:2},
+     total:{kills:550,damage:65000,mostDamageInGame:2400,
+      mostHeadshotsInGame:8,mostKnocksInGame:7,longRangeDefeats:12}},
+    {name:'M416',level:22,tier:3,xp:30000,
+     official:{kills:31,headshots:12,damage:3000,longestKill:210},
+     competitive:{kills:5},total:{kills:3,damage:500}}
+   ]});
  if(uri.pathname.startsWith('/api/'))return respond(res,200,{
   schemaVersion:1,items:[],history:[],matches:[],rows:[],points:[]});
  if(uri.pathname==='/favicon.ico'){res.writeHead(204);return res.end();}
@@ -93,8 +107,26 @@ async function run(){
    assert.equal(await page.locator('#full-player option').count(),2);
    await page.locator('#full-player').selectOption('Outside Player');
    assert.match(await page.locator('#full-source').innerText(),/PlayStation/);
+   // Confirm the actual Weapon Mastery tab uses post-18.2 Official figures by default.
+   await page.locator('[data-page="weapons"]').click();
+   await page.locator('#page-weapons').waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.getElementById('weapon-detail')?.
+    textContent.includes('Most kills in a match'),{timeout:12000});
+   assert.equal(await page.locator('#weapon-category').inputValue(),'official');
+   assert.match(await page.locator('#weapons-table tr').first().innerText(),/M416/);
+   assert.match(await page.locator('#weapon-coverage').innerText(),/Official \(post-18\.2\)/);
+   await page.locator('[data-weapon-select="BerylM762"]').click();
+   assert.match(await page.locator('#weapon-detail').innerText(),/2,400/);
+   assert.match(await page.locator('#weapon-detail').textContent(),/Legacy \(frozen at 18\.2\)/);
+   await page.locator('#weapon-category').selectOption('total');
+   assert.match(await page.locator('#weapons-table tr').first().innerText(),/BerylM762/);
+   await page.locator('#weapon-sort').selectOption('xp');
+   assert.match(await page.locator('#weapons-table tr').first().innerText(),/M416/);
+   await page.locator('#weapon-search').fill('Beryl');
+   assert.equal(await page.locator('#weapons-table tr').count(),1);
+   assert.match(await page.locator('#weapon-summary').innerText(),/Weapons returned/);
    assert.deepEqual(errors,[],'Browser console errors at '+width+'px');
-   console.log('FULL STATS CHROME PASS: '+width+'px; filters, maxima, recent, profile, outsider');
+   console.log('FULL STATS CHROME PASS: '+width+'px; lifetime and source-correct mastery explorer');
    await page.close();
   }
  }finally{

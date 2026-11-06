@@ -8,6 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="/assets/brand.svg">
 <link rel="stylesheet" href="/assets/site.css">
 <link rel="stylesheet" href="/assets/full-stats.css">
+<link rel="stylesheet" href="/assets/weapon-explorer.css">
 <link rel="stylesheet" href="/assets/toolkit-theme.css">
 <script defer src="/assets/clan-analytics.js"></script>
 <script defer src="/assets/command-centre.js"></script>
@@ -18,6 +19,7 @@
 <script defer src="/assets/survival-view.js"></script>
 <script defer src="/assets/cache-health.js"></script>
 <script defer src="/assets/full-stats.js"></script>
+<script defer src="/assets/weapon-explorer.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -205,23 +207,43 @@
     </section>
         <section class="page" id="page-weapons" hidden>
       <div class="page-head"><p class="eyebrow">WEAPON PERFORMANCE</p><h1>Weapon <em>mastery.</em></h1>
-        <p>Real PUBG mastery levels, kills, headshots, damage and XP from saved API responses.</p></div>
+        <p>Every available saved weapon-mastery field, source-by-source, with accurate post-18.2 and historical comparisons.</p></div>
       <div class="card panel">
         <div class="filters">
           <label>Saved console player <select id="weapons-player"></select></label>
-          <label>Stat category <select id="weapon-category">
-            <option value="total">All recorded stats</option>
-            <option value="official">Official</option>
-            <option value="competitive">Competitive</option></select></label>
+          <label>PUBG statistic source <select id="weapon-category">
+            <option value="official" selected>Official — since patch 18.2</option>
+            <option value="competitive">Competitive — since patch 18.2</option>
+            <option value="total">Historical legacy — no longer updating</option></select></label>
+          <label>Sort by <select id="weapon-sort">
+            <option value="kills">Kills</option>
+            <option value="damage">Damage dealt</option>
+            <option value="headshots">Headshot kills</option>
+            <option value="knocks">Knockdowns</option>
+            <option value="defeats">Defeats</option>
+            <option value="longestKill">Longest kill</option>
+            <option value="mostKillsInGame">Single-match kill record</option>
+            <option value="xp">Mastery XP</option>
+            <option value="level">Mastery level</option>
+          </select></label>
           <label>Search weapons <input type="search" id="weapon-search" placeholder="Weapon name…" autocomplete="off"></label>
           <button type="button" id="weapons-reload" class="secondary">↻ Reload saved mastery</button>
           <button type="button" id="weapons-refresh" class="primary">↻ Refresh mastery from PUBG</button>
+          <button type="button" id="weapon-download" class="secondary">↓ Export displayed CSV</button>
         </div>
         <p class="small muted" id="weapons-note" aria-live="polite">Choose a player to view stored weapon mastery.</p>
-        <div id="weapon-bars" class="weapon-bars" aria-label="Top recorded weapon kills"></div>
+        <p class="small muted">PUBG stopped updating <code>StatsTotal</code> after update 18.2. Official and Competitive fields are separate post-update records; they cannot be added to the legacy values or treated as lifetime-wide totals.</p>
+        <div id="weapon-summary" class="weapon-summary" aria-label="Observed weapon mastery summary"></div>
+        <p id="weapon-coverage" class="small muted weapon-coverage" aria-live="polite">Waiting for cached mastery details.</p>
+        <h3>Most kills in the selected source</h3>
+        <div id="weapon-bars" class="weapon-bars" aria-label="Top recorded weapon kills in selected source"></div>
         <div class="scroll-table"><table><thead><tr>
-          <th>WEAPON</th><th>LEVEL / TIER</th><th>KILLS</th><th>HEADSHOTS</th><th>DAMAGE</th><th>XP</th>
+          <th>WEAPON</th><th>LEVEL / TIER</th><th>KILLS</th><th>HEADSHOTS</th><th>KNOCKS</th><th>DAMAGE</th><th>DEFEATS</th><th>LONGEST KILL</th><th>XP</th>
         </tr></thead><tbody id="weapons-table"></tbody></table></div>
+        <div id="weapon-detail" class="weapon-detail" aria-live="polite">
+          <p class="small muted">Choose a weapon to compare all available saved mastery fields across source categories.</p>
+        </div>
+        <p class="small muted weapon-download-hint">The export contains only sanitized statistics shown above, in the chosen source category. Deprecated mastery medals are not used to calculate performance. The PUBG data library can show additional safe fields from the original saved response.</p>
       </div>
     </section>
 

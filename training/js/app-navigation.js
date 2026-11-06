@@ -13,7 +13,7 @@
   const root = document.body;
   let currentPanel = 'panel-sensitivity';
   let lastToolkitPanel = 'panel-sensitivity';
-  const clanSections=new Set(['overview','leaderboard','players','modes','matches',
+  const clanSections=new Set(['overview','leaderboard','players','modes','full-stats','matches',
     'weapons','season','teammates','compare','awards','analysis','data-tools',
     'help','survival','sources','global','health','roadmap']);
   // Deep links to Combat subsections must activate the Combat tool, not Scope.

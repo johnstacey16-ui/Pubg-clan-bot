@@ -12,7 +12,7 @@ test('Clan Dashboard is a real first tool inside the original HELP Toolkit shell
  assert.match(html,/id="panel-clan" class="hub-main clan-workspace"/);
  assert.match(html,/data-return-tool aria-label="Back to Toolkit"/);
  assert.match(html,/id="clan-section-tabs"/);
- assert.equal((html.match(/class="page"/g)||[]).length,18);
+ assert.equal((html.match(/class="page"/g)||[]).length,19);
  assert.match(html,/<base href="\/training\/"/);
  assert.doesNotMatch(html,/<iframe\b/);
  assert.doesNotMatch(html,/class="command-centre-bridge"/);

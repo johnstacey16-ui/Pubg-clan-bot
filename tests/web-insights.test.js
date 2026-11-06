@@ -6,9 +6,11 @@ const id='account.TESTPLAYER0123456';
 const weapon={data:{attributes:{weaponSummaries:{
   Item_Weapon_BerylM762_C:{
     LevelCurrent:35,TierCurrent:5,XPTotal:190114,
-    StatsTotal:{Kills:1520,HeadShots:496,DamagePlayer:157173.07},
-    OfficialStatsTotal:{Kills:1397,HeadShots:490},
-    CompetitiveStatsTotal:{Kills:20,HeadShots:22},
+    StatsTotal:{Kills:1520,HeadShots:496,DamagePlayer:157173.07,
+      MostDamagePlayerInAGame:1500,MostHeadShotsInAGame:8,
+      MostGroggiesInAGame:9,MostDefeatsInAGame:10},
+    OfficialStatsTotal:{Kills:1397,HeadShots:490,MostDefeatsInAGame:6},
+    CompetitiveStatsTotal:{Kills:20,HeadShots:22,LongestKill:320},
     Medals:[{bad:'ignore'}],secretApiKey:'not-for-web'
   },
   Item_Weapon_M416_C:{LevelCurrent:20,XPTotal:45000,
@@ -49,6 +51,12 @@ test('weapon mastery maps actual PUBG field names without conflating categories'
  assert.equal(result.body.items[0].total.kills,1520);
  assert.equal(result.body.items[0].official.kills,1397);
  assert.equal(result.body.items[0].competitive.kills,20);
+ assert.equal(result.body.items[0].total.mostDamageInGame,1500);
+ assert.equal(result.body.items[0].total.mostHeadshotsInGame,8);
+ assert.equal(result.body.items[0].total.mostKnocksInGame,9);
+ assert.equal(result.body.items[0].total.mostDefeatsInGame,10);
+ assert.equal(result.body.items[0].official.mostDefeatsInGame,6);
+ assert.equal(result.body.items[0].competitive.longestKill,320);
  assert.equal(result.body.items[0].level,35);
  assert.equal(result.body.items[0].tier,5);
  assert.doesNotMatch(JSON.stringify(result.body),/secretApiKey|account\.|bad/);
@@ -120,4 +128,18 @@ test('Survival Mastery is accessible to saved console players without clan depen
  assert.equal(result.body.stats.level,null);
  assert.equal(result.body.savedAt,'2026-11-03T17:00:00Z');
  assert.doesNotMatch(JSON.stringify(result.body),/account.TESTPLAYER/);
+});
+
+test('weapon parser rejects invalid numeric fields rather than inventing zero',()=>{
+ const r=weaponItems({data:{attributes:{weaponSummaries:{
+  Item_Weapon_Test_C:{
+   StatsTotal:{Kills:-10,HeadShots:true,MostDamagePlayerInAGame:'bad',
+    DamagePlayer:0,MostGroggiesInAGame:2}
+  }
+ }}}});
+ assert.equal(r[0].total.kills,undefined);
+ assert.equal(r[0].total.headshots,undefined);
+ assert.equal(r[0].total.damage,0);
+ assert.equal(r[0].total.mostKnocksInGame,2);
+ assert.equal(r[0].total.mostDamageInGame,undefined);
 });
