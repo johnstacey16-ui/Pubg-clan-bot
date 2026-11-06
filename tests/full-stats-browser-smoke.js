@@ -33,8 +33,12 @@ const server=http.createServer(async(req,res)=>{
    {id:'00336e4b-d659-4497-bfc4-9f6dd705cc71',map:'Baltic_Main',
     mode:'squad',playedAt:'2026-11-05T14:00:00Z',placement:1,
     kills:5,damage:800,headshots:2,knocks:4,assists:2,
-    squad:[{name:'Sample Member',isSelf:true,kills:5,damage:800,assists:2},
-     {name:'Friend',kills:3,damage:250,assists:1}]},
+    timeSurvivedSeconds:1851,swimMeters:187.6,killPlace:3,
+    killStreaks:2,roadKills:1,teamKills:0,vehicleDestroys:2,
+    weaponsAcquired:14,deathType:'byzone',
+    squad:[{name:'Sample Member',isSelf:true,kills:5,damage:800,assists:2,
+      timeSurvivedSeconds:1851,headshots:2,revives:1},
+     {name:'Friend',kills:3,damage:250,assists:1,headshots:1,revives:2}]},
    {id:'00336e4b-d659-4497-bfc4-9f6dd705cc72',map:'Baltic_Main',
     mode:'squad',playedAt:'2026-11-04T14:00:00Z',placement:12,kills:0,damage:50,
     squad:[{name:'Sample Member',isSelf:true,kills:0}]},
@@ -110,6 +114,16 @@ async function run(){
    await page.locator('#match-outcome-filter').selectOption('win');
    assert.equal(await page.locator('#match-results article').count(),1);
    assert.match(await page.locator('#match-results').innerText(),/62.5%/);
+   await page.locator('#match-results article').first().locator('.match-detail summary').click();
+   const detail=await page.locator('#match-results article').first().locator('.match-detail').innerText();
+   assert.match(detail,/30m 51s/);
+   assert.match(detail,/Died to zone/);
+   assert.match(detail,/187\.6 m/);
+   assert.match(detail,/Weapons acquired/);
+   assert.match(detail,/Vehicles destroyed/);
+   assert.match(await page.locator('#match-lab-coverage').innerText(),/match survival records/);
+   await page.locator('#match-trend-metric').selectOption('timeSurvivedSeconds');
+   assert.match(await page.locator('#match-trend').innerText(),/1,851/);
    await page.locator('#match-trend-metric').selectOption('damage');
    assert.equal(await page.locator('#match-trend .match-trend-item').count(),1);
    const chartHeight=await page.locator('#match-trend [data-height]').first().evaluate(
