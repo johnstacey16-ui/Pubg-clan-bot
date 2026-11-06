@@ -117,7 +117,7 @@ async function run(){
    assert.match(await page.locator('#weapon-coverage').innerText(),/Official \(post-18\.2\)/);
    await page.locator('[data-weapon-select="BerylM762"]').click();
    assert.match(await page.locator('#weapon-detail').innerText(),/2,400/);
-   assert.match(await page.locator('#weapon-detail').innerText(),/Legacy \(frozen at 18\.2\)/);
+   assert.match(await page.locator('#weapon-detail').textContent(),/Legacy \(frozen at 18\.2\)/);
    await page.locator('#weapon-category').selectOption('total');
    assert.match(await page.locator('#weapons-table tr').first().innerText(),/BerylM762/);
    await page.locator('#weapon-sort').selectOption('xp');
