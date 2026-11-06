@@ -96,7 +96,7 @@ async function run(){
    const barHeight=await page.locator('#overview-chart .bar-actual').first()
     .evaluate(el=>parseFloat(getComputedStyle(el).height));
    assert.ok(barHeight>2,'Chart bars must render at real numeric heights under strict CSP');
-   for(const tab of ['overview','leaderboard','players','modes','matches',
+   for(const tab of ['overview','leaderboard','players','modes','full-stats','matches',
     'weapons','season','teammates','compare','awards','analysis',
     'data-tools','help','survival','sources','global','health','roadmap'])
     await click(page,tab);
@@ -116,7 +116,7 @@ async function run(){
    await page.waitForFunction(()=>document.getElementById('survival-data')
     .textContent.includes('14,000'));
    assert.deepEqual(errors,[],'Browser console errors at '+width+'px');
-   console.log('CHROME PASS: '+width+'px; 18 tabs, roster pagination, awards, health, dictionary, survival');
+   console.log('CHROME PASS: '+width+'px; 19 tabs, roster pagination, awards, health, dictionary, survival');
    await page.close();
   }
   console.log('REAL CHROME SMOKE PASS; only local synthetic API fixtures');
