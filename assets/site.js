@@ -362,15 +362,9 @@
   }
 
   function renderTeammateInsights() {
-    var source=insightCache.teammates;
-    if(!source)return;
-    $('teammates-table').innerHTML=source.items.map(function(p){
-      return '<tr><td><strong>'+escapeHtml(p.name)+'</strong></td>'+
-        '<td>'+fmt(p.games)+'</td><td>'+fmt(p.wins)+'</td>'+
-        '<td>'+fmt(p.kills)+'</td><td>'+fmt(p.damage)+'</td>'+
-        '<td>'+fmt(p.assists)+'</td><td>'+escapeHtml(dateText(p.lastPlayedAt))+'</td></tr>';
-    }).join('')||'<tr><td colspan="7" class="empty">No archived squad partners for this player yet.</td></tr>';
+    window.SquadChemistry?.render(insightCache.teammates);
   }
+
   async function loadInsight(kind) {
     var name=insightNames[kind];
     if(!name)return;
@@ -856,6 +850,7 @@
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);
   window.MatchLab?.init();
+  window.SquadChemistry?.init();
   window.ClanMatchBoard?.init();
   $('match-refresh').addEventListener('click',function(){
     refreshFromPubg('matches',matchName,'match-note');
