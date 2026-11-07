@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="/assets/weapon-explorer.css">
 <link rel="stylesheet" href="/assets/match-lab.css">
 <link rel="stylesheet" href="/assets/clan-match-board.css">
+<link rel="stylesheet" href="/assets/squad-chemistry.css">
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
@@ -738,7 +739,9 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
         </section>
       </div>
 
-      <div class="card panel telemetry-panel" id="telemetry-panel">
+      <details class="telemetry-opt-in" id="telemetry-opt-in">
+        <summary>Optional legacy 2D replay — resource-intensive; closed by default</summary>
+        <div class="card panel telemetry-panel" id="telemetry-panel">
         <div class="panel-heading"><div><p class="eyebrow subtle">REAL MATCH EVENTS · NO ESTIMATES</p>
           <h2>Combat intelligence and 2D telemetry replay</h2></div>
           <span class="chip">REAL RECORDED COORDINATES</span></div>
@@ -797,6 +800,7 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
         <p id="telemetry-position" class="small muted">Coordinates appear when an actual recorded track is available.</p>
         <p class="small muted">This shows telemetry samples, not video, real-time tracking or interpolated movement. Points more than 30 seconds old are faint. Paths break at gaps over 30 seconds. Without a verified matching terrain image, the grid is the correct map background.</p>
       </div>
+      </details>
     </section>
         <section class="page" id="page-weapons" hidden>
       <div class="page-head"><p class="eyebrow">WEAPON PERFORMANCE</p><h1>Weapon <em>mastery.</em></h1>
@@ -911,17 +915,44 @@ body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--hu
     </section>
     <section class="page" id="page-teammates" hidden>
       <div class="page-head"><p class="eyebrow">SQUAD CONNECTIONS</p><h1>Teammate <em>insights.</em></h1>
-        <p>Find recurring partners using actual archived squad matches, not estimated lifetime statistics.</p></div>
+        <p>Compare real matches with recurring squad partners, observed wins and team kill contribution. Lightweight saved data only: no replay or large telemetry download.</p></div>
       <div class="card panel">
         <div class="filters">
           <label>Saved console player <select id="teammates-player"></select></label>
           <button type="button" id="teammates-reload" class="secondary">↻ Reload saved teammates</button>
         </div>
         <p class="small muted" id="teammates-note" aria-live="polite">Choose a player to review archived squad partners.</p>
+        <div class="filters">
+          <label>Partner name <input id="teammates-search" type="search" maxlength="100" placeholder="Search saved squad names"></label>
+          <label>Minimum games <select id="teammates-min"><option value="1" selected>1 game</option><option value="2">2 games</option><option value="3">3 games</option><option value="5">5 games</option><option value="10">10 games</option></select></label>
+          <label>Sort partners <select id="teammates-sort">
+            <option value="games" selected>Games together</option>
+            <option value="wins">Recorded wins</option>
+            <option value="winRate">Observed win rate</option>
+            <option value="top10Rate">Observed Top 10 rate</option>
+            <option value="pairKillsPerMatch">Your combined kills per observed match</option>
+            <option value="kills">Partner kills</option>
+            <option value="damage">Partner damage</option>
+            <option value="lastPlayedAt">Last played</option>
+          </select></label>
+        </div>
+        <p class="small muted" id="teammates-coverage" aria-live="polite">Source coverage will appear when saved squad matches are loaded.</p>
         <div class="scroll-table"><table><thead><tr>
-          <th>PARTNER</th><th>GAMES TOGETHER</th><th>WINS TOGETHER</th>
-          <th>PARTNER KILLS</th><th>PARTNER DAMAGE</th><th>ASSISTS</th><th>LAST PLAYED</th>
+          <th>PARTNER</th><th>GAMES TOGETHER</th><th>KNOWN FINISHES</th>
+          <th>WINS</th><th>WIN %</th><th>TOP-10 %</th><th>PARTNER KILLS</th>
+          <th>PARTNER DAMAGE</th><th>KNOCKS</th><th>YOUR KILLS</th>
+          <th>COMBINED KILLS / OBSERVED GAME</th>
         </tr></thead><tbody id="teammates-table"></tbody></table></div>
+        <div class="squad-chem-layout">
+          <section aria-labelledby="teammates-bars-title"><h3 id="teammates-bars-title">Most frequent saved partners</h3>
+            <div id="teammates-bars"></div>
+          </section>
+          <section aria-labelledby="teammates-detail-title"><h3 id="teammates-detail-title">Partner details</h3>
+            <label>Partner <select id="teammates-partner"></select></label>
+            <div id="teammates-detail" aria-live="polite"><p class="small muted">Choose a saved partner to review real maps and modes played together.</p></div>
+          </section>
+        </div>
+        <p class="small muted">These comparisons cover the latest 500 archived matches for each selected player, at most 180 days. Shared visible names are not verified permanent identities. Unavailable match values are never represented as zero.</p>
       </div>
     </section>
 <section class="page" id="page-compare" hidden><div class="page-head"><p class="eyebrow">HEAD TO HEAD</p><h1>Player <em>comparison.</em></h1><p>Two players, one side-by-side view of real verified lifetime statistics.</p></div><div class="card panel"><div class="compare-controls"><label>PLAYER ONE <select id="compare-one"></select></label><b>VS</b><label>PLAYER TWO <select id="compare-two"></select></label></div>
