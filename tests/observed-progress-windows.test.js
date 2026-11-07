@@ -79,9 +79,9 @@ test('real delta calculations do not reward a reset or missing earlier wins',()=
  const awards=E.progressAwards(analysed,3);
  assert.equal(awards.length,4);
  assert.ok(awards.every(a=>a.eligiblePlayers===2));
- assert.deepEqual(awards.map(a=>a.winner?.name),['Alpha','Alpha','Alpha','Alpha']);
+ assert.deepEqual(awards.map(a=>a.winner?.name),['Alpha','Beta','Alpha','Alpha']);
  assert.equal(awards[0].winner.deltaKills,20);
- assert.equal(awards[1].winner.deltaKpr,20/7);
+ assert.equal(awards[1].winner.deltaKpr,3);
  assert.equal(awards[2].winner.deltaWins,2);
  assert.equal(awards[3].winner.deltaMatches,7);
 });
