@@ -27,10 +27,10 @@ function app(){
  const window={ClanAnalytics:Engine};
  const document={getElementById:get,createElement(){return{click(){}}}};
  const fetch=async url=>{
-  assert.equal(url,'/api/public-progress');
-  return{ok:true,json:async()=>({schemaVersion:1,rows:[
+  assert.equal(url,'/api/public-progress?days=3');
+  return{ok:true,json:async()=>({schemaVersion:1,kind:'observed-progress',windowDays:3,minDays:2,maxDays:4,rows:[
    {name:'Member0',platform:'xbox',
-    latestAt:'2026-11-03T12:00:00Z',previousAt:'2026-10-26T12:00:00Z',
+    latestAt:'2026-11-07T12:00:00Z',previousAt:'2026-11-04T12:00:00Z',
     latestKills:110,previousKills:100,latestMatches:60,previousMatches:55,
     latestWins:5,previousWins:4}
   ]})};
