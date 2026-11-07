@@ -500,6 +500,25 @@
         <div class="cc-awards-grid" id="cc-awards-grid"></div>
         <p class="small muted">Awards require a minimum number of matches. Unavailable advanced statistics are never guessed. A consistency award needs enough genuine multi-day observations and is not issued prematurely.</p>
       </div>
+      <div class="card panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow subtle">REAL HISTORICAL OBSERVATIONS · NO PREDICTIONS</p>
+            <h2>Clan momentum from genuine lifetime snapshots</h2></div>
+          <span class="chip">SAVED DATA ONLY</span>
+        </div>
+        <p class="small muted">Short-window achievement leaders are computed only from two actual saved PUBG lifetime snapshots. A player needs at least three newly recorded matches, no counter reset and known wins/kills. The 7- and 14-day choices will show no winners until the collection history is old enough.</p>
+        <div class="filters">
+          <label>Observed comparison <select id="cc-momentum-window">
+            <option value="1">Around 1 day (18–36 hours)</option>
+            <option value="3" selected>Around 3 days (2–4 days)</option>
+            <option value="7">Around 7 days (6–9 days)</option>
+            <option value="14">Around 14 days (12–17 days)</option>
+          </select></label>
+        </div>
+        <p class="small muted" id="cc-momentum-note" aria-live="polite">Open Awards to read real saved comparison pairs.</p>
+        <div class="cc-awards-grid" id="cc-momentum-grid"></div>
+        <p class="small muted">These unofficial winners reflect increases between sampled lifetime counters, not match-by-match events, career consistency or a PUBG-ranked rating. The date span is shown for every winner.</p>
+      </div>
       <section class="card panel clan-record-panel" aria-labelledby="clan-record-title">
         <div class="panel-heading"><div>
           <p class="eyebrow subtle">REAL ARCHIVED PUBG PARTICIPANT PERFORMANCE</p>
@@ -546,11 +565,19 @@
         <div class="scroll-table"><table><thead><tr><th>#</th><th>PLAYER</th><th>MODELLED ROLE</th>
           <th>UNOFFICIAL RATING</th><th>SAMPLE BAND</th><th>OBSERVED METRICS</th></tr></thead>
           <tbody id="cc-scores"></tbody></table></div></div>
-      <div class="card panel"><div class="panel-heading"><h2>Genuine weekly performance changes</h2></div>
+      <div class="card panel"><div class="panel-heading"><h2>Real observed performance changes</h2></div>
+        <div class="filters">
+          <label>Snapshot comparison <select id="cc-progress-window">
+            <option value="1">Around 1 day (18–36 hours)</option>
+            <option value="3" selected>Around 3 days (2–4 days)</option>
+            <option value="7">Around 7 days (6–9 days)</option>
+            <option value="14">Around 14 days (12–17 days)</option>
+          </select></label>
+        </div>
         <p id="cc-progress-note" class="small muted" aria-live="polite"></p>
-        <p class="small muted">Only actual lifetime snapshots 6–14 days apart are compared. Delta K/match describes kills earned between observations divided by matches added, not an estimated week's individual matches.</p>
-        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>NEW KILLS</th><th>ADDED MATCHES</th>
-          <th>DELTA K/MATCH</th><th>STATUS</th><th>LATEST OBSERVATION</th></tr></thead>
+        <p class="small muted">Compares the latest saved lifetime totals with an actual earlier snapshot closest to the selected interval, within the labelled date tolerance. Interval kills/game is kills added divided by games added, not a change in lifetime K/D. A counter reset, missing earlier record or no new match is shown explicitly and does not enter the awards.</p>
+        <div class="scroll-table"><table><thead><tr><th>PLAYER</th><th>NEW KILLS</th><th>NEW WINS</th><th>ADDED MATCHES</th>
+          <th>INTERVAL KILLS/GAME</th><th>STATUS</th><th>REAL OBSERVATION SPAN</th></tr></thead>
           <tbody id="cc-progress"></tbody></table></div></div>
       <div class="card panel"><div class="panel-heading"><h2>Saved data-quality review</h2></div>
         <p id="cc-quality-note" class="small muted"></p>
