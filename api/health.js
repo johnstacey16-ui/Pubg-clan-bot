@@ -2,23 +2,28 @@
 const { createClient } = require('@supabase/supabase-js');
 const { VERSION, commands } = require('../lib/command-definitions');
 const { getCacheHealth } = require('../lib/cache-health');
+const { getCollectionHealth } = require('../lib/clan-collection-health');
 module.exports = async (req, res) => {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  const includeCollection = req.query?.collection === '1';
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)
     return res.status(503).json({ status: 'not_configured' });
   try {
     const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false }
     });
-    const [queue, players, run, registered, dashboard, seasons, cacheHealth] = await Promise.all([
+    const [queue, players, run, registered, dashboard, seasons, cacheHealth, collectionHealth] = await Promise.all([
       db.from('player_import_queue').select('status,is_clan_member').limit(1000),
       db.from('players').select('id', { count: 'exact', head: true }),
       db.from('pubg_sync_control').select('last_run_at').eq('id', 1).maybeSingle(),
       db.from('bot_metadata').select('value').eq('setting', 'guild_commands:1411949587299569788').maybeSingle(),
       db.from('discord_dashboard_channels').select('channel_id,last_rendered_at').eq('guild_id','1411949587299569788').maybeSingle(),
       db.from('clan_season_sync_state').select('last_attempt_at,last_finished_at,last_result').order('last_attempt_at',{ascending:false}).limit(100),
-      getCacheHealth(db)
+      getCacheHealth(db),
+      // Avoid an extra aggregate DB read for ordinary uptime/Discord status.
+      includeCollection ? getCollectionHealth(db) : Promise.resolve(null)
     ]);
     if (queue.error || players.error || run.error || registered.error || dashboard.error || seasons.error) throw new Error('Database query failed');
     const counts = (queue.data || []).reduce((result, item) => {
@@ -36,6 +41,7 @@ module.exports = async (req, res) => {
         error: counts.error || 0 },
       last_sync_attempt: run.data?.last_run_at || null,
       cache_health: cacheHealth || {status:'unavailable'},
+      ...(includeCollection ? {collection_health:collectionHealth || {status:'unavailable'}} : {}),
       season_collection: {
         players_attempted: (seasons.data || []).length,
         last_attempt_at: seasons.data?.[0]?.last_attempt_at || null,
