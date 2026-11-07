@@ -147,6 +147,7 @@
     if(page==='matches'){
       if(data)loadCachedMatches();
       window.ClanMatchBoard?.load();
+      window.ClanActivityPulse?.load();
     }
     if(page==='full-stats')window.FullPubgStats?.show();
     if(page==='awards')window.ClanRecordBook?.load();
@@ -862,6 +863,7 @@
   window.MatchLab?.init();
   window.SquadChemistry?.init();
   window.ClanRecordBook?.init();
+  window.ClanActivityPulse?.init();
   window.ClanMatchBoard?.init();
   $('match-refresh').addEventListener('click',function(){
     refreshFromPubg('matches',matchName,'match-note');
