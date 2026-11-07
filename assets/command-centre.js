@@ -5,7 +5,8 @@
   var E=window.ClanAnalytics;
   if(!E)return;
   var state={data:null,progress:null,progressBusy:false,progressDone:false,
-    progressDays:3,progressRequest:0,progressCache:new Map(),
+    progressDays:3,progressRequest:0,progressLoadingDays:null,
+    progressError:false,progressCache:new Map(),
     before:null,after:null,sourceNames:{before:null,after:null}};
   var $=id=>document.getElementById(id);
   var html=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>
@@ -69,10 +70,12 @@
     if(!target||!note)return;
     setWindowLabel();
     if(state.progressBusy){
-      note.textContent='Reading genuine '+state.progressDays+'-day snapshot comparisons…';return;
+      note.textContent='Reading genuine '+state.progressDays+'-day snapshot comparisons…';
+      target.innerHTML='';return;
     }
     if(!state.progressDone||state.progress?.windowDays!==state.progressDays){
-      note.textContent='No genuine observed data loaded for this window.';
+      note.textContent=state.progressError?'Observed snapshot records temporarily unavailable.':
+        'No genuine observed data loaded for this window.';
       target.innerHTML='';return;
     }
     var rows=E.progress(state.progress.rows);
@@ -103,10 +106,13 @@
     if(!target||!note)return;
     setWindowLabel();
     if(state.progressBusy){
-      note.textContent='Reading genuine '+state.progressDays+'-day saved observations…';return;
+      note.textContent='Reading genuine '+state.progressDays+'-day saved observations…';
+      target.innerHTML='';return;
     }
     if(!state.progressDone||state.progress?.windowDays!==state.progressDays){
-      note.textContent='History not loaded yet.';target.innerHTML='';return;
+      note.textContent=state.progressError?'Observed snapshot records temporarily unavailable.':
+        'History not loaded yet.';
+      target.innerHTML='';return;
     }
     var rows=E.progress(state.progress.rows||[]);
     var observed=rows.filter(r=>r.state==='observed');
@@ -128,6 +134,7 @@
   }
   async function getProgress(force){
     var days=state.progressDays;
+    if(state.progressBusy&&state.progressLoadingDays===days&&!force)return;
     if(state.progressDone&&!force&&state.progress?.windowDays===days)return;
     var cached=state.progressCache.get(days);
     if(!force&&cached&&Date.now()-cached.cachedAt<90000){
@@ -135,6 +142,7 @@
       renderProgress();renderMomentum();return;
     }
     var token=++state.progressRequest;
+    state.progressLoadingDays=days;state.progressError=false;
     state.progressBusy=true;state.progressDone=false;
     state.progress=null;renderProgress();renderMomentum();
     try{
@@ -146,16 +154,14 @@
         result.windowDays!==days||!Array.isArray(result.rows))
         throw Error('Unexpected observed progress history');
       if(token!==state.progressRequest)return;
-      state.progress=result;state.progressDone=true;
+      state.progress=result;state.progressDone=true;state.progressError=false;
       state.progressCache.set(days,{data:result,cachedAt:Date.now()});
     }catch(error){
       if(token!==state.progressRequest)return;
-      state.progressDone=false;state.progress=null;
-      $('cc-momentum-note').textContent='Saved observation comparisons temporarily unavailable.';
-      $('cc-progress-note').textContent='Saved observation comparisons temporarily unavailable.';
+      state.progressDone=false;state.progress=null;state.progressError=true;
     }finally{
       if(token===state.progressRequest){
-        state.progressBusy=false;
+        state.progressBusy=false;state.progressLoadingDays=null;
         renderProgress();renderMomentum();
       }
     }
@@ -164,7 +170,7 @@
     var days=Number(value);
     if(![1,3,7,14].includes(days))return;
     if(days===state.progressDays)return;
-    state.progressDays=days;state.progressDone=false;
+    state.progressDays=days;state.progressDone=false;state.progressError=false;
     state.progress=null;setWindowLabel();
     void getProgress(false);
   }
