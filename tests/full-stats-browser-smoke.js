@@ -25,6 +25,34 @@ const server=http.createServer(async(req,res)=>{
  if(uri.pathname==='/api/public-stats')return respond(res,200,summary);
  if(uri.pathname==='/api/player-lookup')return respond(res,200,{
   schemaVersion:1,found:true,isClanMember:false,player:outsider});
+ if(uri.pathname==='/api/public-matches'&&uri.searchParams.get('route')==='clan-board'){
+  const days=Number(uri.searchParams.get('days')||30);
+  return respond(res,200,{schemaVersion:1,kind:'clan-match-board',periodDays:days,
+   generatedAt:'2026-11-07T06:00:00Z',clanPlayers:50,observedPlayers:3,
+   playerMatchObservations:12,distinctMatches:9,
+   note:'Only verified archived match records',rows:[
+    {name:'Alpha',platform:'xbox',map:'Baltic_Main',mode:'squad',
+     latest:'2026-11-07T03:00:00Z',games:4,placed:4,wins:1,top10:2,
+     killsObserved:4,kills:12,damageObserved:4,damage:1400,
+     assistsObserved:4,assists:4,knocksObserved:4,knocks:5,
+     survivalObserved:4,survivalSeconds:4800,placementTotal:28},
+    {name:'Beta',platform:'psn',map:'Baltic_Main',mode:'squad',
+     latest:'2026-11-07T04:00:00Z',games:5,placed:5,wins:1,top10:4,
+     killsObserved:5,kills:10,damageObserved:5,damage:1000,
+     assistsObserved:5,assists:2,knocksObserved:5,knocks:4,
+     survivalObserved:5,survivalSeconds:4000,placementTotal:22},
+    {name:'Alpha',platform:'xbox',map:'Desert_Main',mode:'solo',
+     latest:'2026-11-07T05:00:00Z',games:2,placed:2,wins:0,top10:1,
+     killsObserved:2,kills:2,damageObserved:2,damage:200,
+     assistsObserved:2,assists:0,knocksObserved:2,knocks:0,
+     survivalObserved:0,survivalSeconds:0,placementTotal:20},
+    {name:'NoSample',platform:'xbox',map:'Desert_Main',mode:'duo',
+     latest:'2026-11-06T02:00:00Z',games:1,placed:0,wins:0,top10:0,
+     killsObserved:0,kills:0,damageObserved:0,damage:0,
+     assistsObserved:0,assists:0,knocksObserved:0,knocks:0,
+     survivalObserved:0,survivalSeconds:0,placementTotal:0}
+   ]});
+ }
  if(uri.pathname==='/api/public-matches')return respond(res,200,{
   schemaVersion:1,name:'Sample Member',platform:'xbox',
   source:'Private 180-day archive',archivedCount:4,availableCount:4,
@@ -103,6 +131,37 @@ async function run(){
    await page.locator('#page-matches').waitFor({state:'visible'});
    await page.waitForFunction(()=>document.getElementById('match-map-table')?.
     textContent.includes('Baltic_Main'),{timeout:12000});
+   await page.waitForFunction(()=>document.getElementById('clan-board-status')
+    ?.textContent.includes('Saved comparison ready'),{timeout:12000});
+   assert.equal(await page.locator('#clan-board-table tr').count(),2);
+   assert.match(await page.locator('#clan-board-kpis').innerText(),/50/);
+   assert.match(await page.locator('#clan-board-note').innerText(),/not lifetime/i);
+   await page.locator('#clan-board-map').selectOption('Baltic_Main');
+   assert.equal(await page.locator('#clan-board-table tr').count(),2);
+   await page.locator('#clan-board-sort').selectOption('winRate');
+   assert.match(await page.locator('#clan-board-table tr').first().innerText(),/Alpha/);
+   assert.match(await page.locator('#clan-board-table tr').first().innerText(),/25%/);
+   await page.locator('#clan-board-min').selectOption('5');
+   assert.equal(await page.locator('#clan-board-table tr').count(),1);
+   assert.match(await page.locator('#clan-board-table tr').first().innerText(),/Beta/);
+   await page.locator('#clan-board-min').selectOption('1');
+   assert.equal(await page.locator('#clan-board-table tr').count(),2);
+   await page.locator('#clan-board-compare-a').selectOption('xbox:alpha');
+   await page.locator('#clan-board-compare-b').selectOption('psn:beta');
+   assert.match(await page.locator('#clan-board-compare').innerText(),/Alpha/);
+   assert.match(await page.locator('#clan-board-compare').innerText(),/Beta/);
+   await page.locator('#clan-board-map').selectOption('');
+   const mapWidth=await page.locator('#clan-board-map-bars [data-width]').first()
+    .evaluate(el=>parseFloat(el.style.width));
+   assert.ok(mapWidth>0,'Map distribution bars require a real CSSOM width');
+   await page.locator('#clan-board-days').selectOption('7');
+   await page.waitForFunction(()=>document.getElementById('clan-board-status')
+    ?.textContent.includes('Saved comparison ready')&&
+    document.getElementById('clan-board-note')?.textContent.includes('7-day'),
+    {timeout:12000});
+   assert.equal(await page.locator('#clan-board-table tr').count(),3);
+   assert.equal(await page.locator('#clan-board-export').isDisabled(),false);
+
    assert.equal(await page.locator('#match-results article').count(),4);
    assert.match(await page.locator('#match-lab-coverage').innerText(),/4 of 4/);
    assert.match(await page.locator('#match-lab-coverage').innerText(),/NOT lifetime totals/);
