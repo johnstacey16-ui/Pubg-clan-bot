@@ -133,8 +133,17 @@
       else el.removeAttribute('aria-current');
     });
     $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes','full-stats':'Complete player stats',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',survival:'Survival mastery',sources:'PUBG data library',global:'Official regional ranks',health:'Data health',roadmap:'Roadmap'}[page];
-    try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/dashboard/' : '/dashboard/#' + page); } catch (e) {}
-    window.scrollTo(0,0);
+    // The dashboard is lazy-loaded inside the shared HELP toolkit. It can
+    // finish booting after a user has already returned to another tool.
+    // Never hijack a toolkit tool URL or its scroll position in that case.
+    var clanPanel=document.getElementById('panel-clan');
+    var isActiveClan=!clanPanel||typeof clanPanel.classList?.contains!=='function'||
+      clanPanel.classList.contains('active');
+    try {
+      if(!preserveHash&&isActiveClan)
+        history.replaceState(null,'',page==='overview'?'/dashboard/':'/dashboard/#'+page);
+    } catch (e) {}
+    if(isActiveClan)window.scrollTo(0,0);
     if(page==='matches'){
       if(data)loadCachedMatches();
       window.ClanMatchBoard?.load();

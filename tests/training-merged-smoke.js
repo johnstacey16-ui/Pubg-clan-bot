@@ -89,6 +89,13 @@ async function main(){
      await page.locator('#mobile-nav-toggle').click();
      assert.equal(await page.locator('#mobile-nav-toggle').getAttribute('aria-expanded'),'true');
    }
+   // Simulate slow dashboard JavaScript arriving after the user exits
+   // the clan workspace. Its late initialisation must never rewrite the
+   // active toolkit location /#panel-backpack back to /dashboard/.
+   await page.route('**/assets/site.js',async route=>{
+     await new Promise(resolve=>setTimeout(resolve,850));
+     await route.continue();
+   });
    await page.locator('#app-toolnav .unified-clan-entry').click();
    await page.waitForURL(base+'/dashboard/');
    assert.ok(await page.locator('#panel-clan').evaluate(el=>el.classList.contains('active')));
@@ -96,6 +103,9 @@ async function main(){
    assert.equal(await page.locator('#clan-section-tabs [data-page]').count(),19);
    assert.equal(await page.locator('iframe').count(),0);
    await page.locator('[data-return-tool]').click();
+   // Wait beyond the delayed dashboard script completion, not just
+   // until the route initially changes, to detect the original race.
+   await page.waitForTimeout(1450);
    assert.match(page.url(),/\/#panel-backpack$/);
    assert.ok(await page.locator('#panel-backpack').evaluate(el=>el.classList.contains('active')));
    assert.deepEqual(notFound,[],'Unresolved training assets at '+width+'px');
