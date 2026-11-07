@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="/assets/weapon-explorer.css">
 <link rel="stylesheet" href="/assets/match-lab.css">
 <link rel="stylesheet" href="/assets/clan-match-board.css">
+<link rel="stylesheet" href="/assets/clan-activity-pulse.css">
 <link rel="stylesheet" href="/assets/squad-chemistry.css">
 <link rel="stylesheet" href="/assets/clan-record-book.css">
 <link rel="stylesheet" href="/assets/toolkit-theme.css">
@@ -26,6 +27,7 @@
 <script defer src="/assets/weapon-explorer.js"></script>
 <script defer src="/assets/match-lab.js"></script>
 <script defer src="/assets/clan-match-board.js"></script>
+<script defer src="/assets/clan-activity-pulse.js"></script>
 <script defer src="/assets/squad-chemistry.js"></script>
 <script defer src="/assets/clan-record-book.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
@@ -143,6 +145,42 @@
     </section>
     <section class="page" id="page-matches" hidden>
       <div class="page-head"><p class="eyebrow">CACHED MATCH ANALYSIS</p><h1>Match <em>intelligence.</em></h1><p>Explore map, mode, placement and squad performance from archived matches saved for up to 180 days. Compare real observed reports, or open recorded PUBG telemetry for 2D replays and match-local rivals.</p></div>
+      <section class="card panel clan-pulse-panel" aria-labelledby="clan-pulse-heading">
+        <div class="panel-heading"><div>
+          <p class="eyebrow subtle">REAL PUBG CLAN ACTIVITY · ARCHIVED MATCHES</p>
+          <h2 id="clan-pulse-heading">Clan Activity Pulse</h2>
+        </div><span class="chip">ZERO PUBG REQUESTS</span></div>
+        <p class="small muted">Explore actual saved clan match activity by UTC date. Unique games are deduplicated across clan teammates; player-match observations record each clan member in a shared match. Today's figures are incomplete, and a date without saved matches does not prove nobody played.</p>
+        <div class="filters">
+          <label>UTC history window <select id="clan-pulse-days">
+            <option value="7">7 UTC calendar days</option>
+            <option value="30" selected>30 UTC calendar days</option>
+            <option value="180">180 UTC calendar days</option>
+          </select></label>
+          <label>Chart statistic <select id="clan-pulse-metric">
+            <option value="distinctMatches" selected>Distinct saved games</option>
+            <option value="playerMatches">Player-match observations</option>
+            <option value="kills">Observed player kills</option>
+            <option value="playerWins">Observed player wins</option>
+          </select></label>
+          <button class="secondary" id="clan-pulse-reload" type="button">↻ Reload saved activity</button>
+        </div>
+        <p class="small muted" id="clan-pulse-status" aria-live="polite">Open Match Intelligence to load actual clan activity.</p>
+        <div id="clan-pulse-kpis" class="clan-pulse-kpis" aria-label="Observed clan activity totals"></div>
+        <p id="clan-pulse-coverage" class="small muted" aria-live="polite"></p>
+        <div class="clan-pulse-visual" aria-label="Selectable saved clan activity chart">
+          <div id="clan-pulse-chart" class="clan-pulse-chart"></div>
+        </div>
+        <div id="clan-pulse-detail" class="clan-pulse-detail" aria-live="polite">
+          Select a saved activity day to inspect its genuine observation totals.
+        </div>
+        <p class="small muted" id="clan-pulse-table-note"></p>
+        <div class="scroll-table"><table><thead><tr>
+          <th>UTC DATE</th><th>DISTINCT GAMES</th><th>PLAYER-MATCHES</th>
+          <th>ACTIVE PLAYERS</th><th>PLAYER WINS</th><th>KILLS</th><th>KILLS OBSERVED</th>
+        </tr></thead><tbody id="clan-pulse-table"></tbody></table></div>
+        <p class="small muted">7- and 30-day charts show individual UTC days. The 180-day chart groups consecutive calendar days in weeks to stay lightweight; selecting a group reveals its daily records. Weekly active-player totals are explicitly <em>player-days</em>, never fabricated unique players.</p>
+      </section>
       <section class="card panel clan-board-panel" aria-labelledby="clan-board-heading">
         <div class="panel-heading">
           <div><p class="eyebrow subtle">SAVED CLAN MATCH HISTORY · OFFICIAL RECORDS</p>
