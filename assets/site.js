@@ -149,6 +149,7 @@
       window.ClanMatchBoard?.load();
     }
     if(page==='full-stats')window.FullPubgStats?.show();
+    if(page==='awards')window.ClanRecordBook?.load();
     if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
     if(page==='season'&&data){loadSeason();loadSeasonLeaderboard();}
     if(data&&window.CommandCentre?.render)window.CommandCentre.render(page,data);
@@ -860,6 +861,7 @@
   $('match-reload').addEventListener('click',loadCachedMatches);
   window.MatchLab?.init();
   window.SquadChemistry?.init();
+  window.ClanRecordBook?.init();
   window.ClanMatchBoard?.init();
   $('match-refresh').addEventListener('click',function(){
     refreshFromPubg('matches',matchName,'match-note');
