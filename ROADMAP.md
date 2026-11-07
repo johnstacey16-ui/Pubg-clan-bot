@@ -76,6 +76,7 @@
 - [x] Verified automated collector remains active: on 2026-11-07, all 50 cached console-player indexes had been refreshed within 24 hours; 48/50 profile jobs were done and two pending under the shared rate budget.
 - [x] Historical clan match leaderboard with server-only verified-member aggregation, rolling 7/30/180-day comparisons, map/mode and minimum-sample filters, observed survival and kill/damage rates, peer comparisons and formula-safe CSV; unique matches and player-match observations are explicitly distinct.
 - [x] Source-only clan single-match record book: top five different verified players' genuine archived personal bests in ten PUBG participant categories, with 7/30/180-day windows, map/mode/date, sample coverage and no telemetry or new PUBG requests.
+- [x] Read-only Clan Activity Pulse: true UTC calendar-day match archive activity (7/30/180 days), distinct match IDs versus player-match observations, observed kills/wins, active players, coverage and 180-day weekly bucketing. No new PUBG API requests, replay downloads, functions or paid services.
 - [x] Backfill three genuine saved match reports without using the PUBG API
 - [x] Private RLS and verified console-player lookup; public output uses an explicit field allowlist
 - [ ] Confirm trigger archiving on the next newly retrieved PUBG match in production
