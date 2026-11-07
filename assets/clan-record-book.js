@@ -94,6 +94,9 @@
   const days=Number($('clan-record-days').value)||30;
   const previous=cache.get(days);
   if(!force&&previous&&Date.now()-previous.storedAt<90000){
+   $('clan-record-status').textContent='Read-only saved PUBG record book ready. '+
+    fmt(previous.data.distinctMatches)+' distinct saved games in '+days+
+    ' days. No PUBG API calls (browser-cached).';
    render(previous.data);return;
   }
   const token=++generation;
