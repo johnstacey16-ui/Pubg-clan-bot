@@ -73,6 +73,8 @@
 - [x] Responsive Match Intelligence website tab with optional squad breakdown
 - [x] Verify match-cache shape in Supabase; use existing Discord /recent to populate
 - [x] Persistent match archive for all saved Xbox/PS players, 180-day retention, daily pruning through protected cron
+- [x] Verified automated collector remains active: on 2026-11-07, all 50 cached console-player indexes had been refreshed within 24 hours; 48/50 profile jobs were done and two pending under the shared rate budget.
+- [x] Historical clan match leaderboard with server-only verified-member aggregation, rolling 7/30/180-day comparisons, map/mode and minimum-sample filters, observed survival and kill/damage rates, peer comparisons and formula-safe CSV; unique matches and player-match observations are explicitly distinct.
 - [x] Backfill three genuine saved match reports without using the PUBG API
 - [x] Private RLS and verified console-player lookup; public output uses an explicit field allowlist
 - [ ] Confirm trigger archiving on the next newly retrieved PUBG match in production

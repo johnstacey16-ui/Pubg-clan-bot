@@ -91,6 +91,9 @@ test('free Hobby Vercel deployment stays within 12 serverless function builds',(
  assert.match(read('assets/source-explorer.js'),/route:'source'/);
  assert.match(read('assets/global-board.js'),/route:'global'/);
  assert.match(read('assets/telemetry-view.js'),/route:'telemetry'/);
+ assert.match(matches,/publicClanMatchBoard/);
+ assert.match(read('assets/clan-match-board.js'),/route=clan-board/);
+ assert.match(read('training/js/clan-dashboard-loader.js'),/assets\/clan-match-board\.js/);
 });
 
 
