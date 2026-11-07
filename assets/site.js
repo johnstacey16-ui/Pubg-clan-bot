@@ -137,7 +137,8 @@
     // finish booting after a user has already returned to another tool.
     // Never hijack a toolkit tool URL or its scroll position in that case.
     var clanPanel=document.getElementById('panel-clan');
-    var isActiveClan=!clanPanel||clanPanel.classList.contains('active');
+    var isActiveClan=!clanPanel||typeof clanPanel.classList?.contains!=='function'||
+      clanPanel.classList.contains('active');
     try {
       if(!preserveHash&&isActiveClan)
         history.replaceState(null,'',page==='overview'?'/dashboard/':'/dashboard/#'+page);
