@@ -1,6 +1,6 @@
 'use strict';
 const {createClient}=require('@supabase/supabase-js');
-const {weeklyProgress}=require('../lib/clan-weekly-progress');
+const {observedProgress}=require('../lib/clan-weekly-progress');
 module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','private, no-store');
  res.setHeader('X-Content-Type-Options','nosniff');
@@ -11,7 +11,7 @@ module.exports=async(req,res)=>{
   const db=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY,{
    auth:{autoRefreshToken:false,persistSession:false}
   });
-  const result=await weeklyProgress(db);
+  const result=await observedProgress(db,req.query?.days);
   return res.status(result.status).json(result.body);
  }catch(error){
   console.error('Clan improvement history read failed:',error.message);
