@@ -1,0 +1,29 @@
+/* Lightweight archive-only squad chemistry; no canvas, replay or animation. */
+.squad-chemistry-panel{margin-top:19px}
+.squad-chemistry-panel .filters{margin:15px 0}
+.squad-chemistry-panel table{min-width:1050px}
+.squad-chemistry-panel th{font-size:9px;white-space:nowrap}
+.squad-chemistry-panel td{font-size:12px}
+.squad-chem-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:20px 0}
+.squad-chem-layout>section{border:1px solid #304a64;border-radius:12px;padding:15px;min-width:0;background:#10253b}
+.squad-chem-layout h3{margin:0 0 12px;font-size:16px}
+.squad-chem-bar{display:grid;grid-template-columns:minmax(80px,1fr) minmax(80px,2fr) 36px;gap:12px;align-items:center;margin:11px 0;font-size:11px}
+.squad-chem-bar span{overflow-wrap:anywhere}
+.squad-chem-track{height:9px;border-radius:5px;background:#203951;overflow:hidden}
+.squad-chem-track div{height:100%;width:0;background:linear-gradient(90deg,#39bcb4,#6bd7f2);border-radius:5px}
+.squad-chem-bar strong{text-align:right;color:#c6fcef;font-variant-numeric:tabular-nums}
+.squad-chem-statrow,.squad-chem-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.squad-chem-statrow>div{padding:11px;border:1px solid #29465f;border-radius:9px}
+.squad-chem-statrow small{display:block;color:#a2b9d0;font-size:10px}
+.squad-chem-statrow strong{display:block;color:#d0fff0;font-size:15px;margin-top:5px}
+.squad-chem-groups{margin-top:18px}
+.squad-chem-groups h4{font-size:12px}
+.squad-chem-row{display:flex;align-items:start;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #29435d;font-size:11px}
+.squad-chem-row span{overflow-wrap:anywhere}
+.squad-chem-row strong{white-space:nowrap}
+.telemetry-opt-in{margin-top:19px}
+.telemetry-opt-in>summary{cursor:pointer;list-style-position:inside;border:1px solid #34506b;padding:16px;border-radius:11px;color:#c9f4e9;font-weight:740}
+.telemetry-opt-in:not([open])>summary{background:#122c41}
+.telemetry-opt-in[open]>summary{margin-bottom:18px}
+@media(max-width:920px){.squad-chem-layout{grid-template-columns:1fr}}
+@media(max-width:540px){.squad-chem-groups{grid-template-columns:1fr}.squad-chem-bar{gap:7px}}
