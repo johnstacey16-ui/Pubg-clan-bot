@@ -57,6 +57,41 @@ const server=http.createServer(async(req,res)=>{
    }))
   });
  }
+ if(uri.pathname==='/api/health'){
+  const collection=uri.searchParams.get('collection')==='1';
+  const scopes=['lifetime','profile','weapons','survival'].map(scope=>({
+   scope,total:50,done:scope==='profile'?48:50,
+   pending:scope==='profile'?2:0,leased:0,unavailable:0,
+   readyForRetry:scope==='profile'?2:0,pendingOlderThan48h:0,
+   lastAttemptAt:'2026-11-07T05:47:23Z',
+   lastCompletedAt:'2026-11-07T05:47:25Z'
+  }));
+  return respond(res,200,{
+   status:'ok',last_sync_attempt:'2026-11-07T05:00:00Z',
+   cache_health:{schemaVersion:1,checkedAt:'2026-11-07T09:30:00Z',
+    cache:{total:1800,fresh:400,expired:1400,
+     newestFetchedAt:'2026-11-07T05:47:25Z',
+     byCategory:{matches:1497,player_profiles:50}},
+    budget:{reservations:2,limit:8,windowSeconds:65,lastReservedAt:null},
+    observations:{lifetimePlayers:51,seasonPlayers:2,seasonAttempts:0},
+    notice:'Reservations do not guarantee live responses.'},
+   season_collection:{latest_result:null,last_finished_at:null},
+   ...(collection?{collection_health:{
+    schemaVersion:1,checkedAt:'2026-11-07T09:30:00Z',
+    players:{verified:50,checked:50,checkedWithin24h:50,
+     checkedWithin48h:50,checkedOlderThan48h:0,neverChecked:0,
+     latestCheckedAt:'2026-11-07T03:28:13Z',
+     oldestCheckedAt:'2026-11-07T03:18:48Z'},
+    archive:{playerMatchObservations:1772,observedPlayers:39,
+     distinctMatches:1497,writesWithin24h:1772,
+     lastWrittenAt:'2026-11-07T05:47:25Z',
+     lastMatchPlayedAt:'2026-11-07T02:56:18Z'},
+    scopes,season:{tracked:0,attemptedWithin24h:0,
+     completedWithin24h:0,lastAttemptAt:null,lastCompletedAt:null},
+    note:'Last checked is not a fresh upstream response.'
+   }}:{})
+  });
+ }
  if(uri.pathname==='/api/public-stats')return respond(res,200,summary);
  if(uri.pathname==='/api/player-lookup')return respond(res,200,{
   schemaVersion:1,found:true,isClanMember:false,player:outsider});
@@ -470,6 +505,21 @@ async function run(){
    await page.locator('#weapon-search').fill('Beryl');
    assert.equal(await page.locator('#weapons-table tr').count(),1);
    assert.match(await page.locator('#weapon-summary').innerText(),/Weapons returned/);
+   await page.locator('[data-page="health"]').click();
+   await page.locator('#page-health').waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.getElementById('health-backfill-table')?.
+    textContent.includes('Recent-match index'),{timeout:12000});
+   assert.match(await page.locator('#health-freshness-metrics').innerText(),/50/);
+   assert.match(await page.locator('#health-freshness-metrics').innerText(),/1,497/);
+   assert.match(await page.locator('#health-backfill-table').innerText(),/48 \/ 50/);
+   assert.match(await page.locator('#health-backfill-note').innerText(),/2 clan tasks are pending/);
+   assert.match(await page.locator('#health-archive-note').innerText(),/newest match played/);
+   assert.match(await page.locator('#health-collection-note').innerText(),/No stale player-check/);
+   assert.match(await page.locator('#health-season-collector').innerText(),/0 tracked clan players/);
+   assert.match(await page.locator('#health-source-note').innerText(),/Reservations do not guarantee/);
+   await page.locator('#health-refresh').click();
+   await page.waitForFunction(()=>document.getElementById('health-backfill-note')?.
+    textContent.includes('2 clan tasks are pending'),{timeout:12000});
    assert.deepEqual(errors,[],'Browser console errors at '+width+'px');
    console.log('FULL STATS CHROME PASS: '+width+'px; lifetime and source-correct mastery explorer');
    await page.close();
