@@ -1,0 +1,31 @@
+/* Real archived clan player-match comparison. All widths remain usable on phone. */
+.clan-board-panel{margin-bottom:20px}
+.clan-board-panel h2{margin:0;font-size:21px}
+.clan-board-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0}
+.clan-board-kpi{padding:15px;border:1px solid #36526a;border-radius:11px;background:#112943}
+.clan-board-kpi small{display:block;font-size:10px;color:#a3b8d1}
+.clan-board-kpi strong{display:block;margin-top:7px;font-size:23px;font-variant-numeric:tabular-nums;color:#bcffee}
+.clan-board-panel .filters{margin:15px 0}
+.clan-board-panel select{max-width:230px}
+.clan-board-panel input[type=search]{max-width:270px}
+.clan-board-panel .scroll-table{border:1px solid #31455f;border-radius:10px}
+.clan-board-panel .scroll-table table{min-width:980px}
+.clan-board-panel .scroll-table th{font-size:9px}
+.clan-board-panel .scroll-table td{font-size:12px}
+.clan-board-platform{display:block;color:#91aecd;font-size:10px}
+.clan-board-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:20px}
+.clan-board-grid>section{padding:15px;border:1px solid #324861;border-radius:12px;background:#102339;min-width:0}
+.clan-board-grid h3{font-size:17px;margin:0 0 10px}
+.clan-board-grid .filters select{min-width:0;max-width:100%;width:100%}
+.clan-board-map-row{display:grid;grid-template-columns:minmax(85px,1fr) minmax(40px,2fr) 52px;align-items:center;gap:10px;margin:12px 0;font-size:11px}
+.clan-board-map-row>span{overflow-wrap:anywhere}
+.clan-board-map-row>strong{text-align:right;font-variant-numeric:tabular-nums;color:#c6f5ef}
+.clan-board-track{height:9px;background:#21374e;border-radius:5px;overflow:hidden}
+.clan-board-track div{height:100%;width:0;background:linear-gradient(90deg,#48bdb3,#77ddff);border-radius:5px}
+.clan-board-compare-grid{display:grid;gap:4px}
+.clan-board-pair{display:grid;grid-template-columns:minmax(70px,1fr) minmax(100px,1.4fr) minmax(70px,1fr);align-items:center;border-bottom:1px solid #2c465f;gap:8px;padding:8px 0;text-align:center}
+.clan-board-pair strong{color:#ddfff5;font-size:14px;overflow-wrap:anywhere}
+.clan-board-pair span{font-size:10px;color:#afc3d8}
+@media(max-width:1030px){.clan-board-grid{grid-template-columns:1fr}}
+@media(max-width:780px){.clan-board-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.clan-board-kpi strong{font-size:20px}.clan-board-panel .filters>*{flex:1 1 140px;min-width:0}.clan-board-panel .filters input[type=search]{min-width:0}}
