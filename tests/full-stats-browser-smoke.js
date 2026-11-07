@@ -60,6 +60,28 @@ const server=http.createServer(async(req,res)=>{
  if(uri.pathname==='/api/public-stats')return respond(res,200,summary);
  if(uri.pathname==='/api/player-lookup')return respond(res,200,{
   schemaVersion:1,found:true,isClanMember:false,player:outsider});
+ if(uri.pathname==='/api/public-matches'&&uri.searchParams.get('route')==='clan-activity'){
+  const span=Number(uri.searchParams.get('days')||30);
+  const rows=Array.from({length:span},(_,i)=>{
+   const day=new Date(Date.UTC(2026,10,7-(span-1-i))).toISOString().slice(0,10);
+   const games=i%6===0?0:(i%5)+2;
+   const observations=games*2;
+   return{day,distinctMatches:games,playerMatches:observations,
+    activePlayers:games?2:0,playerWins:games?1:0,
+    knownPlacements:observations,playerTop10:games?2:0,
+    killsObserved:observations,kills:games*4,
+    damageObserved:observations,damage:games*123.25};
+  });
+  const sum=field=>rows.reduce((n,r)=>n+r[field],0);
+  return respond(res,200,{
+   schemaVersion:1,kind:'clan-activity',periodDays:span,timeZone:'UTC',
+   generatedAt:'2026-11-07T08:30:00Z',verifiedPlayers:50,
+   observedPlayers:14,playerMatchObservations:sum('playerMatches'),
+   distinctMatches:sum('distinctMatches'),
+   firstMatchAt:'2026-10-22T06:56:48Z',lastMatchAt:'2026-11-07T02:56:18Z',
+   days:rows,note:'Saved player matches, not all actual clan games.'
+  });
+ }
  if(uri.pathname==='/api/public-matches'&&uri.searchParams.get('route')==='clan-records'){
   const days=Number(uri.searchParams.get('days')||30);
   const record=(metric,rank,value,name='Sample Member')=>({
@@ -301,6 +323,36 @@ async function run(){
     textContent.includes('Baltic_Main'),{timeout:12000});
    await page.waitForFunction(()=>document.getElementById('clan-board-status')
     ?.textContent.includes('Saved comparison ready'),{timeout:12000});
+   await page.waitForFunction(()=>document.getElementById('clan-pulse-status')
+    ?.textContent.includes('Saved activity ready'),{timeout:12000});
+   assert.equal(await page.locator('#clan-pulse-chart button').count(),30);
+   assert.match(await page.locator('#clan-pulse-kpis').innerText(),/50/);
+   assert.match(await page.locator('#clan-pulse-coverage').innerText(),/partial day/);
+   assert.equal(await page.locator('#clan-pulse-table tr').count(),30);
+   assert.match(await page.locator('#clan-pulse-detail').innerText(),/Distinct active clan players/);
+   await page.locator('#clan-pulse-metric').selectOption('kills');
+   const pulseFill=await page.locator('#clan-pulse-chart .clan-pulse-fill')
+    .evaluateAll(list=>Math.max(...list.map(el=>parseFloat(el.style.height)||0)));
+   assert.ok(pulseFill>0,'Saved daily activity bars have measurable CSS-only heights');
+   await page.locator('#clan-pulse-chart [data-pulse-index="0"]').click();
+   assert.equal(await page.locator('#clan-pulse-chart [aria-pressed="true"]').count(),1);
+   assert.match(await page.locator('#clan-pulse-detail').innerText(),/Reported kills/);
+   await page.locator('#clan-pulse-days').selectOption('7');
+   await page.waitForFunction(()=>document.getElementById('clan-pulse-status')
+    ?.textContent.includes('7 UTC calendar days'),{timeout:12000});
+   assert.equal(await page.locator('#clan-pulse-chart button').count(),7);
+   assert.equal(await page.locator('#clan-pulse-table tr').count(),7);
+   await page.locator('#clan-pulse-days').selectOption('180');
+   await page.waitForFunction(()=>document.getElementById('clan-pulse-status')
+    ?.textContent.includes('180 UTC calendar days'),{timeout:12000});
+   assert.equal(await page.locator('#clan-pulse-chart button').count(),26);
+   assert.match(await page.locator('#clan-pulse-detail').innerText(),/Active player-days/);
+   await page.locator('#clan-pulse-chart [data-pulse-index="0"]').click();
+   assert.equal(await page.locator('#clan-pulse-table tr').count(),7);
+   assert.match(await page.locator('#clan-pulse-table-note').innerText(),/multiple player-days/);
+   await page.locator('#clan-pulse-days').selectOption('30');
+   await page.waitForFunction(()=>document.getElementById('clan-pulse-status')
+    ?.textContent.includes('30 UTC calendar days'),{timeout:12000});
    assert.equal(await page.locator('#clan-board-table tr').count(),2);
    assert.match(await page.locator('#clan-board-kpis').innerText(),/50/);
    assert.match(await page.locator('#clan-board-note').innerText(),/not lifetime/i);
