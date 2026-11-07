@@ -216,7 +216,10 @@
         $('clan-board-status').textContent='Saved clan match comparisons are temporarily unavailable. '+
           'No new PUBG data was requested.';
       }finally{
-        if(token===lastRequest)$('clan-board-refresh').disabled=false;
+        if(token===lastRequest){
+          $('clan-board-refresh').disabled=false;
+          pending=null;
+        }
       }
     })();
     pending={days,promise:work};
