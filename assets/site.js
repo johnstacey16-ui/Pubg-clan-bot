@@ -135,7 +135,10 @@
     $('crumb').textContent = {overview:'Overview',leaderboard:'Leaderboards',players:'Player roster',modes:'Game modes','full-stats':'Complete player stats',compare:'Compare',matches:'Match intelligence',weapons:'Weapon mastery',season:'Season & ranked',teammates:'Teammate insights',awards:'Clan awards',analysis:'Deep analysis','data-tools':'Data workbench',help:'Analytics guide',survival:'Survival mastery',sources:'PUBG data library',global:'Official regional ranks',health:'Data health',roadmap:'Roadmap'}[page];
     try { if(!preserveHash) history.replaceState(null, '', page === 'overview' ? '/dashboard/' : '/dashboard/#' + page); } catch (e) {}
     window.scrollTo(0,0);
-    if(page==='matches' && data)loadCachedMatches();
+    if(page==='matches'){
+      if(data)loadCachedMatches();
+      window.ClanMatchBoard?.load();
+    }
     if(page==='full-stats')window.FullPubgStats?.show();
     if((page==='weapons'||page==='teammates')&&data)loadInsight(page);
     if(page==='season'&&data){loadSeason();loadSeasonLeaderboard();}
@@ -853,6 +856,7 @@
   $('match-player').addEventListener('change',function(e){matchName=e.target.value;loadCachedMatches();});
   $('match-reload').addEventListener('click',loadCachedMatches);
   window.MatchLab?.init();
+  window.ClanMatchBoard?.init();
   $('match-refresh').addEventListener('click',function(){
     refreshFromPubg('matches',matchName,'match-note');
   });
