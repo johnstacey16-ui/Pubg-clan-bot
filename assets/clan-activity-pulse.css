@@ -1,0 +1,30 @@
+/* Source-only clan activity timeline, no canvas/image/animation. */
+.clan-pulse-panel{margin-top:22px}
+.clan-pulse-panel .panel-heading h2{margin:0}
+.clan-pulse-panel .filters{margin:14px 0 16px;align-items:end}
+.clan-pulse-panel .filters label{flex:1 1 160px}
+.clan-pulse-panel .filters select{width:100%}
+.clan-pulse-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
+.clan-pulse-kpi{background:#102a40;border:1px solid #34516a;border-radius:10px;padding:13px;min-width:0}
+.clan-pulse-kpi small{display:block;color:#a9bed2;font-size:10px}
+.clan-pulse-kpi strong{display:block;font-size:20px;color:#c0ffec;margin-top:7px;font-variant-numeric:tabular-nums}
+.clan-pulse-visual{margin:16px 0 18px;border:1px solid #34516a;border-radius:12px;padding:12px;overflow-x:auto}
+.clan-pulse-chart{display:flex;gap:5px;align-items:stretch;min-width:500px}
+.clan-pulse-slot{flex:1 0 0;min-width:13px;display:flex;flex-direction:column;gap:4px}
+.clan-pulse-column{display:block;position:relative;min-height:132px;width:100%;border:1px solid #385972;border-radius:6px;background:#0c253c;cursor:pointer;overflow:hidden;padding:0}
+.clan-pulse-column.selected{border:2px solid #71e8d1;background:#10374b}
+.clan-pulse-column:focus-visible{outline:2px solid #eafff7;outline-offset:2px}
+.clan-pulse-fill{position:absolute;bottom:0;left:0;width:100%;background:linear-gradient(0deg,#249889,#71c8e1);min-height:0;border-radius:3px 3px 0 0}
+.clan-pulse-column.selected .clan-pulse-fill{background:linear-gradient(0deg,#46bca0,#b3ffe9)}
+.clan-pulse-tick{min-height:30px;color:#a8bbcf;font-size:9px;line-height:1.4;text-align:center;overflow-wrap:anywhere}
+.clan-pulse-detail{padding:14px;border:1px solid #34516a;border-radius:10px;background:#10263a;margin-bottom:16px}
+.clan-pulse-detail>strong{color:#c0ffe9;font-size:16px;display:block}
+.clan-pulse-partial{display:block;color:#ffd29e;margin:5px 0}
+.clan-pulse-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.clan-pulse-detail-grid span{min-width:0}
+.clan-pulse-detail-grid small{display:block;font-size:10px;color:#a8c0d2}
+.clan-pulse-detail-grid b{font-size:17px;color:#e2fff3}
+.clan-pulse-panel .scroll-table{margin:12px 0}
+.clan-pulse-panel table{min-width:680px}
+.clan-pulse-panel th,.clan-pulse-panel td{font-size:11px}
+@media(max-width:760px){.clan-pulse-kpis,.clan-pulse-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
