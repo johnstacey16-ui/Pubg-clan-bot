@@ -87,7 +87,8 @@
    $('clan-pulse-metric').value:'distinctMatches';
   const max=Math.max(1,...groups.map(g=>numeric(g[metric])));
   $('clan-pulse-chart').innerHTML=groups.map((g,i)=>{
-   const height=Math.max(2,Math.round(numeric(g[metric])/max*100));
+   const height=numeric(g[metric])===0?0:
+    Math.max(2,Math.round(numeric(g[metric])/max*100));
    const isLast=g.to===end;
    const label=g.label+(days===180?' (UTC week group)':' (UTC)')+
     ' · '+fmt(g[metric])+' '+metrics[metric].toLowerCase();
@@ -140,6 +141,8 @@
   const days=Number($('clan-pulse-days').value)||30;
   const local=cached.get(days);
   if(!force&&local&&Date.now()-local.cachedAt<90000){
+   ++requestId; // Invalidate an older in-flight request for another window.
+   $('clan-pulse-reload').disabled=false;
    $('clan-pulse-status').textContent='Saved activity ready · '+
     days+' UTC calendar days (cached). No PUBG API requests.';
    render(local.data);return;
@@ -163,6 +166,8 @@
    if(token!==requestId)return;
    $('clan-pulse-status').textContent=
     'Saved daily activity is temporarily unavailable. No upstream PUBG refresh was attempted.';
+   for(const id of ['clan-pulse-kpis','clan-pulse-coverage','clan-pulse-chart',
+     'clan-pulse-detail','clan-pulse-table','clan-pulse-table-note'])$(id).innerHTML='';
   }finally{
    if(token===requestId)$('clan-pulse-reload').disabled=false;
   }
