@@ -750,6 +750,22 @@
         <p id="health-season-note" class="small muted"></p>
         <p id="health-source-note" class="small muted">PUBG request reservations are not guaranteed successful responses.</p>
       </div>
+      <div class="card panel" aria-labelledby="health-collection-title">
+        <div class="panel-heading"><div><h2 id="health-collection-title">Clan collection freshness and backfill</h2>
+          <p class="small muted">Verified console-clan aggregate records only. Checks, successful responses and match dates are different signals.</p></div><span class="chip">ON-DEMAND ONLY</span></div>
+        <p id="health-collection-note" class="small muted" role="status" aria-live="polite">Open Data Health to inspect saved collector progress.</p>
+        <div class="cc-awards-grid" id="health-freshness-metrics" aria-label="Saved collector coverage"></div>
+        <p id="health-archive-note" class="small muted"></p>
+        <h3>Backfill job stages</h3>
+        <p class="small muted">Done means a task finished using a returned or cached response; it does not prove the upstream PUBG API was freshly contacted. Pending and ready-for-retry tasks are normal when the shared rate budget is busy.</p>
+        <div class="scroll-table"><table><thead><tr>
+          <th>DATA TYPE</th><th>DONE</th><th>PENDING</th><th>READY TO RETRY</th>
+          <th>LEASED</th><th>UNAVAILABLE</th><th>LAST COMPLETION</th>
+        </tr></thead><tbody id="health-backfill-table"></tbody></table></div>
+        <p id="health-backfill-note" class="small muted"></p>
+        <p id="health-season-collector" class="small muted"></p>
+        <p id="health-collection-source" class="small muted">A missing record means unobserved, not healthy or failed. Reading this report never refreshes PUBG data.</p>
+      </div>
       <div class="card panel"><h2>Saved PUBG cache categories</h2>
         <p class="small muted">Counts only. The website never receives private cache keys, player account IDs, raw payloads or credentials.</p>
         <div class="scroll-table"><table><thead><tr><th>RESOURCE</th><th>CACHED RESPONSES</th></tr></thead>

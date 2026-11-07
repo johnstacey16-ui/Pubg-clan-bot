@@ -103,6 +103,7 @@
 - [ ] Retain old private source until feature parity and acceptance; no deletion
 
 - [x] Safe on-demand Data Health page with real Supabase cache and budget summaries (8 reserved API calls per 65 seconds); no new Vercel function
+- [x] On-demand verified-clan collection health and freshness monitoring: genuine 24/48-hour player last-check coverage, archived match write time versus game-played time, backfill stages and ready-for-retry counts, plus observed season collector state. Query only when Data Health is opened; no PUBG requests, new Vercel function, or background polling. No-upstream-check proof is inferred from cache/job completion.
 - [ ] Complete final old-dashboard migration matrix and browser/device acceptance
 
 ### Phase 4 — Secure updates and Discord integration
@@ -124,7 +125,8 @@
 ### Phase 5 — Production hardening
 - [x] Full automated Node regression suite: regression suite checked via GitHub Actions on 2026-11-03
 - [ ] Complete live desktop, Android and Xbox browser checks
-- [ ] Error monitoring, stale-data indicators and backoff
+- [ ] External error alerting and operational incident notifications (no always-on paid monitor required)
+- [x] Read-only stale player-check flags, collector backfill task states and retry readiness, archive event-vs-ingest clocks on Data Health; existing budget backoff and retries remain unchanged.
 - [x] Consolidate new API handlers into the existing 12 Hobby-compatible Vercel functions (no paid upgrade or separate backend)
 - [ ] Confirm free-tier usage, hosting and API-request budgets
 - [ ] Validate layout and interaction on Xbox browser (hardware acceptance separately)
