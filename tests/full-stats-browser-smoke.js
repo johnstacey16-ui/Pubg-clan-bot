@@ -22,6 +22,41 @@ function respond(res,status,payload){
 }
 const server=http.createServer(async(req,res)=>{
  const uri=new URL(req.url,'http://127.0.0.1');
+ if(uri.pathname==='/api/public-progress'){
+  const days=Number(uri.searchParams.get('days')||3);
+  const previous=days===1?'2026-11-06T12:00:00Z':
+   days===3?'2026-11-04T12:00:00Z':null;
+  const now='2026-11-07T12:00:00Z';
+  const bounds=days===1?[0.75,1.5]:days===3?[2,4]:
+   days===7?[6,9]:[12,17];
+  const item=(player,kills,wins,matches,oldKills,oldWins,oldMatches,prior=previous)=>({
+   player_name:player,platform:'xbox',latest_at:now,previous_at:prior,
+   latest_kills:kills,latest_wins:wins,latest_matches:matches,
+   previous_kills:oldKills,previous_wins:oldWins,previous_matches:oldMatches
+  });
+  const raw=[
+   item('Sample Member',140,9,62,120,7,55),
+   item('Alpha',80,4,54,68,4,50),
+   item('Reset',1,1,2,100,8,51),
+   item('Baseline',10,1,10,null,null,null,null)
+  ];
+  return respond(res,200,{
+   schemaVersion:1,kind:'observed-progress',windowDays:days,
+   minDays:bounds[0],maxDays:bounds[1],
+   source:'Genuine official PUBG lifetime counter snapshots',
+   comparedPlayers:previous?3:0,awaitingComparison:previous?1:4,
+   note:'Actual saved snapshot comparisons only.',
+   count:4,rows:raw.map(r=>({
+    name:r.player_name,platform:r.platform,latestAt:r.latest_at,
+    previousAt:r.previous_at,
+    latestKills:r.latest_kills,latestWins:r.latest_wins,
+    latestMatches:r.latest_matches,
+    previousKills:r.previous_at?r.previous_kills:null,
+    previousWins:r.previous_at?r.previous_wins:null,
+    previousMatches:r.previous_at?r.previous_matches:null
+   }))
+  });
+ }
  if(uri.pathname==='/api/public-stats')return respond(res,200,summary);
  if(uri.pathname==='/api/player-lookup')return respond(res,200,{
   schemaVersion:1,found:true,isClanMember:false,player:outsider});
@@ -214,6 +249,19 @@ async function run(){
    await page.locator('#page-awards').waitFor({state:'visible'});
    await page.waitForFunction(()=>document.getElementById('clan-record-status')
     ?.textContent.includes('Read-only saved PUBG record book ready'),{timeout:12000});
+   await page.waitForFunction(()=>document.getElementById('cc-momentum-note')
+    ?.textContent.includes('verified players have actual snapshot pairs'),{timeout:12000});
+   assert.equal(await page.locator('#cc-momentum-grid .cc-award').count(),4);
+   assert.match(await page.locator('#cc-momentum-note').innerText(),/2 have 3\+ newly recorded games/);
+   assert.match(await page.locator('#cc-momentum-grid').innerText(),/Sample Member/);
+   assert.match(await page.locator('#cc-momentum-grid').innerText(),/20/);
+   await page.locator('#cc-momentum-window').selectOption('7');
+   await page.waitForFunction(()=>document.getElementById('cc-momentum-note')
+    ?.textContent.includes('0 verified players have actual snapshot pairs'),{timeout:12000});
+   assert.match(await page.locator('#cc-momentum-grid').innerText(),/No eligible real result/);
+   await page.locator('#cc-momentum-window').selectOption('3');
+   await page.waitForFunction(()=>document.getElementById('cc-momentum-note')
+    ?.textContent.includes('3 verified players have actual snapshot pairs'),{timeout:12000});
    assert.match(await page.locator('#clan-record-kpis').innerText(),/1,500/);
    assert.equal(await page.locator('#clan-record-metrics button').count(),10);
    assert.equal(await page.locator('#clan-record-table tr').count(),2);
@@ -232,6 +280,21 @@ async function run(){
    await page.waitForFunction(()=>document.getElementById('clan-record-status')
     ?.textContent.includes('30 days'),{timeout:12000});
    assert.match(await page.locator('#clan-record-description').innerText(),/not a career high/);
+   await page.locator('[data-page="analysis"]').click();
+   await page.locator('#page-analysis').waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.getElementById('cc-progress-note')
+    ?.textContent.includes('players added genuine games'),{timeout:12000});
+   assert.equal(await page.locator('#cc-progress-window').inputValue(),'3');
+   assert.match(await page.locator('#cc-progress').innerText(),/Sample Member/);
+   assert.match(await page.locator('#cc-progress').innerText(),/counter changed/);
+   assert.match(await page.locator('#cc-progress').innerText(),/baseline only/);
+   await page.locator('#cc-progress-window').selectOption('14');
+   await page.waitForFunction(()=>document.getElementById('cc-progress-note')
+    ?.textContent.includes('0 players added genuine games'),{timeout:12000});
+   await page.locator('#cc-progress-window').selectOption('1');
+   await page.waitForFunction(()=>document.getElementById('cc-progress-note')
+    ?.textContent.includes('2 players added genuine games'),{timeout:12000});
+   assert.match(await page.locator('#cc-progress').innerText(),/Sample Member/);
    await page.locator('[data-page="matches"]').click();
    await page.locator('#page-matches').waitFor({state:'visible'});
    await page.waitForFunction(()=>document.getElementById('match-map-table')?.
