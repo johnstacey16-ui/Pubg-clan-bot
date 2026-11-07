@@ -33,7 +33,7 @@ as $fn$
       (case p_days when 1 then 1.5 when 3 then 4
         when 7 then 9 when 14 then 17 else 999 end)*interval '1 day'
   order by pg_catalog.abs(
-    pg_catalog.extract(epoch from (recent.observed_at-s.observed_at)) -
+    extract(epoch from (recent.observed_at-s.observed_at)) -
     p_days*86400
   ),s.observed_at desc
   limit 1
