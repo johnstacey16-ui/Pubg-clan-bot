@@ -84,7 +84,7 @@ test('aggregates genuine map and mode observations, not imaginary career games',
 });
 test('CSV exports only filtered, formula-safe observed aggregates',()=>{
  const exported=exportCsv(aggregate(data),30,'','');
- assert.match(exported,/periodDays,mapFilter,modeFilter/);
+ assert.match(exported,/"periodDays","mapFilter","modeFilter"/);
  assert.match(exported,/Alpha/);
  assert.match(exported,/NoSample/);
  assert.doesNotMatch(exported,/match_id|pubg_account_id|privateTelemetry/);
