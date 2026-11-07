@@ -76,6 +76,32 @@ const server=http.createServer(async(req,res)=>{
     mode:'duo',playedAt:'2026-11-02T14:00:00Z',placement:null,
     kills:null,damage:null}
   ]});
+ if(uri.pathname==='/api/public-insights'&&uri.searchParams.get('kind')==='teammates')
+  return respond(res,200,{schemaVersion:1,kind:'teammates',name:'Sample Member',
+    platform:'xbox',archivedMatches:5,count:3,
+    note:'Saved squad rosters only; no large telemetry report loaded.',
+    items:[
+     {name:'Mate A',games:4,knownPlacements:3,wins:1,top10:2,
+      winRate:100/3,top10Rate:200/3,
+      kills:8,killsObserved:4,damage:1200,damageObserved:4,
+      assists:3,assistsObserved:4,knocks:4,knocksObserved:4,
+      myKills:12,myKillsObserved:4,pairedKills:20,pairedObserved:4,
+      pairKillsPerMatch:5,lastPlayedAt:'2026-11-07T01:00:00Z',
+      maps:[{name:'Baltic_Main',games:3},{name:'Desert_Main',games:1}],
+      modes:[{name:'squad',games:4}]},
+     {name:'Mate B',games:2,knownPlacements:1,wins:0,top10:1,
+      winRate:0,top10Rate:100,kills:4,killsObserved:2,
+      damage:500,damageObserved:2,assists:0,assistsObserved:2,
+      knocks:1,knocksObserved:2,myKills:3,myKillsObserved:2,
+      pairedKills:7,pairedObserved:2,pairKillsPerMatch:3.5,
+      maps:[{name:'Baltic_Main',games:2}],modes:[{name:'squad',games:2}]},
+     {name:'Mate C',games:1,knownPlacements:0,wins:0,top10:0,
+      winRate:null,top10Rate:null,kills:null,killsObserved:0,
+      damage:null,damageObserved:0,assists:null,assistsObserved:0,
+      knocks:null,knocksObserved:0,myKills:null,myKillsObserved:0,
+      pairedKills:null,pairedObserved:0,pairKillsPerMatch:null,
+      maps:[{name:'Sanhok_Main',games:1}],modes:[{name:'duo',games:1}]}
+    ]});
  if(uri.pathname==='/api/public-insights'&&uri.searchParams.get('kind')==='weapons')
   return respond(res,200,{schemaVersion:1,kind:'weapons',name:'Sample Member',
    platform:'xbox',savedAt:'2026-11-05T12:00:00Z',count:2,
@@ -127,6 +153,28 @@ async function run(){
    await page.locator('#page-full-stats').waitFor({state:'visible'});
    assert.equal(await page.locator('#full-player option').count(),1);
    assert.match(await page.locator('#full-source').innerText(),/Sample Member/);
+   await page.locator('[data-page="teammates"]').click();
+   await page.locator('#page-teammates').waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.getElementById('teammates-coverage')
+    ?.textContent.includes('3 distinct visible teammate names'),{timeout:12000});
+   assert.equal(await page.locator('#teammates-table tr').count(),3);
+   assert.match(await page.locator('#teammates-table tr').first().innerText(),/Mate A/);
+   assert.match(await page.locator('#teammates-coverage').innerText(),/5 saved match reports/);
+   await page.locator('#teammates-min').selectOption('2');
+   assert.equal(await page.locator('#teammates-table tr').count(),2);
+   await page.locator('#teammates-sort').selectOption('winRate');
+   assert.match(await page.locator('#teammates-table tr').first().innerText(),/Mate A/);
+   await page.locator('#teammates-partner').selectOption('Mate A');
+   assert.match(await page.locator('#teammates-detail').innerText(),/Baltic_Main/);
+   assert.match(await page.locator('#teammates-detail').innerText(),/5? games|4 games/);
+   const duoBar=await page.locator('#teammates-bars [data-width]').first()
+    .evaluate(el=>parseFloat(el.style.width));
+   assert.ok(duoBar>0,'Squad bars use real CSSOM width without canvas');
+   await page.locator('#teammates-search').fill('Mate B');
+   assert.equal(await page.locator('#teammates-table tr').count(),1);
+   await page.locator('#teammates-search').fill('');
+   await page.locator('#teammates-min').selectOption('1');
+   assert.equal(await page.locator('#teammates-table tr').count(),3);
    await page.locator('[data-page="matches"]').click();
    await page.locator('#page-matches').waitFor({state:'visible'});
    await page.waitForFunction(()=>document.getElementById('match-map-table')?.
@@ -188,7 +236,10 @@ async function run(){
    const chartHeight=await page.locator('#match-trend [data-height]').first().evaluate(
     el=>parseFloat(el.style.height));
    assert.ok(chartHeight>0,'Saved match trend bars must have actual CSSOM heights');
+   assert.equal(await page.locator('#telemetry-opt-in').getAttribute('open'),null);
    await page.locator('#match-results [data-replay-match]').first().click();
+   assert.notEqual(await page.locator('#telemetry-opt-in').getAttribute('open'),null);
+
    assert.equal(await page.locator('#telemetry-match').inputValue(),
     '00336e4b-d659-4497-bfc4-9f6dd705cc71');
    await page.locator('#match-map-filter').selectOption('');

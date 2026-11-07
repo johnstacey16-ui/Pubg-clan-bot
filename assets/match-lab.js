@@ -268,7 +268,7 @@
           '</span></div>').join(''):
           '<p class="small muted">No squad roster saved for this match.</p>')+
         '</details><button type="button" class="secondary match-replay-select" data-replay-match="'+
-         escape(m.id)+'">Select for recorded 2D replay</button></article>';
+         escape(m.id)+'">Optional 2D replay (large telemetry)</button></article>';
     }).join('')||'<p class="match-empty">No matches match these filters. Change the selection to show more stored reports.</p>';
   }
   function init(){
@@ -282,6 +282,8 @@
       const select=$('telemetry-match');
       if(!id||!select||![...select.options].some(option=>option.value===id))return;
       select.value=id;
+      const optIn=$('telemetry-opt-in');
+      if(optIn)optIn.open=true; // User explicitly selected this optional feature.
       $('telemetry-status').textContent='Selected saved match '+id.slice(0,8)+
        '. Choose Analyse selected match to retrieve actual recorded events, if available.';
       $('telemetry-panel').scrollIntoView({behavior:'smooth',block:'start'});
