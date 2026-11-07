@@ -75,6 +75,7 @@
 - [x] Persistent match archive for all saved Xbox/PS players, 180-day retention, daily pruning through protected cron
 - [x] Verified automated collector remains active: on 2026-11-07, all 50 cached console-player indexes had been refreshed within 24 hours; 48/50 profile jobs were done and two pending under the shared rate budget.
 - [x] Historical clan match leaderboard with server-only verified-member aggregation, rolling 7/30/180-day comparisons, map/mode and minimum-sample filters, observed survival and kill/damage rates, peer comparisons and formula-safe CSV; unique matches and player-match observations are explicitly distinct.
+- [x] Source-only clan single-match record book: top five different verified players' genuine archived personal bests in ten PUBG participant categories, with 7/30/180-day windows, map/mode/date, sample coverage and no telemetry or new PUBG requests.
 - [x] Backfill three genuine saved match reports without using the PUBG API
 - [x] Private RLS and verified console-player lookup; public output uses an explicit field allowlist
 - [ ] Confirm trigger archiving on the next newly retrieved PUBG match in production
@@ -112,7 +113,7 @@
 - [x] Add an SVG percentile comparison radar based on actual saved mode data
 - [x] Show real 6–14 day snapshot progress through a private Supabase RPC; flag counter resets and missing baselines
 - [x] Add local-only validated CSV historical comparison, official CSV export, labelled source-only bot scatter, data quality flags, and analytics glossary
-- [ ] Add genuine multi-observation consistency awards when enough historical samples exist
+- [ ] Add genuine multi-observation consistency awards when enough historical samples exist (as of 2026-11-07: only Nov 3–7 snapshots exist, so no player yet has a valid 6–14-day comparison; do not invent award winners)
 - [ ] Add authenticated manager-only persistent CSV imports with auditable source provenance
 - [ ] Verify the new Command Centre views in production browsers, Android and Xbox
 - [ ] Accessibility and performance regression gate

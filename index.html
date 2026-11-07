@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="/assets/match-lab.css">
 <link rel="stylesheet" href="/assets/clan-match-board.css">
 <link rel="stylesheet" href="/assets/squad-chemistry.css">
+<link rel="stylesheet" href="/assets/clan-record-book.css">
 <link rel="stylesheet" href="/assets/toolkit-theme.css">
 <script defer src="/assets/clan-analytics.js"></script>
 <script defer src="/assets/command-centre.js"></script>
@@ -26,6 +27,7 @@
 <script defer src="/assets/match-lab.js"></script>
 <script defer src="/assets/clan-match-board.js"></script>
 <script defer src="/assets/squad-chemistry.js"></script>
+<script defer src="/assets/clan-record-book.js"></script>
 <script defer src="/assets/site.js"></script></head><body>
 <a class="skip" href="#content">Skip to content</a>
 <div class="layout">
@@ -498,6 +500,31 @@
         <div class="cc-awards-grid" id="cc-awards-grid"></div>
         <p class="small muted">Awards require a minimum number of matches. Unavailable advanced statistics are never guessed. A consistency award needs enough genuine multi-day observations and is not issued prematurely.</p>
       </div>
+      <section class="card panel clan-record-panel" aria-labelledby="clan-record-title">
+        <div class="panel-heading"><div>
+          <p class="eyebrow subtle">REAL ARCHIVED PUBG PARTICIPANT PERFORMANCE</p>
+          <h2 id="clan-record-title">Clan Match Record Book</h2>
+        </div><span class="chip">ZERO PUBG REQUESTS</span></div>
+        <p class="small muted">The best single saved match for each of up to five different verified clan players, per metric. These observed records are separate from lifetime awards above, with real source dates, maps, modes and sample coverage. Older unrecorded matches cannot be inferred.</p>
+        <div class="filters">
+          <label>Saved record window <select id="clan-record-days">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="180">Last 180 days</option>
+          </select></label>
+          <label>Explore match record <select id="clan-record-metric"></select></label>
+          <button class="secondary" type="button" id="clan-record-reload">↻ Reload saved records</button>
+        </div>
+        <p class="small muted" id="clan-record-status" aria-live="polite">Open Awards to load verified archived match achievements.</p>
+        <div class="clan-record-kpis" id="clan-record-kpis" aria-label="Real archived match coverage"></div>
+        <div class="clan-record-metrics" id="clan-record-metrics" aria-label="Ten observed PUBG match record categories"></div>
+        <p class="small muted" id="clan-record-description" aria-live="polite">Choose a record category to see its observed winners and sample coverage.</p>
+        <div class="scroll-table"><table><thead><tr>
+          <th>RANK</th><th>CLAN PLAYER</th><th>RECORD</th>
+          <th>MAP</th><th>MODE</th><th>PLAYED (UTC)</th>
+        </tr></thead><tbody id="clan-record-table"></tbody></table></div>
+        <p class="small muted">Only official archived console match statistics are included. A given player appears once per metric, based on their highest observed match. This is not a career-high guarantee, a global PUBG ranking or a modelled achievement.</p>
+      </section>
     </section>
     <section class="page" id="page-analysis" hidden>
       <div class="page-head"><p class="eyebrow">PERFORMANCE INTELLIGENCE</p>

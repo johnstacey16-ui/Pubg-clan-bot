@@ -25,6 +25,40 @@ const server=http.createServer(async(req,res)=>{
  if(uri.pathname==='/api/public-stats')return respond(res,200,summary);
  if(uri.pathname==='/api/player-lookup')return respond(res,200,{
   schemaVersion:1,found:true,isClanMember:false,player:outsider});
+ if(uri.pathname==='/api/public-matches'&&uri.searchParams.get('route')==='clan-records'){
+  const days=Number(uri.searchParams.get('days')||30);
+  const record=(metric,rank,value,name='Sample Member')=>({
+   metric,rank,value,name,platform:name==='Alpha'?'psn':'xbox',
+   map:'Baltic_Main',mode:'squad',playedAt:'2026-11-06T12:00:00Z'
+  });
+  return respond(res,200,{
+   schemaVersion:1,kind:'clan-match-records',periodDays:days,
+   generatedAt:'2026-11-07T07:00:00Z',
+   verifiedPlayers:50,observedPlayers:39,
+   playerMatchObservations:1772,distinctMatches:1500,
+   coverage:[
+    {metric:'kills',observed:1772},{metric:'damage',observed:1772},
+    {metric:'headshots',observed:1600},{metric:'assists',observed:1598},
+    {metric:'knocks',observed:1650},{metric:'revives',observed:1550},
+    {metric:'longestKillMeters',observed:1600},
+    {metric:'timeSurvivedSeconds',observed:1559},
+    {metric:'roadKills',observed:1600},
+    {metric:'vehicleDestroys',observed:1650}
+   ],
+   records:[
+    record('kills',1,35),record('kills',2,28,'Alpha'),
+    record('damage',1,4241.46,'Alpha'),
+    record('headshots',1,11),
+    record('assists',1,8),
+    record('knocks',1,14),
+    record('revives',1,3),
+    record('longestKillMeters',1,370.2),
+    record('timeSurvivedSeconds',1,1851),
+    record('roadKills',1,2),
+    record('vehicleDestroys',1,3)
+   ]
+  });
+ }
  if(uri.pathname==='/api/public-matches'&&uri.searchParams.get('route')==='clan-board'){
   const days=Number(uri.searchParams.get('days')||30);
   return respond(res,200,{schemaVersion:1,kind:'clan-match-board',periodDays:days,
@@ -175,6 +209,29 @@ async function run(){
    await page.locator('#teammates-search').fill('');
    await page.locator('#teammates-min').selectOption('1');
    assert.equal(await page.locator('#teammates-table tr').count(),3);
+   // The awards view is archive-only: no telemetry request or PUBG fetch.
+   await page.locator('[data-page="awards"]').click();
+   await page.locator('#page-awards').waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.getElementById('clan-record-status')
+    ?.textContent.includes('Read-only saved PUBG record book ready'),{timeout:12000});
+   assert.match(await page.locator('#clan-record-kpis').innerText(),/1,500/);
+   assert.equal(await page.locator('#clan-record-metrics button').count(),10);
+   assert.equal(await page.locator('#clan-record-table tr').count(),2);
+   assert.match(await page.locator('#clan-record-table tr').first().innerText(),/35/);
+   assert.match(await page.locator('#clan-record-description').innerText(),/1,772/);
+   await page.locator('#clan-record-metric').selectOption('damage');
+   assert.match(await page.locator('#clan-record-table tr').first().innerText(),/4,241.5/);
+   await page.locator('#clan-record-metrics [data-record-metric="timeSurvivedSeconds"]').click();
+   assert.match(await page.locator('#clan-record-table tr').first().innerText(),/30m 51s/);
+   assert.match(await page.locator('#clan-record-description').innerText(),/1,559/);
+   await page.locator('#clan-record-days').selectOption('7');
+   await page.waitForFunction(()=>document.getElementById('clan-record-status')
+    ?.textContent.includes('7 days'),{timeout:12000});
+   assert.equal(await page.locator('#clan-record-table tr').count(),1);
+   await page.locator('#clan-record-days').selectOption('30');
+   await page.waitForFunction(()=>document.getElementById('clan-record-status')
+    ?.textContent.includes('30 days'),{timeout:12000});
+   assert.match(await page.locator('#clan-record-description').innerText(),/not a career high/);
    await page.locator('[data-page="matches"]').click();
    await page.locator('#page-matches').waitFor({state:'visible'});
    await page.waitForFunction(()=>document.getElementById('match-map-table')?.
