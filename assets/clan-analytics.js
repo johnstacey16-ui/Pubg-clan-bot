@@ -198,6 +198,32 @@
     }).sort((a,b)=>(b.deltaKpr??-1)-(a.deltaKpr??-1)||
       a.name.localeCompare(b.name));
   }
+  // Informal interval momentum awards; never lifetime consistency claims.
+  // Require at least three genuinely added rounds and nondecreasing counters,
+  // and do not treat missing wins or kills as evidence.
+  function progressAwards(rows,minNewMatches=3){
+    var eligible=(Array.isArray(rows)?rows:[]).filter(p=>
+      p&&p.state==='observed'&&
+      Number.isFinite(p.deltaMatches)&&p.deltaMatches>=minNewMatches&&
+      Number.isFinite(p.deltaKills)&&p.deltaKills>=0&&
+      Number.isFinite(p.deltaWins)&&p.deltaWins>=0&&
+      Number.isFinite(p.deltaKpr)&&p.deltaKpr>=0&&
+      typeof p.name==='string'&&p.name.trim());
+    var categories=[
+      {key:'deltaKills',title:'Most kills added',unit:'kills'},
+      {key:'deltaKpr',title:'Highest interval kills / game',unit:'kills per new match'},
+      {key:'deltaWins',title:'Most wins added',unit:'wins'},
+      {key:'deltaMatches',title:'Most games added',unit:'games'}
+    ];
+    return categories.map(def=>{
+      var ranked=eligible.filter(p=>p[def.key]>0).slice().sort((a,b)=>
+        b[def.key]-a[def.key]||b.deltaMatches-a.deltaMatches||
+        a.name.localeCompare(b.name));
+      return{...def,winner:ranked[0]||null,
+        eligiblePlayers:eligible.length,
+        contenders:ranked.length};
+    });
+  }
   function splitCSVLine(line,delimiter){
     var fields=[],field='',quoted=false;
     for(var i=0;i<line.length;i++){
@@ -309,5 +335,5 @@
     return rows;
   }
   return{number,rate,median,winsorise,percentile,features,score,awards,
-    quality,progress,parseCSV,exportCSV,compareSnapshots,FIELDS,WEIGHTS};
+    quality,progress,progressAwards,parseCSV,exportCSV,compareSnapshots,FIELDS,WEIGHTS};
 });

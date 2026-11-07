@@ -5,6 +5,8 @@
   var E=window.ClanAnalytics;
   if(!E)return;
   var state={data:null,progress:null,progressBusy:false,progressDone:false,
+    progressDays:3,progressRequest:0,progressLoadingDays:null,
+    progressError:false,progressCache:new Map(),
     before:null,after:null,sourceNames:{before:null,after:null}};
   var $=id=>document.getElementById(id);
   var html=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>
@@ -58,42 +60,119 @@
     $('cc-data-integrity').textContent='Checked '+cohort().length+
       ' verified clan profiles. External files and unverified bot percentages are excluded.';
   }
+  function setWindowLabel(){
+    for(const id of ['cc-progress-window','cc-momentum-window']){
+      var select=$(id);if(select)select.value=String(state.progressDays);
+    }
+  }
+  function renderMomentum(){
+    var target=$('cc-momentum-grid'),note=$('cc-momentum-note');
+    if(!target||!note)return;
+    setWindowLabel();
+    if(state.progressBusy){
+      note.textContent='Reading genuine '+state.progressDays+'-day snapshot comparisons…';
+      target.innerHTML='';return;
+    }
+    if(!state.progressDone||state.progress?.windowDays!==state.progressDays){
+      note.textContent=state.progressError?'Observed snapshot records temporarily unavailable.':
+        'No genuine observed data loaded for this window.';
+      target.innerHTML='';return;
+    }
+    var rows=E.progress(state.progress.rows);
+    var awards=E.progressAwards(rows,3);
+    var compared=rows.filter(r=>r.previousAt!==null).length;
+    var eligible=awards[0]?.eligiblePlayers||0;
+    note.textContent=compared+' verified players have actual snapshot pairs '+
+      state.progress.minDays+'–'+state.progress.maxDays+' days apart · '+
+      eligible+' have 3+ newly recorded games with valid nondecreasing counters. '+
+      'Unofficial window-only momentum, not career consistency.';
+    target.innerHTML=awards.map(item=>{
+      var p=item.winner;
+      var value=p?(item.key==='deltaKpr'?dec(p.deltaKpr,2):fmt(p[item.key])):'—';
+      return '<article class="cc-award">'+
+        '<h3>'+html(item.title)+'</h3>'+
+        '<p class="small muted">'+html(item.unit)+'</p>'+
+        (p?'<strong>'+html(p.name)+'</strong><p>'+value+
+          ' · '+fmt(p.deltaMatches)+' added games</p>'+
+          '<small>Observed '+html(date(p.previousAt))+' → '+
+          html(date(p.latestAt))+'</small>':
+          '<p class="muted">No eligible real result for this window</p>')+
+        '<small>'+item.eligiblePlayers+' eligible players (min 3 new games)</small>'+
+        '</article>';
+    }).join('');
+  }
   function renderProgress(){
     var target=$('cc-progress'),note=$('cc-progress-note');
-    if(state.progressBusy){note.textContent='Reading saved genuine weekly samples…';return;}
-    if(!state.progressDone){note.textContent='History not loaded yet.';return;}
-    var rows=E.progress(state.progress?.rows||[]);
+    if(!target||!note)return;
+    setWindowLabel();
+    if(state.progressBusy){
+      note.textContent='Reading genuine '+state.progressDays+'-day saved observations…';
+      target.innerHTML='';return;
+    }
+    if(!state.progressDone||state.progress?.windowDays!==state.progressDays){
+      note.textContent=state.progressError?'Observed snapshot records temporarily unavailable.':
+        'History not loaded yet.';
+      target.innerHTML='';return;
+    }
+    var rows=E.progress(state.progress.rows||[]);
     var observed=rows.filter(r=>r.state==='observed');
     var reset=rows.filter(r=>r.state==='counter_changed');
-    note.textContent=observed.length+' players with real comparison pairs (6–14 days apart) · '+
-      (rows.length-observed.length)+' awaiting comparable data · '+reset.length+
-      ' counters require review';
+    var awaiting=rows.filter(r=>r.state==='baseline_only');
+    note.textContent=observed.length+' players added genuine games with valid comparison pairs '+
+      state.progress.minDays+'–'+state.progress.maxDays+' days apart · '+
+      awaiting.length+' awaiting earlier snapshots · '+reset.length+
+      ' counter changes need review. These are cumulative counter differences, not invented individual match stats.';
     target.innerHTML=rows.map(p=>
       '<tr><td>'+html(p.name)+'</td><td>'+
       (p.state==='observed'?fmt(p.deltaKills):'—')+'</td><td>'+
+      (p.state==='observed'?fmt(p.deltaWins):'—')+'</td><td>'+
       (p.state==='observed'?fmt(p.deltaMatches):'—')+'</td><td>'+
       (p.deltaKpr===null?'—':dec(p.deltaKpr,2))+'</td><td>'+
       html(p.state.replaceAll('_',' '))+'</td><td>'+
-      html(date(p.latestAt))+'</td></tr>'
-    ).join('')||'<tr><td colspan="6">No saved lifetime observations yet</td></tr>';
+      html(date(p.previousAt))+' → '+html(date(p.latestAt))+'</td></tr>'
+    ).join('')||'<tr><td colspan="7">No saved lifetime observations yet</td></tr>';
   }
-  async function getProgress(){
-    if(state.progressBusy||state.progressDone)return;
-    state.progressBusy=true;renderProgress();
+  async function getProgress(force){
+    var days=state.progressDays;
+    if(state.progressBusy&&state.progressLoadingDays===days&&!force)return;
+    if(state.progressDone&&!force&&state.progress?.windowDays===days)return;
+    var cached=state.progressCache.get(days);
+    if(!force&&cached&&Date.now()-cached.cachedAt<90000){
+      state.progress=cached.data;state.progressBusy=false;state.progressDone=true;
+      renderProgress();renderMomentum();return;
+    }
+    var token=++state.progressRequest;
+    state.progressLoadingDays=days;state.progressError=false;
+    state.progressBusy=true;state.progressDone=false;
+    state.progress=null;renderProgress();renderMomentum();
     try{
-      var response=await fetch('/api/public-progress',{cache:'no-store',headers:{Accept:'application/json'}});
-      if(!response.ok)throw Error('API HTTP '+response.status);
+      var response=await fetch('/api/public-progress?days='+days,
+        {cache:'no-store',headers:{Accept:'application/json'}});
+      if(!response.ok)throw Error('Observed progress HTTP '+response.status);
       var result=await response.json();
-      if(result.schemaVersion!==1||!Array.isArray(result.rows))throw Error('Unexpected history');
-      state.progress=result;
-      state.progressDone=true;
+      if(result.schemaVersion!==1||result.kind!=='observed-progress'||
+        result.windowDays!==days||!Array.isArray(result.rows))
+        throw Error('Unexpected observed progress history');
+      if(token!==state.progressRequest)return;
+      state.progress=result;state.progressDone=true;state.progressError=false;
+      state.progressCache.set(days,{data:result,cachedAt:Date.now()});
     }catch(error){
-      $('cc-progress-note').textContent='Genuine weekly history is temporarily unavailable.';
-      $('cc-progress').innerHTML='';
-      state.progressDone=false;
-      return;
-    }finally{state.progressBusy=false;}
-    renderProgress();
+      if(token!==state.progressRequest)return;
+      state.progressDone=false;state.progress=null;state.progressError=true;
+    }finally{
+      if(token===state.progressRequest){
+        state.progressBusy=false;state.progressLoadingDays=null;
+        renderProgress();renderMomentum();
+      }
+    }
+  }
+  function changeProgressWindow(value){
+    var days=Number(value);
+    if(![1,3,7,14].includes(days))return;
+    if(days===state.progressDays)return;
+    state.progressDays=days;state.progressDone=false;state.progressError=false;
+    state.progress=null;setWindowLabel();
+    void getProgress(false);
   }
   function drawRadar(target,a,b,mode,players){
     var host=$(target);
@@ -212,6 +291,9 @@
     }catch(error){label.textContent='Local CSV could not be read.';}
   }
   function init(){
+    for(const id of ['cc-progress-window','cc-momentum-window']){
+      $(id).addEventListener('change',function(){changeProgressWindow(this.value);});
+    }
     for(const id of ['cc-min-matches','cc-team-weight']){
       $(id).addEventListener('input',function(){
         $('cc-min-output').textContent=minimum();
@@ -230,9 +312,9 @@
   }
   function render(page,data){
     state.data=data;
-    if(page==='awards')renderAwards();
+    if(page==='awards'){renderAwards();renderMomentum();void getProgress(false);}
     else if(page==='analysis'){
-      renderScores();renderProgress();getProgress();
+      renderScores();renderProgress();void getProgress(false);
     }else if(page==='data-tools')renderData();
   }
   init();

@@ -112,8 +112,10 @@
 - [x] Adapt legacy Command Centre awards, experimental roles, optional clan percentile ratings and What-if policy controls
 - [x] Add an SVG percentile comparison radar based on actual saved mode data
 - [x] Show real 6–14 day snapshot progress through a private Supabase RPC; flag counter resets and missing baselines
+- [x] Add real 1/3/7/14-day observed snapshot comparisons and four cautious interval momentum awards (3+ genuinely added matches, no counter reset), with actual before/after timestamps, no interpolation, and honest empty 7/14-day states until evidence arrives. Reuses existing progress Vercel function; no extra PUBG requests.
 - [x] Add local-only validated CSV historical comparison, official CSV export, labelled source-only bot scatter, data quality flags, and analytics glossary
 - [ ] Add genuine multi-observation consistency awards when enough historical samples exist (as of 2026-11-07: only Nov 3–7 snapshots exist, so no player yet has a valid 6–14-day comparison; do not invent award winners)
+  - The new short-window momentum awards are *not* lifetime consistency trophies; genuine consistency still needs multiple non-overlapping observed windows.
 - [ ] Add authenticated manager-only persistent CSV imports with auditable source provenance
 - [ ] Verify the new Command Centre views in production browsers, Android and Xbox
 - [ ] Accessibility and performance regression gate
