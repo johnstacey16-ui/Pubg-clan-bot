@@ -125,7 +125,10 @@ test('health panel and privacy-safe aggregate route reuse the existing backend',
  const index=read('index.html'),view=read('assets/cache-health.js');
  for(const id of ['health-metrics','health-types','health-refresh','health-status','health-source-note'])
   assert.ok(index.includes('id="'+id+'"'));
- assert.match(view,/fetch\('\/api\/health'/);
+ assert.match(view,/fetch\('\/api\/health\?collection=1'/);
+ assert.match(read('api/health.js'),/getCollectionHealth/);
+ assert.match(read('training/index.html'),/id="health-backfill-table"/);
+ assert.match(read('training/index.html'),/id="health-freshness-metrics"/);
  assert.match(read('api/health.js'),/getCacheHealth/);
  assert.doesNotMatch(index+view,/SUPABASE_SERVICE_KEY|PUBG_API_KEY/);
 });
